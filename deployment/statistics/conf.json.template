@@ -1,0 +1,20 @@
+{
+  "name": "net.atos~statistics~0.1-SNAPSHOT",
+  "config": {
+    "main" : "net.atos.entng.statistics.Statistics",
+    "port" : 8040,
+    "sql" : false,
+    "mongodb" : true,
+    "neo4j" : false,
+    "app-name" : "Statistics",
+    "app-address" : "/statistics",
+    "app-icon" : "statistics-large",
+    "host": "${host}",
+    "ssl" : $ssl,
+    "auto-redeploy": false,
+    "userbook-host": "${host}",
+    "integration-mode" : "HTTP",
+    "mode" : "${mode}",
+    "aggregate-cron" : "0 0/2 * * * ? *"
+    }
+}
