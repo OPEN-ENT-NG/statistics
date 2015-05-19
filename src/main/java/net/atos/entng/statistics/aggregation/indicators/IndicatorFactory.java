@@ -3,7 +3,6 @@ package net.atos.entng.statistics.aggregation.indicators;
 import static org.entcore.common.aggregation.MongoConstants.TRACE_FIELD_MODULE;
 import static org.entcore.common.aggregation.MongoConstants.TRACE_FIELD_PROFILE;
 import static org.entcore.common.aggregation.MongoConstants.TRACE_FIELD_STRUCTURES;
-import static org.entcore.common.aggregation.MongoConstants.TRACE_FIELD_USER;
 import static org.entcore.common.aggregation.MongoConstants.TRACE_TYPE_ACTIVATION;
 import static org.entcore.common.aggregation.MongoConstants.TRACE_TYPE_CONNEXION;
 import static org.entcore.common.aggregation.MongoConstants.TRACE_TYPE_SVC_ACCESS;
@@ -29,19 +28,15 @@ public class IndicatorFactory {
 	}
 
 
-	// Connections and unique visitors
+	// Connections
 	public static Indicator getConnectionIndicator(Collection<IndicatorFilterMongoImpl> filters) {
 		Collection<IndicatorGroup> indicatorGroups = new ArrayList<IndicatorGroup>();
 		indicatorGroups.add(
 			new IndicatorGroup(TRACE_FIELD_STRUCTURES).setArray(true)
-			.addChild(new IndicatorGroup(TRACE_FIELD_PROFILE)
-				.addChild(TRACE_FIELD_USER)
-			)
-		);
+			.addChild(TRACE_FIELD_PROFILE));
 
 		return new IndicatorMongoImpl(TRACE_TYPE_CONNEXION, filters, indicatorGroups);
 	}
-
 
 	// Access to applications
 	public static Indicator getAccessIndicator(Collection<IndicatorFilterMongoImpl> filters) {
@@ -49,9 +44,7 @@ public class IndicatorFactory {
 		indicatorGroups.add(
 			new IndicatorGroup(TRACE_FIELD_MODULE)
 			.addChild(new IndicatorGroup(TRACE_FIELD_STRUCTURES).setArray(true)
-					.addChild(TRACE_FIELD_PROFILE)
-			)
-		);
+					.addChild(TRACE_FIELD_PROFILE)));
 
 		return new IndicatorMongoImpl(TRACE_TYPE_SVC_ACCESS, filters, indicatorGroups);
 	}

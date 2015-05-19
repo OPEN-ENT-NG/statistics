@@ -41,10 +41,12 @@ public class IndicatorHelper {
 		// UserAccount Activation
 		aggProcessing.addIndicator(IndicatorFactory.getActivationIndicator(filters));
 
-		// Connections and unique visitors
+		// Connections
 		aggProcessing.addIndicator(IndicatorFactory.getConnectionIndicator(filters));
 
 		// Access to applications
 		aggProcessing.addIndicator(IndicatorFactory.getAccessIndicator(filters));
+
+		// TODO : Unique visitors
 	}
 }
