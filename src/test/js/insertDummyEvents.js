@@ -15,7 +15,7 @@ function getNextDay(time) {
 }
 
 var mongoCollection = "dummyEvents";
-var maxBulkOperations = 1000; // Each group of operations can have at most 1000 operations (according to http://docs.mongodb.org/v2.6/core/bulk-write-operations/#bulk-execution-mechanics)
+var bulkExecutionThreshold = 900; // Each group of operations can have at most 1000 operations. If a group exceeds this limit, MongoDB will divide the group into smaller groups of 1000 or less. (according to http://docs.mongodb.org/v2.6/core/bulk-write-operations/#bulk-execution-mechanics)
 var bulk = db[mongoCollection].initializeUnorderedBulkOp();
 var start = new Date();
 
@@ -23,8 +23,7 @@ var start = new Date();
 // Dates of events to insert
 var firstDay = 1427846400000; // Wed, 01 Apr 2015 00:00:00 GMT
 var lastDay = 1430438400000; // Fri, 01 May 2015 00:00:00 GMT
-var startDate = firstDay;
-var endDate = getNextDay(startDate);
+
 
 var nbUsers = 175000;
 var nbStructures = 100;
@@ -66,24 +65,31 @@ var modules = [
 
 
 // Insert events
-while (endDate <= lastDay) {
-	for(var i=1; i<=nbUsers; i++) {
-	  if(i % maxBulkOperations === 0 || i === nbUsers) {
-	  	bulk.execute();
-	    bulk = db[mongoCollection].initializeUnorderedBulkOp();  	
-	  }
+for(var i=1; i<=nbUsers; i++) {
+  // Init user data : id, profile and structures
+  var userProfile = profiles[getRandomInt(0, profiles.length)];
+  var userId = "dummyUserId_" + i;
 
-	  var eventDate = getRandomInt(startDate, endDate);
-	  var userProfile = profiles[getRandomInt(0, profiles.length)];
+  var nbStructuresForCurrentUser = getRandomInt(1, maxNbStructuresPerUser+1);
+  var userStructures = [];
+  var firstStructureIndex = getRandomInt(0, structures.length);
+  userStructures.push(structures[firstStructureIndex]);
+  for(var s=1; s<nbStructuresForCurrentUser; s++) {
+  	userStructures.push(structures[(firstStructureIndex+s) % structures.length]);
+  }
 
-	  var nbStructuresForCurrentUser = getRandomInt(1, maxNbStructuresPerUser+1);
-	  var userStructures = [];
-	  var firstStructureIndex = getRandomInt(0, structures.length);
-	  userStructures.push(structures[firstStructureIndex]);
-	  for(var s=1; s<nbStructuresForCurrentUser; s++) {
-	  	userStructures.push(structures[(firstStructureIndex+s) % structures.length]);
-      }
 
+  if(bulk.nInsertOps >= bulkExecutionThreshold) {
+  	bulk.execute();
+    bulk = db[mongoCollection].initializeUnorderedBulkOp();  	
+  }
+
+
+  var startDate = firstDay;
+  var endDate = getNextDay(startDate);
+  var eventDate = getRandomInt(startDate, endDate);
+
+  while (endDate <= lastDay) {
 	  if(startDate === firstDay) {
 	  	  // Insert ACTIVATION events only on the first day
 		  bulk.insert({
@@ -91,7 +97,7 @@ while (endDate <= lastDay) {
 			"event-type" : "ACTIVATION",
 			"module" : "Auth",
 			"date" : new NumberLong(eventDate),
-			"userId" : "dummyUserId_" + i,
+			"userId" : userId,
 			"profil" : userProfile,
 			"structures" : userStructures,
 			"classes" : [
@@ -111,13 +117,13 @@ while (endDate <= lastDay) {
 	  // Number of connections per user is random (between 1 and maxNbLoginPerUser)
 	  var nbLogin = getRandomInt(1, maxNbLoginPerUser+1);
 	  for(var j=0; j<nbLogin; j++) {
-                  eventDate = getRandomInt(startDate, endDate);
+          eventDate = getRandomInt(startDate, endDate);
 		  bulk.insert({
 		    "_id" : new ObjectId().str,
 			"event-type" : "LOGIN",
 			"module" : "Auth",
 			"date" :  new NumberLong(eventDate),
-			"userId" : "dummyUserId_" + i,
+			"userId" : userId,
 			"profil" : userProfile,
 			"structures" : userStructures,
 			"classes" : [
@@ -145,7 +151,7 @@ while (endDate <= lastDay) {
 			"event-type" : "ACCESS",
 			"module" : module,
 			"date" : new NumberLong(eventDate),
-			"userId" : "dummyUserId_" + i,
+			"userId" : userId,
 			"profil" : userProfile,
 			"structures" : userStructures,
 			"classes" : [
@@ -162,10 +168,9 @@ while (endDate <= lastDay) {
 		  });
 	  }
 
-	}
-
-	startDate = getNextDay(startDate);
-	endDate = getNextDay(startDate);
+	  startDate = getNextDay(startDate);
+	  endDate = getNextDay(startDate);
+  }
 }
 
 bulk.execute();
