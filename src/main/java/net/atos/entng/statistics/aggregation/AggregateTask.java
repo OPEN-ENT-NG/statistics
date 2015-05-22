@@ -2,7 +2,6 @@ package net.atos.entng.statistics.aggregation;
 
 import java.util.Date;
 
-import net.atos.entng.statistics.DateUtils;
 import net.atos.entng.statistics.aggregation.indicators.IndicatorHelper;
 
 import org.entcore.common.aggregation.processing.AggregationProcessing;
@@ -33,11 +32,7 @@ public class AggregateTask implements Handler<Long> {
 		AggregationProcessing aggProcessing = new AggregationProcessingImpl();
 		IndicatorHelper.addIndicators(from, to, aggProcessing);
 
-		Date marker = writeDate != null ? writeDate :
-				DateUtils.getFirstDayOfCurrentMonth(); // Agregate by month, by setting parameter pWriteDate to the 1st day of the month
-		log.debug("marker date: "+marker.toString());
-
-		aggProcessing.process(marker, new Handler<JsonObject>() {
+		aggProcessing.process(writeDate, new Handler<JsonObject>() {
 			@Override
 			public void handle(JsonObject event) {
 				try {

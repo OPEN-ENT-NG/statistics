@@ -3,6 +3,7 @@ package net.atos.entng.statistics;
 import java.text.ParseException;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.TimeZone;
 
 import net.atos.entng.statistics.aggregation.AggregateTask;
 
@@ -37,7 +38,7 @@ public class Statistics extends BaseServer {
 				&& container.config().getBoolean("aggregateOnStart", false)) {
 
             Date startDate = new Date();
-            startDate.setTime(1422748800000L); // Sun, 01 Feb 2015 00:00:00 GMT
+            startDate.setTime(1427846400000L); // Wed, 01 Apr 2015 00:00:00 GMT
 
             Date endDate = new Date();
             endDate.setTime(1430438400000L); // Fri, 01 May 2015 00:00:00 GMT
@@ -53,7 +54,6 @@ public class Statistics extends BaseServer {
 
 		Calendar fromCal = Calendar.getInstance();
 		fromCal.setTime(startDate);
-
 		fromCal.set(Calendar.HOUR_OF_DAY, 0);
 		fromCal.set(Calendar.MINUTE, 0);
 		fromCal.set(Calendar.SECOND, 0);
@@ -66,7 +66,7 @@ public class Statistics extends BaseServer {
 
 		do {
 			// Launch aggregation
-			final AggregateTask aggTask = new AggregateTask(from, to, DateUtils.getFirstDayOfMonth(from));
+			final AggregateTask aggTask = new AggregateTask(from, to, null);
 
 			vertx.setTimer(100L, new Handler<Long>() {
 				@Override
@@ -82,6 +82,16 @@ public class Statistics extends BaseServer {
 			toCal.add(Calendar.DAY_OF_MONTH, 1);
 			to = toCal.getTime();
 		} while (to.before(endDate));
+
+
+		// Aggregate last day
+		final AggregateTask aggTask = new AggregateTask(from, to, null);
+		vertx.setTimer(100L, new Handler<Long>() {
+			@Override
+			public void handle(Long event) {
+				aggTask.handle(event);
+			}
+		});
 	}
 
 }

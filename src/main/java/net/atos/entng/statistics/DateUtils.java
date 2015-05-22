@@ -16,6 +16,13 @@ public class DateUtils {
 		return getFirstDay(cal);
 	}
 
+	public static Date getFirstDayOfLastMonth(Date date) {
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(date);
+		cal.add(Calendar.MONTH, -1);
+		return getFirstDay(cal);
+	}
+
 	private static Date getFirstDay(Calendar cal) {
 		cal.set(Calendar.DAY_OF_MONTH, 1);
 		cal.set(Calendar.HOUR_OF_DAY, 0);
@@ -26,4 +33,11 @@ public class DateUtils {
 		return cal.getTime();
 	}
 
+	public static Date getTheDayBefore(Date date) {
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(date);
+		cal.add(Calendar.DAY_OF_YEAR, -1);
+
+		return cal.getTime();
+	};
 }
