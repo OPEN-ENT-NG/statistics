@@ -5,11 +5,6 @@ import java.util.Date;
 
 public class DateUtils {
 
-	public static Date getFirstDayOfCurrentMonth() {
-		Calendar cal = Calendar.getInstance();
-		return getFirstDay(cal);
-	}
-
 	public static Date getFirstDayOfMonth(Date date) {
 		Calendar cal = Calendar.getInstance();
 		cal.setTime(date);

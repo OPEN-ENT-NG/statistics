@@ -3,7 +3,6 @@ package net.atos.entng.statistics;
 import java.text.ParseException;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.TimeZone;
 
 import net.atos.entng.statistics.aggregation.AggregateTask;
 
