@@ -17,6 +17,7 @@ public class Statistics extends BaseServer {
 	public void start() {
 		super.start();
 
+		// 1) Aggregation
 		/* By default, fire aggregate-cron at 1:15am every day.
 		 * Be careful when setting fire times between midnight and 1:00 AM
 		 * - "daylight savings" can cause a skip or a repeat depending on whether the time moves back or jumps forward.
@@ -31,19 +32,23 @@ public class Statistics extends BaseServer {
 			return;
 		}
 
-
 		// Used for development
 		if("dev".equals(container.config().getString("mode", null))
 				&& container.config().getBoolean("aggregateOnStart", false)) {
 
             Date startDate = new Date();
-            startDate.setTime(1427846400000L); // Wed, 01 Apr 2015 00:00:00 GMT
+            startDate.setTime(1430352000000L); // Thu, 30 Apr 2015 00:00:00 GMT
 
             Date endDate = new Date();
             endDate.setTime(1430438400000L); // Fri, 01 May 2015 00:00:00 GMT
 
 			this.aggregateEvents(startDate, endDate);
 		}
+
+
+		// 2) Controller
+		// addController(new StatisticsController(MongoConstants.COLLECTIONS.stats.toString()));
+		// MongoDbConf.getInstance().setCollection(MongoConstants.COLLECTIONS.stats.toString());
 	}
 
 
@@ -53,10 +58,6 @@ public class Statistics extends BaseServer {
 
 		Calendar fromCal = Calendar.getInstance();
 		fromCal.setTime(startDate);
-		fromCal.set(Calendar.HOUR_OF_DAY, 0);
-		fromCal.set(Calendar.MINUTE, 0);
-		fromCal.set(Calendar.SECOND, 0);
-		fromCal.set(Calendar.MILLISECOND, 0);
 		from = fromCal.getTime();
 
 		Calendar toCal = (Calendar) fromCal.clone();
@@ -80,17 +81,7 @@ public class Statistics extends BaseServer {
 
 			toCal.add(Calendar.DAY_OF_MONTH, 1);
 			to = toCal.getTime();
-		} while (to.before(endDate));
-
-
-		// Aggregate last day
-		final AggregateTask aggTask = new AggregateTask(from, to, null);
-		vertx.setTimer(100L, new Handler<Long>() {
-			@Override
-			public void handle(Long event) {
-				aggTask.handle(event);
-			}
-		});
+		} while (from.before(endDate));
 	}
 
 }

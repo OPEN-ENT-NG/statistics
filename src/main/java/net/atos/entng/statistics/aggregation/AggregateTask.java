@@ -29,7 +29,9 @@ public class AggregateTask implements Handler<Long> {
 	public void handle(Long event) {
 		log.info("Execute AggregateTask.");
 
-		AggregationProcessing aggProcessing = new AggregationProcessingImpl();
+		// TODO : clean collection "stats" every month (delete intermediate documents created for indicator UNIQUE_VISITORS)
+
+		AggregationProcessing aggProcessing = new AggregationProcessingSequentialImpl();
 		IndicatorHelper.addIndicators(from, to, aggProcessing);
 
 		aggProcessing.process(writeDate, new Handler<JsonObject>() {
