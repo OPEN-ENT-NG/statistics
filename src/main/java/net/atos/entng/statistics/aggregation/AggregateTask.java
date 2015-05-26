@@ -15,14 +15,16 @@ public class AggregateTask implements Handler<Long> {
 
 	private static final Logger log = LoggerFactory.getLogger(AggregateTask.class);
 	private Date writeDate, from, to;
+	private Handler<JsonObject> handler;
 
 	public AggregateTask() {
 	}
 
-	public AggregateTask(Date pFrom, Date pTo, Date pWriteDate) {
+	public AggregateTask(Date pFrom, Date pTo, Date pWriteDate, Handler<JsonObject> pHandler) {
 		writeDate = pWriteDate;
 		from = pFrom;
 		to = pTo;
+		handler = pHandler;
 	}
 
 	@Override
@@ -32,7 +34,7 @@ public class AggregateTask implements Handler<Long> {
 		AggregationProcessing aggProcessing = new AggregationProcessingSequentialImpl();
 		IndicatorHelper.addIndicators(from, to, aggProcessing);
 
-		aggProcessing.process(writeDate, new Handler<JsonObject>() {
+		Handler<JsonObject> handler = (this.handler!=null) ? this.handler : new Handler<JsonObject>() {
 			@Override
 			public void handle(JsonObject event) {
 				try {
@@ -43,7 +45,9 @@ public class AggregateTask implements Handler<Long> {
 					log.error("Error in AggregateTask when checking status", e);
 				}
 			}
-		});
+		};
+
+		aggProcessing.process(writeDate, handler);
 	}
 
 }

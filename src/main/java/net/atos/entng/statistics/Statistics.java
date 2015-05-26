@@ -8,6 +8,7 @@ import net.atos.entng.statistics.aggregation.AggregateTask;
 
 import org.entcore.common.http.BaseServer;
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.json.JsonObject;
 
 import fr.wseduc.cron.CronTrigger;
 
@@ -53,35 +54,45 @@ public class Statistics extends BaseServer {
 
 
 	// Aggregate documents of collection "events" for each day, from startDate to endDate
-	private void aggregateEvents(Date startDate, Date endDate) {
-		Date from, to;
-
-		Calendar fromCal = Calendar.getInstance();
+	private void aggregateEvents(final Date startDate, final Date endDate) {
+		final Calendar fromCal = Calendar.getInstance();
 		fromCal.setTime(startDate);
-		from = fromCal.getTime();
 
-		Calendar toCal = (Calendar) fromCal.clone();
+		final Calendar toCal = (Calendar) fromCal.clone();
 		toCal.add(Calendar.DAY_OF_MONTH, 1);
-		to = toCal.getTime();
 
-		do {
-			// Launch aggregation
-			final AggregateTask aggTask = new AggregateTask(from, to, null);
+		// Launch aggregations sequentially, one after the other
+		vertx.setTimer(1000L, new Handler<Long>() {
+			@Override
+			public void handle(final Long event) {
+				Handler<JsonObject> handler = new Handler<JsonObject>() {
+					@Override
+					public void handle(JsonObject aggregateEvent) {
+						try {
+							if (!"ok".equals(aggregateEvent.getString("status", null))) {
+								log.error("Error in AggregateTask : status is different from ok." + aggregateEvent.toString());
+							}
+							else {
+								// Increment dates
+								fromCal.add(Calendar.DAY_OF_MONTH, 1);
+								toCal.add(Calendar.DAY_OF_MONTH, 1);
 
-			vertx.setTimer(100L, new Handler<Long>() {
-				@Override
-				public void handle(Long event) {
-					aggTask.handle(event);
-				}
-			});
+								if(fromCal.getTime().before(endDate)) {
+									AggregateTask aggTask = new AggregateTask(fromCal.getTime(), toCal.getTime(), null, this);
+									aggTask.handle(0L);
+								}
+							}
+						} catch (Exception e) {
+							log.error("Error in AggregateTask when checking status", e);
+						}
+					}
+				};
 
-			// Increment dates
-			fromCal.add(Calendar.DAY_OF_MONTH, 1);
-			from = fromCal.getTime();
-
-			toCal.add(Calendar.DAY_OF_MONTH, 1);
-			to = toCal.getTime();
-		} while (from.before(endDate));
+				AggregateTask aggTask = new AggregateTask(fromCal.getTime(), toCal.getTime(), null, handler);
+				aggTask.handle(event);
+			}
+		});
 	}
+
 
 }

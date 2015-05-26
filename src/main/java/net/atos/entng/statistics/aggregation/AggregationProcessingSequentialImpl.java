@@ -33,14 +33,15 @@ public class AggregationProcessingSequentialImpl extends AggregationProcessing {
 		final Iterator<Indicator> it = indicators.iterator();
 		Indicator indicator = it.next();
 
-		// Agregate indicators one by one
+		// Agregate indicators one after the other
 		indicator.aggregate(new Handler<JsonObject>() {
 			@Override
 			public void handle(JsonObject event) {
-				callBack.handle(event);
-
 				if(it.hasNext()) {
 					it.next().aggregate(this);
+				}
+				else {
+					callBack.handle(event);
 				}
 			}
 		});
