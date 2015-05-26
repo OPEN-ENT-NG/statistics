@@ -5,8 +5,11 @@ import java.util.Calendar;
 import java.util.Date;
 
 import net.atos.entng.statistics.aggregation.AggregateTask;
+import net.atos.entng.statistics.controllers.StatisticsController;
 
+import org.entcore.common.aggregation.MongoConstants;
 import org.entcore.common.http.BaseServer;
+import org.entcore.common.mongodb.MongoDbConf;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.json.JsonObject;
 
@@ -18,7 +21,7 @@ public class Statistics extends BaseServer {
 	public void start() {
 		super.start();
 
-		// 1) Aggregation
+		// 1) Schedule daily aggregation
 		/* By default, fire aggregate-cron at 1:15am every day.
 		 * Be careful when setting fire times between midnight and 1:00 AM
 		 * - "daylight savings" can cause a skip or a repeat depending on whether the time moves back or jumps forward.
@@ -33,7 +36,7 @@ public class Statistics extends BaseServer {
 			return;
 		}
 
-		// Used for development
+		// In development environment, launch aggregations if parameter "aggregateOnStart" is set to true in module configuration
 		if("dev".equals(container.config().getString("mode", null))
 				&& container.config().getBoolean("aggregateOnStart", false)) {
 
@@ -47,9 +50,9 @@ public class Statistics extends BaseServer {
 		}
 
 
-		// 2) Controller
-		// addController(new StatisticsController(MongoConstants.COLLECTIONS.stats.toString()));
-		// MongoDbConf.getInstance().setCollection(MongoConstants.COLLECTIONS.stats.toString());
+		// 2) Init controller
+		 addController(new StatisticsController(MongoConstants.COLLECTIONS.stats.toString()));
+		 MongoDbConf.getInstance().setCollection(MongoConstants.COLLECTIONS.stats.toString());
 	}
 
 

@@ -3,6 +3,8 @@ package net.atos.entng.statistics;
 import java.util.Calendar;
 import java.util.Date;
 
+import fr.wseduc.mongodb.MongoDb;
+
 public class DateUtils {
 
 	public static Date getFirstDayOfMonth(Date date) {
@@ -23,11 +25,9 @@ public class DateUtils {
 		return cal.getTime();
 	}
 
-	public static Date getTheDayBefore(Date date) {
-		Calendar cal = Calendar.getInstance();
-		cal.setTime(date);
-		cal.add(Calendar.DAY_OF_YEAR, -1);
-
-		return cal.getTime();
-	};
+	public static String formatTimestamp(long unixTimestamp) {
+		Date date = new Date();
+		date.setTime(unixTimestamp);
+		return MongoDb.formatDate(date);
+	}
 }
