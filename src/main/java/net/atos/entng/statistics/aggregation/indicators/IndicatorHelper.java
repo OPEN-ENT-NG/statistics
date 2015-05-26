@@ -54,8 +54,6 @@ public class IndicatorHelper {
 		}
 		filters.add(new DateFilter(from, to));
 
-		writeDate = DateUtils.getTheDayBefore(to);
-
 		// Unique visitors
 		aggProcessing.addIndicator(IndicatorFactory.getUniqueVisitorsIndicator(filters, writeDate));
 	}

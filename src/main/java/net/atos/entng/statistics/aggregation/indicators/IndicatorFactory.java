@@ -69,7 +69,7 @@ public class IndicatorFactory {
 			.addAndReturnChild(TRACE_FIELD_PROFILE);
 		indicatorGroups.add(profileIg);
 
-		IndicatorMongoImpl indicator = new IndicatorMongoImpl(TRACE_TYPE_CONNEXION, filters, indicatorGroups){
+		IndicatorMongoImpl indicator = new IndicatorMongoImpl(TRACE_TYPE_CONNEXION, filters, indicatorGroups, false){
 			@Override
 			protected void customizePipeline(JsonArray pipeline){
 				// Remove "count" from stage "$group" in pipeline, and add "userId" to field _id
