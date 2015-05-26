@@ -34,7 +34,7 @@ var minNbAccessPerUser = 8;
 var maxNbAccessPerUser = 12;
 
 
-var profiles = ["Teacher", "Student", "Personnel"];
+var profiles = ["Teacher", "Student", "Personnel", "Relative", "Guest"];
 
 var structures = [];
 for(var i=1; i<=nbStructures; i++) {
