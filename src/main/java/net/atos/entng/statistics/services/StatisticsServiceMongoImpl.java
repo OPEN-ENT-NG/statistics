@@ -10,6 +10,8 @@ import org.entcore.common.service.impl.MongoDbCrudService;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
+import org.vertx.java.core.logging.Logger;
+import org.vertx.java.core.logging.impl.LoggerFactory;
 
 import com.mongodb.QueryBuilder;
 
@@ -21,6 +23,8 @@ public class StatisticsServiceMongoImpl extends MongoDbCrudService implements St
 
 	private final String collection;
 	private final MongoDb mongo;
+
+	private Logger log = LoggerFactory.getLogger(StatisticsServiceMongoImpl.class);
 
 	public StatisticsServiceMongoImpl(String collection) {
 		super(collection);
@@ -34,18 +38,25 @@ public class StatisticsServiceMongoImpl extends MongoDbCrudService implements St
 		Long start = (Long) params.getNumber("startDate");
 		Long end = (Long) params.getNumber("endDate");
 
-		String groupedBy = TRACE_TYPE_SVC_ACCESS.equals(indicator) ? "module/structures/profil" : "structures/profil";
+		boolean isAccessIndicator = TRACE_TYPE_SVC_ACCESS.equals(indicator);
+		String groupedBy = isAccessIndicator ? "module/structures/profil" : "structures/profil";
 
 		QueryBuilder query = QueryBuilder.start(STATS_FIELD_GROUPBY).is(groupedBy)
 				.and(STATS_FIELD_DATE).greaterThanEquals(formatTimestamp(start)).lessThan(formatTimestamp(end))
 				.and("structures_id").is(params.getString("schoolId"))
 				.and(indicator).exists(true);
+		if(isAccessIndicator) {
+			query.and("module_id").is(params.getString("module"));
+		}
 
 		JsonObject projection = new JsonObject();
 		projection.putNumber("_id", 0)
 			.putNumber(indicator, 1)
 			.putNumber("profil_id", 1)
 			.putNumber("date", 1);
+
+		log.debug("query: "+MongoQueryBuilder.build(query).encodePrettily());
+		log.debug("projection: "+projection.encodePrettily());
 
 		mongo.find(collection, MongoQueryBuilder.build(query), null, projection, MongoDbResult.validResultsHandler(handler));
 	}

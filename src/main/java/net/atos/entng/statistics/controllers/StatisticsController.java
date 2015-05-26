@@ -32,13 +32,36 @@ public class StatisticsController extends MongoDbControllerHelper {
 		statsService = new StatisticsServiceMongoImpl(collection);
 	}
 
-	private final static Set<String> indicators;
+	private final static Set<String> indicators, modules;
 	static {
 		indicators = new HashSet<>();
 		indicators.add(STATS_FIELD_UNIQUE_VISITORS);
 		indicators.add(TRACE_TYPE_ACTIVATION);
 		indicators.add(TRACE_TYPE_CONNEXION);
 		indicators.add(TRACE_TYPE_SVC_ACCESS);
+
+		modules = new HashSet<>();
+		modules.add("Blog");
+		modules.add("Workspace");
+		modules.add("Conversation");
+		modules.add("Actualites");
+		modules.add("Support");
+		modules.add("Community");
+		modules.add("Forum");
+		modules.add("Wiki");
+		modules.add("Rbs");
+		modules.add("Mindmap");
+		modules.add("TimelineGenerator");
+		modules.add("CollaborativeWall");
+		modules.add("Poll");
+		modules.add("Calendar");
+		modules.add("AdminConsole");
+		modules.add("Pages");
+		modules.add("Rack");
+		modules.add("Annuaire");
+		modules.add("Archive");
+		modules.add("");
+		modules.add("");
 	}
 
 	// TODO : add workflow rights for all REST APIs
@@ -68,6 +91,15 @@ public class StatisticsController extends MongoDbControllerHelper {
 						return;
 					}
 
+					String module = "";
+					if(TRACE_TYPE_SVC_ACCESS.equals(indicator)) {
+						module = request.params().get("module");
+						if(module==null || module.trim().isEmpty() || !modules.contains(module)) {
+							badRequest(request);
+							return;
+						}
+					}
+
 					String startDate = request.params().get("startDate");
 					String endDate = request.params().get("endDate");
 					long start, end;
@@ -88,7 +120,8 @@ public class StatisticsController extends MongoDbControllerHelper {
 					params.putString("schoolId", schoolId)
 						.putString("indicator", indicator)
 						.putNumber("startDate", start)
-						.putNumber("endDate", end);
+						.putNumber("endDate", end)
+						.putString("module", module);
 
 					statsService.getStats(params, new Handler<Either<String,JsonArray>>() {
 						@Override
