@@ -20,5 +20,11 @@
     "group.school.Teacher": "Tous les enseignants de l'{0}.",
     "group.school.Guest": "Tous les invités de l'{0}.",
     "plus": "Plus",
-    "statistics.title": "Statistiques"
+    "statistics.title": "Statistiques",
+    "statistics.form.school": "Etablissement",
+    "statistics.form.indicator": "Indicateur",
+    "statistics.form.module": "Service",
+    "statistics.form.display.chart": "Afficher le diagramme",
+    "statistics.form.export.to.csv" : "Exporter au format csv",
+    "statictics.no.data.found": "Les critères que vous avez choisis ne renvoient aucune donnée."
 }

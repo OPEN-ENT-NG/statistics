@@ -20,16 +20,12 @@
 					<i18n>statistics.title</i18n>
 				</h1>
 			</div>
-<!-- 			<section> -->
-<!-- 				<container template="main"></container> -->
-<!-- 			</section> -->
-			<div class="diag">
-				<h2>Nom de l'indicateur</h2>
-				  <form>
-				    Séparer par profil <input type="checkbox" ng-model="grouped">
-				  </form>
-				  <chart val="data" grouped="grouped"></chart>
-			</div>
+			<section>
+				<container template="main"></container>
+			</section>
+			<section>
+				<container template="chart"></container>
+			</section>
 		</div>
 	</portal>
 </body>

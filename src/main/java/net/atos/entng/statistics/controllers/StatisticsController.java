@@ -60,8 +60,6 @@ public class StatisticsController extends MongoDbControllerHelper {
 		modules.add("Rack");
 		modules.add("Annuaire");
 		modules.add("Archive");
-		modules.add("");
-		modules.add("");
 	}
 
 	// TODO : add workflow rights for all REST APIs
@@ -70,6 +68,15 @@ public class StatisticsController extends MongoDbControllerHelper {
 	@ApiDoc("Get HTML view")
 	public void view(HttpServerRequest request) {
 		renderView(request);
+	}
+
+	@Get("/indicators")
+	@ApiDoc("Get existing indicators and modules")
+	public void getIndicators(final HttpServerRequest request) {
+		JsonObject jo = new JsonObject();
+		jo.putArray("indicators", new JsonArray(indicators.toArray()));
+		jo.putArray("modules", new JsonArray(modules.toArray()));
+		renderJson(request, jo);
 	}
 
 	@Get("/data")
