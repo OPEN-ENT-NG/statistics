@@ -1,8 +1,9 @@
-function StatisticsController($scope, template, model, route, $location, orderByFilter) {
+function StatisticsController($scope, template, model) {
 
 	this.initialize = function() {
 		$scope.template = template;
-		
+
+		// Init variables used in template form.html
 		$scope.form = {};
 		
 		$scope.schools = [];
@@ -12,7 +13,6 @@ function StatisticsController($scope, template, model, route, $location, orderBy
 
 		$scope.indicators = [];
 		$scope.modules = [];
-		
 		model.getMetadata(function(result){
 			if (result && result.indicators && result.modules) {
 				$scope.indicators = result.indicators;
@@ -20,20 +20,61 @@ function StatisticsController($scope, template, model, route, $location, orderBy
 			}
 		});
 		
+		$scope.dates = getDates();
+		
 		template.open('main', 'form');
 	};
+	
+	// Init dates used in form
+	function getDates() {
+		var maxDate = moment().startOf('month'); // 1st day of current month
+		
+		// Set minDate to september 1st of current school year
+		var year = moment().year();
+		var september = 8;
+		if(moment().month() < september) {
+			year = year - 1;
+		}
+		var minDate = moment().year(year).month(september).startOf('month');
 
+		var dates = [];
+		dates.push(minDate.clone());
+		while(minDate.isBefore(maxDate)) {
+			var date = minDate.add(1, 'months').clone();
+			dates.push(date);
+		}
+		
+		// Add today
+		var today = moment().startOf('day');
+		if(today.isAfter(maxDate)) {
+			dates.push(today);
+		}
+		
+		return dates;
+	}
+	
+	$scope.formatMoment = function(moment) {
+		return moment.format('DD/MM/YYYY');
+	};
+	
+	$scope.translate = function(label) {
+		return lang.translate(label);
+	};
+	
+	// Get data and display chart
 	$scope.getData = function() {
 		$scope.form.processing = true;
-		
-		// temporary code. TODO : get dates from form
-		$scope.form.start_date = 1327846400000;
-		$scope.form.end_date = 2000438400000;
+
+		if($scope.form.from.isAfter($scope.form.to) || $scope.form.from.isSame($scope.form.to)) {
+			notify.error('statistics.invalid.dates');
+			$scope.form.processing = false;
+			return;
+		}
 		
 		var query = 'schoolId=' + $scope.form.school_id +
 			"&indicator=" + $scope.form.indicator +
-		  "&startDate=" + $scope.form.start_date +
-			"&endDate=" + $scope.form.end_date;
+		  "&startDate=" +  $scope.form.from.unix() +
+			"&endDate=" + $scope.form.to.unix();
 		if($scope.form.module!==undefined && $scope.form.module!==null) {
 			query += '&module=' + $scope.form.module;
 		}
@@ -49,6 +90,7 @@ function StatisticsController($scope, template, model, route, $location, orderBy
 		});
 	};
 
+	// Format raw data for d3.js
 	function formatData(inputData) {
 		var dates = _.chain(inputData).pluck("date").sort().uniq().value();
 		var profiles = _.chain(inputData).pluck("profil_id").sort().uniq().value();
@@ -62,10 +104,19 @@ function StatisticsController($scope, template, model, route, $location, orderBy
 					y0value = outputData[i-1][j].y + outputData[i-1][j].y0;
 				}
 
+				var date;
+				if(dates[j].length > 10) {
+					var substr = dates[j].substring(0, 10); // Keep 'yyyy-MM-dd' from 'yyyy-MM-dd HH:mm.ss.SSS'
+					date = moment(substr).lang('fr').format('MMMM YYYY');
+				}
+				else {
+					date = dates[j];
+				}
+				
 				outputData[i][j] = {
 					x : j,
-					date : dates[j],
-					profile : profiles[i],
+					date : date,
+					profile : lang.translate(profiles[i]),
 					y0 : y0value
 				};
 

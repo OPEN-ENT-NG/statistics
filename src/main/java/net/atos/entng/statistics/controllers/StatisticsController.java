@@ -8,6 +8,7 @@ import static org.entcore.common.aggregation.MongoConstants.TRACE_TYPE_SVC_ACCES
 import java.util.HashSet;
 import java.util.Set;
 
+import net.atos.entng.statistics.DateUtils;
 import net.atos.entng.statistics.services.StatisticsService;
 import net.atos.entng.statistics.services.StatisticsServiceMongoImpl;
 
@@ -111,8 +112,8 @@ public class StatisticsController extends MongoDbControllerHelper {
 					String endDate = request.params().get("endDate");
 					long start, end;
 					try {
-						start = Long.parseLong(startDate);
-						end = Long.parseLong(endDate);
+						start = DateUtils.parseStringDate(startDate);
+						end = DateUtils.parseStringDate(endDate);
 						if(end < start || end < 0L || start < 0L) {
 							badRequest(request);
 							return;

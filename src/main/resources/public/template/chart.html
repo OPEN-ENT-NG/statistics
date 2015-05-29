@@ -1,9 +1,10 @@
 <article class="twelve cell">
 	<div class="diag">
-		<h2>[[chart.indicator]]</h2>
+		<h2>[[translate(chart.indicator)]]</h2>
 		<div ng-if="chart.data && chart.data.length > 0">
 			<form>
-				Séparer par profil <input type="checkbox" ng-model="chart.grouped">
+				<i18n>statistics.chart.separate.by.profile</i18n>
+				<input type="checkbox" ng-model="chart.grouped">
 			</form>
 			<chart val="chart.data" grouped="chart.grouped"></chart>
 		</div>
