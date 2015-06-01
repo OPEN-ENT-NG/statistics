@@ -27,7 +27,7 @@
     "Teacher": "Enseignant",
     "ACTIVATION" : "Comptes activés",
     "LOGIN": "Connexions",
-    "ACCESS": "Accès à une application",
+    "ACCESS": "Accès",
     "UNIQUE_VISITORS": "Visiteurs uniques",
     "statistics.title": "Statistiques",
     "statistics.form.school": "Etablissement",
@@ -39,5 +39,9 @@
     "statistics.form.to": "au",
     "statictics.no.data.found": "Les critères que vous avez choisis ne renvoient aucune donnée.",
     "statistics.invalid.dates": "La date de fin doit être supérieure à la date de début.",
-    "statistics.chart.separate.by.profile": "Séparer par profil"
+    "statistics.chart.separate.by.profile": "Séparer par profil",
+    "statistics.number.of": "Nombre de {0}",
+    "statistics.number.of.to.module": "Nombre d'{0} à l'application {1}",
+    "statistics.for.school": "pour l'établissement {0}",
+    "statistics.for.schools": "pour les établissements {0}"
 }

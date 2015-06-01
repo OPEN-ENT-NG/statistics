@@ -16,7 +16,7 @@ function StatisticsController($scope, template, model) {
 		model.getMetadata(function(result){
 			if (result && result.indicators && result.modules) {
 				$scope.indicators = result.indicators;
-				$scope.modules = result.modules;
+				$scope.modules = formatModules(result.modules);
 			}
 		});
 		
@@ -80,12 +80,12 @@ function StatisticsController($scope, template, model) {
 		}
 		
 		$scope.chart = {};
-		$scope.chart.indicator = $scope.form.indicator;
 		
 		template.open('chart', 'chart');
 		model.getData(query, function(data) {
 			$scope.chart.data = formatData(data);
 			$scope.form.processing = false;
+			$scope.chart.title = getChartTitle($scope.form.indicator, $scope.form.school_id, $scope.form.module);
 			$scope.$apply();
 		});
 	};
@@ -132,6 +132,54 @@ function StatisticsController($scope, template, model) {
 		}
 		
 		return outputData;
+	}
+	
+	function formatModules(modules) {
+		var result = [];
+		for(var i=0; i<modules.length; i++) {
+			var module = {
+				technicalName : modules[i],
+				name : getApplicationName(modules[i])
+			};
+			result.push(module);
+		}
+		result.sort(function(thisModule, thatModule) {
+			return thisModule.name.localeCompare(thatModule.name);
+		});
+		return result;
+	}
+	
+	function getApplicationName(moduleName) {
+		var app = _.find(model.me.apps, function(app){
+			return '/'+ moduleName.toLowerCase() === app.prefix;
+		});
+		var label = (app !== undefined) ? app.name : moduleName;
+		return label;
+	}
+	
+	function getChartTitle(indicator, schoolId, module) {
+		var indicatorName = lang.translate(indicator).toLowerCase();
+		var title;
+		if(indicator === 'ACCESS' && module) {
+			title = lang.translate('statistics.number.of.to.module')
+						.replace(/\{0\}/g, indicatorName)
+						.replace(/\{1\}/g, getApplicationName(module));
+		}
+		else {
+			title = lang.translate('statistics.number.of').replace(/\{0\}/g, indicatorName);
+		}
+
+		title += ' ' + lang.translate('statistics.for.school').replace(/\{0\}/g, getSchoolName(schoolId));
+		return title;
+	}
+	
+	function getSchoolName(schoolId) {
+		var index = model.me.structures.indexOf(schoolId);
+		var schoolName;
+		if(index >= 0) {
+			schoolName = model.me.structureNames[index];
+		}
+		return schoolName;
 	}
 	
 	this.initialize();

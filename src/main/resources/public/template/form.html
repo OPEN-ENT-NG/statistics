@@ -22,9 +22,8 @@
 			<label class="two cell"><i18n>statistics.form.module</i18n></label>
 			<span class="ten cell">
 				<select ng-model="form.module" 
-					ng-init="form.module = modules[0]"
-					ng-options="module for module in modules">
-					<!-- TODO : get displayname of modules in model.me.apps -->
+					ng-init="form.module = modules[0].technicalName"
+					ng-options="module.technicalName as module.name for module in modules">
 				</select>
 			</span>
 		</div>
@@ -51,7 +50,7 @@
 		<div class="row">
 			<div ng-if="!form.processing">
 				<button class="right-magnet" ng-click="getData()"><i18n>statistics.form.display.chart</i18n></button>
-				<!-- TODO : bouton export CSV -->
+				<!-- TODO : export CSV -->
 				<button class="right-magnet" disabled="true" ng-click="exportData()"><i18n>statistics.form.export.to.csv</i18n></button>
 			</div>
 			<i18n ng-if="form.processing === true" class="right-magnet">statistics.form.processing</i18n>
