@@ -2,7 +2,7 @@
   "name": "net.atos~statistics~0.1-SNAPSHOT",
   "config": {
     "main" : "net.atos.entng.statistics.Statistics",
-    "port" : 8041,
+    "port" : 8042,
     "sql" : false,
     "mongodb" : true,
     "neo4j" : false,
