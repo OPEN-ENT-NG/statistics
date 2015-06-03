@@ -12,12 +12,19 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 
+import org.entcore.common.aggregation.MongoConstants.COLLECTIONS;
+import org.entcore.common.aggregation.filters.dbbuilders.MongoDBBuilder;
 import org.entcore.common.aggregation.filters.mongo.IndicatorFilterMongoImpl;
 import org.entcore.common.aggregation.groups.IndicatorGroup;
 import org.entcore.common.aggregation.indicators.Indicator;
 import org.entcore.common.aggregation.indicators.mongo.IndicatorMongoImpl;
+import org.vertx.java.core.eventbus.Message;
+import org.vertx.java.core.Handler;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
+
+import fr.wseduc.mongodb.MongoQueryBuilder;
+import fr.wseduc.mongodb.MongoUpdateBuilder;
 
 public class IndicatorFactory {
 
@@ -69,7 +76,7 @@ public class IndicatorFactory {
 			.addAndReturnChild(TRACE_FIELD_PROFILE);
 		indicatorGroups.add(profileIg);
 
-		IndicatorMongoImpl indicator = new IndicatorMongoImpl(TRACE_TYPE_CONNEXION, filters, indicatorGroups, false){
+		IndicatorMongoImpl indicator = new IndicatorMongoImpl(TRACE_TYPE_CONNEXION, filters, indicatorGroups){
 			@Override
 			protected void customizePipeline(JsonArray pipeline){
 				// Remove "count" from stage "$group" in pipeline, and add "userId" to field _id
@@ -91,6 +98,17 @@ public class IndicatorFactory {
 				.putObject("_id", getGroupByObject(new JsonObject(), profileIg))
 				.putObject("count", new JsonObject().putNumber("$sum", 1)));
 				pipeline.addObject(groupBy);
+			}
+
+			@Override
+			// Set the indicator's value (instead of incrementing it)
+			protected void writeAction(MongoDBBuilder criteriaQuery, int resultsCount, Handler<Message<JsonObject>> handler){
+				mongo.update(COLLECTIONS.stats.name(),
+						MongoQueryBuilder.build(criteriaQuery),
+						new MongoUpdateBuilder().set(this.getWriteKey(), resultsCount).build(),
+						true,
+						true,
+						handler);
 			}
 		};
 		indicator.setWriteKey(STATS_FIELD_UNIQUE_VISITORS);
