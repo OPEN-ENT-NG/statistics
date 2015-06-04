@@ -42,24 +42,35 @@ function StatisticsController($scope, template, model) {
 		var minDate = moment().year(year).month(september).startOf('month');
 
 		var dates = [];
-		dates.push(minDate.clone());
+		dates.push(getDateObjectForNgOptions(minDate.clone()));
 		while(minDate.isBefore(maxDate)) {
 			var date = minDate.add(1, 'months').clone();
-			dates.push(date);
+			dates.push(getDateObjectForNgOptions(date));
 		}
 		
-		// Add today
-		var today = moment().startOf('day');
-		if(today.isAfter(maxDate)) {
-			dates.push(today);
+		// Add yesterday
+		var yesterday = moment().startOf('day').add(-1, 'days');
+		if(yesterday.isAfter(maxDate)) {
+			dates.push({
+				label: "Hier", // TODO
+				moment: yesterday
+			});
 		}
 		
 		return dates;
 	}
 	
-	$scope.formatMoment = function(moment) {
-		return moment.format('DD/MM/YYYY');
-	};
+	// Return a date object, formatted for ng-options
+	function getDateObjectForNgOptions(moment) {
+		return {
+			label: formatMoment(moment),
+			moment: moment
+		};
+	}
+	
+	function formatMoment(moment) {
+		return moment.lang('fr').format('MMMM YYYY')
+	}
 	
 	$scope.translate = function(label) {
 		return lang.translate(label);
@@ -157,7 +168,7 @@ function StatisticsController($scope, template, model) {
 		var app = _.find(model.me.apps, function(app){
 			return '/'+ moduleName.toLowerCase() === app.prefix;
 		});
-		var label = (app !== undefined) ? app.name : moduleName;
+		var label = (app !== undefined) ? lang.translate(app.displayName) : moduleName;
 		return label;
 	}
 	
