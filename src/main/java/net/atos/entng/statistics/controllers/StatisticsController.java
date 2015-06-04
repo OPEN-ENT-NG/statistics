@@ -6,6 +6,7 @@ import static org.entcore.common.aggregation.MongoConstants.TRACE_TYPE_CONNEXION
 import static org.entcore.common.aggregation.MongoConstants.TRACE_TYPE_SVC_ACCESS;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import net.atos.entng.statistics.DateUtils;
@@ -34,6 +35,7 @@ public class StatisticsController extends MongoDbControllerHelper {
 	}
 
 	private final static Set<String> indicators, modules;
+	private final static JsonObject metadata;
 	static {
 		indicators = new HashSet<>();
 		indicators.add(STATS_FIELD_UNIQUE_VISITORS);
@@ -61,6 +63,10 @@ public class StatisticsController extends MongoDbControllerHelper {
 		modules.add("Rack");
 		modules.add("Annuaire");
 		modules.add("Archive");
+
+		metadata = new JsonObject();
+		metadata.putArray("indicators", new JsonArray(indicators.toArray()));
+		metadata.putArray("modules", new JsonArray(modules.toArray()));
 	}
 
 	// TODO : add workflow rights for all REST APIs
@@ -74,10 +80,7 @@ public class StatisticsController extends MongoDbControllerHelper {
 	@Get("/indicators")
 	@ApiDoc("Get existing indicators and modules")
 	public void getIndicators(final HttpServerRequest request) {
-		JsonObject jo = new JsonObject();
-		jo.putArray("indicators", new JsonArray(indicators.toArray()));
-		jo.putArray("modules", new JsonArray(modules.toArray()));
-		renderJson(request, jo);
+		renderJson(request, metadata);
 	}
 
 	@Get("/data")
@@ -87,8 +90,9 @@ public class StatisticsController extends MongoDbControllerHelper {
 			public void handle(final UserInfos user) {
 				if (user != null) {
 					// TODO : add error messages for all bad requests
-					String schoolId = request.params().get("schoolId");
-					if (schoolId==null || schoolId.trim().isEmpty() || !user.getStructures().contains(schoolId)) {
+
+					List<String> schoolIds = request.params().getAll("schoolId");
+					if (schoolIds==null || schoolIds.size()==0 || !user.getStructures().containsAll(schoolIds)) {
 						badRequest(request);
 						return;
 					};
@@ -125,13 +129,12 @@ public class StatisticsController extends MongoDbControllerHelper {
 					}
 
 					JsonObject params = new JsonObject();
-					params.putString("schoolId", schoolId)
-						.putString("indicator", indicator)
+					params.putString("indicator", indicator)
 						.putNumber("startDate", start)
 						.putNumber("endDate", end)
 						.putString("module", module);
 
-					statsService.getStats(params, new Handler<Either<String,JsonArray>>() {
+					statsService.getStats(schoolIds, params, new Handler<Either<String,JsonArray>>() {
 						@Override
 						public void handle(Either<String, JsonArray> event) {
 							if(event.isLeft()) {

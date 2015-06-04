@@ -5,8 +5,12 @@ function StatisticsController($scope, template, model) {
 
 		// Init variables used in template form.html
 		$scope.form = {};
+		$scope.form.school_id = $scope.getAllSchoolIds();
 		
 		$scope.schools = [];
+		if(model.me.structures.length > 1) {
+			$scope.schools.push({id: $scope.getAllSchoolIds(), name: lang.translate('statistics.all.my.schools')});
+		}
 		for (var i=0; i < model.me.structures.length; i++) {
 			$scope.schools.push({id: model.me.structures[i], name: model.me.structureNames[i]});
 		}
@@ -71,7 +75,10 @@ function StatisticsController($scope, template, model) {
 			return;
 		}
 		
-		var query = 'schoolId=' + $scope.form.school_id +
+		
+		var schoolIdArray = $scope.form.school_id.split(",");
+		
+		var query = http().serialize({ schoolId: schoolIdArray}) +
 			"&indicator=" + $scope.form.indicator +
 		  "&startDate=" +  $scope.form.from.unix() +
 			"&endDate=" + $scope.form.to.unix();
@@ -85,7 +92,7 @@ function StatisticsController($scope, template, model) {
 		model.getData(query, function(data) {
 			$scope.chart.data = formatData(data);
 			$scope.form.processing = false;
-			$scope.chart.title = getChartTitle($scope.form.indicator, $scope.form.school_id, $scope.form.module);
+			$scope.chart.title = getChartTitle($scope.form.indicator, schoolIdArray, $scope.form.module);
 			$scope.$apply();
 		});
 	};
@@ -99,10 +106,7 @@ function StatisticsController($scope, template, model) {
 		for(var i=0; i < profiles.length; i++) {
 			outputData[i] = [];
 			for(var j=0; j < dates.length; j++) {
-				var y0value = 0;
-				if(i>0) {
-					y0value = outputData[i-1][j].y + outputData[i-1][j].y0;
-				}
+				var y0value = (i===0) ? 0 : (outputData[i-1][j].y + outputData[i-1][j].y0);
 
 				var date;
 				if(dates[j].length > 10) {
@@ -157,7 +161,7 @@ function StatisticsController($scope, template, model) {
 		return label;
 	}
 	
-	function getChartTitle(indicator, schoolId, module) {
+	function getChartTitle(indicator, schoolIdArray, module) {
 		var indicatorName = lang.translate(indicator).toLowerCase();
 		var title;
 		if(indicator === 'ACCESS' && module) {
@@ -169,7 +173,13 @@ function StatisticsController($scope, template, model) {
 			title = lang.translate('statistics.number.of').replace(/\{0\}/g, indicatorName);
 		}
 
-		title += ' ' + lang.translate('statistics.for.school').replace(/\{0\}/g, getSchoolName(schoolId));
+		if(schoolIdArray.length > 1) {
+			title += ' ' + lang.translate('statistics.for.my.schools');
+		}
+		else {
+			title += ' ' + lang.translate('statistics.for.school').replace(/\{0\}/g, getSchoolName(schoolIdArray[0]));
+		}
+
 		return title;
 	}
 	
@@ -181,6 +191,11 @@ function StatisticsController($scope, template, model) {
 		}
 		return schoolName;
 	}
+	
+	// Return a string like "schoolId1,schoolId2,...,schoolIdn"
+	$scope.getAllSchoolIds = function() {
+		return model.me.structures.toString();
+	};
 	
 	this.initialize();
 }

@@ -43,5 +43,6 @@
     "statistics.number.of": "Nombre de {0}",
     "statistics.number.of.to.module": "Nombre d'{0} à l'application {1}",
     "statistics.for.school": "pour l'établissement {0}",
-    "statistics.for.schools": "pour les établissements {0}"
+    "statistics.for.my.schools": "pour tous mes établissements",
+    "statistics.all.my.schools": "Tous mes établissements"
 }

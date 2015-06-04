@@ -3,7 +3,7 @@
 		<div class="row" ng-hide="schools.length === 1">
 			<label class="two cell"><i18n>statistics.form.school</i18n></label>
 			<span class="ten cell">
-				<select ng-model="form.school_id" 
+				<select ng-model="form.school_id"
 					ng-init="form.school_id = schools[0].id"
 					ng-options="school.id as school.name for school in schools">
 				</select>
