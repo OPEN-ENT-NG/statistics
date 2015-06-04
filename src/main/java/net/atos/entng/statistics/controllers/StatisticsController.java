@@ -23,6 +23,7 @@ import org.vertx.java.core.json.JsonObject;
 
 import fr.wseduc.rs.ApiDoc;
 import fr.wseduc.rs.Get;
+import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.Either;
 
 public class StatisticsController extends MongoDbControllerHelper {
@@ -69,21 +70,22 @@ public class StatisticsController extends MongoDbControllerHelper {
 		metadata.putArray("modules", new JsonArray(modules.toArray()));
 	}
 
-	// TODO : add workflow rights for all REST APIs
-
 	@Get("")
 	@ApiDoc("Get HTML view")
+	@SecuredAction("statistics.view")
 	public void view(HttpServerRequest request) {
 		renderView(request);
 	}
 
 	@Get("/indicators")
 	@ApiDoc("Get existing indicators and modules")
+	@SecuredAction("statistics.get.indicators")
 	public void getIndicators(final HttpServerRequest request) {
 		renderJson(request, metadata);
 	}
 
 	@Get("/data")
+	@SecuredAction("statistics.get.data")
 	public void getData(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 			@Override
