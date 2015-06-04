@@ -4,7 +4,7 @@
     "sql" : false,
     "mongodb" : true,
     "neo4j" : false,
-    "app-name" : "Statistics",
+    "app-name" : "Statistiques",
     "app-address" : "/statistics",
     "app-icon" : "statistics-large",
     "auto-redeploy": false,
