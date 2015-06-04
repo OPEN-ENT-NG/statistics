@@ -87,6 +87,18 @@ module.directive('chart', function ($window) {
 	            })
 	            .attr("class", "layer");
 
+	        // Tooltip
+	        // =======
+	        
+	        var tip = d3.tip()
+	        .attr('class', 'd3-tip')
+	        .offset([-10, 0])
+	        .html(function(d) {
+	          return "<span style='color:red'>" + d.y + "</span>";
+	        });
+	        
+	        vis.call(tip);
+	        
 	        // Bars
 	        // ====
 
@@ -104,6 +116,8 @@ module.directive('chart', function ($window) {
 	            .attr("x", 0)
 	            .attr("y", height)
 	            .attr("height", 0)
+	            .on('mouseover', tip.show)
+	            .on('mouseout', tip.hide)
 	          .transition()
 	            .delay(function(d, i) { return i * 10; })
 	            .attr("y", y1)
