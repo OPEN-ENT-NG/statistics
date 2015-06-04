@@ -2,35 +2,14 @@
 	<form class="row">
 		<div class="row" ng-hide="schools.length === 1">
 			<label class="two cell"><i18n>statistics.form.school</i18n></label>
-			<span class="ten cell">
+			<span class="four cell">
 				<select ng-model="form.school_id"
 					ng-init="form.school_id = schools[0].id"
 					ng-options="school.id as school.name for school in schools">
 				</select>
 			</span>
-		</div>
-		<div class="row">
-			<label class="two cell"><i18n>statistics.form.indicator</i18n></label>
-			<span class="ten cell">
-				<select ng-model="form.indicator" 
-					ng-init="form.indicator = indicators[0]"
-					ng-options="translate(indicator) for indicator in indicators">
-				</select>
-			</span>
-		</div>
-		<div class="row" ng-if="form.indicator === 'ACCESS'">
-			<label class="two cell"><i18n>statistics.form.module</i18n></label>
-			<span class="ten cell">
-				<select ng-model="form.module" 
-					ng-init="form.module = modules[0].technicalName"
-					ng-options="module.technicalName as module.name for module in modules">
-				</select>
-			</span>
-		</div>
-		
-		<div class="row">
-			<label class="two cell"><i18n>statistics.form.from</i18n></label>
-			<span class="ten cell">
+			<label class="one cell"><i18n>statistics.form.from</i18n></label>
+			<span class="five cell">
 				<select ng-model="form.from" 
 					ng-init="form.from = dates[0].moment"
 					ng-options="date.moment as date.label for date in dates">
@@ -38,8 +17,15 @@
 			</span>
 		</div>
 		<div class="row">
-			<label class="two cell"><i18n>statistics.form.to</i18n></label>
-			<span class="ten cell">
+			<label class="two cell"><i18n>statistics.form.indicator</i18n></label>
+			<span class="four cell">
+				<select ng-model="form.indicator" 
+					ng-init="form.indicator = indicators[0]"
+					ng-options="translate(indicator) for indicator in indicators">
+				</select>
+			</span>
+			<label class="one cell"><i18n>statistics.form.to</i18n></label>
+			<span class="five cell">
 				<select ng-model="form.to" 
 					ng-init="form.to = dates[dates.length-1].moment"
 					ng-options="date.moment as date.label for date in dates">
@@ -48,6 +34,16 @@
 		</div>
 		
 		<div class="row">
+			<div ng-if="form.indicator === 'ACCESS'">
+				<label class="two cell"><i18n>statistics.form.module</i18n></label>
+				<span class="four cell">
+					<select ng-model="form.module" 
+						ng-init="form.module = modules[0].technicalName"
+						ng-options="module.technicalName as module.name for module in modules">
+					</select>
+				</span>
+			</div>
+			
 			<div ng-if="!form.processing">
 				<button class="right-magnet" ng-click="getData()"><i18n>statistics.form.display.chart</i18n></button>
 				<!-- TODO : export CSV -->
@@ -55,5 +51,6 @@
 			</div>
 			<i18n ng-if="form.processing === true" class="right-magnet">statistics.form.processing</i18n>
 		</div>
+		
 	</form>
 </article>

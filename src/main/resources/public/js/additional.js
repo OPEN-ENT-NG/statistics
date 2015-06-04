@@ -1,10 +1,9 @@
 // Directive based on http://briantford.com/blog/angular-d3
-module.directive('chart', function () {
+module.directive('chart', function ($window) {
 
 	  // constants
 	  var margin = {top: 20, right: 10, bottom: 20, left: 60},
-	    width = 960 - margin.left - margin.right,
-	    height = 500 - 0.5 - margin.top - margin.bottom,
+	    height = 250 - 0.5 - margin.top - margin.bottom,
 	    color = d3.interpolateRgb("#f77", "#77f"),
 	    paddingLeft = 30,
 	    nbTicks = 5;
@@ -20,13 +19,31 @@ module.directive('chart', function () {
 	      // set up initial svg object
 	      var vis = d3.select(element[0])
 	        .append("svg")
-	          .attr("width", width + margin.left + margin.right)
+	          .style('width', '100%')
 	          .attr("height", height + margin.top + margin.bottom + 100)
 	          .append("g")
 	          .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
+          // Browser onresize event
+          $window.onresize = function() {
+            scope.$apply();
+          };
+          
+          // Watch for resize event
+          scope.$watch(function() {
+            return angular.element($window)[0].innerWidth;
+          }, function() {
+            scope.render(scope.val, scope.val);
+          });
+	      
 	      scope.$watch('val', function (newVal, oldVal) {
-
+ 	          // reset grouped state to false
+	          scope.grouped = false;
+	    	  
+	    	  scope.render(newVal, oldVal);
+	      });
+          
+	      scope.render = function (newVal, oldVal) {
 	        // clear the elements inside of the directive
 	        vis.selectAll('*').remove();
 
@@ -34,7 +51,10 @@ module.directive('chart', function () {
 	        if (!newVal) {
 	          return;
 	        }
-
+	        
+	        var parentElementWidth = d3.select(element[0]).node().offsetWidth;
+	        var width = parentElementWidth - margin.left - margin.right;
+	        
 	        // Based on: http://mbostock.github.com/d3/ex/stack.html
 	        var n = newVal.length, // number of layers
 	            m = newVal[0].length, // number of samples per layer
@@ -222,22 +242,16 @@ module.directive('chart', function () {
 	          }
 	        }
 
-	        // reset grouped state to false
-	        scope.grouped = false;
-
 	        // setup a watch on 'grouped' to switch between views
 	        scope.$watch('grouped', function (newVal, oldVal) {
-	          // ignore first call which happens before we even have data from the REST API
-	          if (newVal === oldVal) {
-	            return;
-	          }
 	          if (newVal) {
 	            transitionGroup();
 	          } else {
 	            transitionStack();
 	          }
 	        });
-	      });
+	      };
+        
 	    }
 	  };
 	});
