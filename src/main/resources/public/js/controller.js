@@ -52,7 +52,7 @@ function StatisticsController($scope, template, model) {
 		var yesterday = moment().startOf('day').add(-1, 'days');
 		if(yesterday.isAfter(maxDate)) {
 			dates.push({
-				label: "Hier", // TODO
+				label: lang.translate('yesterday'),
 				moment: yesterday
 			});
 		}
