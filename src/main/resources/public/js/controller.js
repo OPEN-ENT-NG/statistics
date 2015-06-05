@@ -69,7 +69,7 @@ function StatisticsController($scope, template, model) {
 	}
 	
 	function formatMoment(moment) {
-		return moment.lang('fr').format('MMMM YYYY')
+		return moment.lang('fr').format('MMMM YYYY');
 	}
 	
 	$scope.translate = function(label) {
@@ -132,7 +132,8 @@ function StatisticsController($scope, template, model) {
 					x : j,
 					date : date,
 					profile : lang.translate(profiles[i]),
-					y0 : y0value
+					y0 : y0value,
+					color : colorFromProfile(profiles[i])
 				};
 
 				var data = _.chain(inputData).where({"profil_id":profiles[i], "date":dates[j]}).value();
@@ -207,6 +208,26 @@ function StatisticsController($scope, template, model) {
 	$scope.getAllSchoolIds = function() {
 		return model.me.structures.toString();
 	};
+	
+	// TODO : get colors from theme.css	
+    var colorsMatch = {
+        relative: '#4bafd5',
+        teacher: '#46bfaf',
+        student: '#ff8500',
+        personnel: '#763294',
+        guest: '#db6087',
+        defaultColor: 'black'
+    };
+
+    function colorFromProfile(profile) {
+    	var userType = profile.toLowerCase();
+    	if(colorsMatch.hasOwnProperty(userType)) {
+    		return colorsMatch[userType];
+    	}
+    	else {
+    		return colorsMatch.defaultColor;
+    	}
+    }
 	
 	this.initialize();
 }

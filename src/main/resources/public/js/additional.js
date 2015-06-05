@@ -4,7 +4,6 @@ module.directive('chart', function ($window) {
 	  // constants
 	  var margin = {top: 20, right: 10, bottom: 20, left: 60},
 	    height = 250 - 0.5 - margin.top - margin.bottom,
-	    color = d3.interpolateRgb("#f77", "#77f"),
 	    paddingLeft = 30,
 	    format = d3.format("d");
 
@@ -83,8 +82,8 @@ module.directive('chart', function ($window) {
 	            .data(data)
 	          .enter().append("g")
 	            .style("fill", function(d, i) {
-	              return color(i / (n - 1));
-	            })
+	            	return d[0].color;
+		         })
 	            .attr("class", "layer");
 
 	        // Tooltip
@@ -188,7 +187,7 @@ module.directive('chart', function ($window) {
 	            .attr("width", 20)
 	            .attr("height", 20)
 	            .style("fill", function(d, i) {
-	              return color(i / (n - 1));
+	            	return d[0].color;
 	            })
 	            .attr("y", function (d, i) {
 	              return height + 36 + 30*(i%3);
