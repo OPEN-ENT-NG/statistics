@@ -1,13 +1,17 @@
 <article class="twelve cell">
 	<form class="row">
-		<div class="row" ng-hide="schools.length === 1">
-			<label class="two cell"><i18n>statistics.form.school</i18n></label>
-			<span class="four cell">
-				<select ng-model="form.school_id"
-					ng-init="form.school_id = schools[0].id"
-					ng-options="school.id as school.name for school in schools">
-				</select>
-			</span>
+		<div class="row">
+			<div>
+				<label class="two cell"><i18n>statistics.form.school</i18n></label>
+				<span class="four cell">
+					<select ng-hide="schools.length === 1" 
+						ng-model="form.school_id"
+						ng-init="form.school_id = schools[0].id"
+						ng-options="school.id as school.name for school in schools">
+					</select>
+					<span ng-if="schools.length === 1">[[schools[0].name]]</span>
+				</span>
+			</div>
 			<label class="one cell"><i18n>statistics.form.from</i18n></label>
 			<span class="five cell">
 				<select ng-model="form.from" 

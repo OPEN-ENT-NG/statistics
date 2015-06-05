@@ -6,7 +6,7 @@ module.directive('chart', function ($window) {
 	    height = 250 - 0.5 - margin.top - margin.bottom,
 	    color = d3.interpolateRgb("#f77", "#77f"),
 	    paddingLeft = 30,
-	    nbTicks = 5;
+	    format = d3.format("d");
 
 	  return {
 	    restrict: 'E',
@@ -149,7 +149,7 @@ module.directive('chart', function ($window) {
 	        var yAxis = d3.svg.axis()
 		        .scale(yScale)
 		        .orient("left")
-		        .ticks(nbTicks);
+		        .tickFormat(format);
 
 	        vis.append("g")
 		        .attr("class", "y axis")
@@ -206,7 +206,7 @@ module.directive('chart', function ($window) {
 		          var yAxis = d3.svg.axis()
 			        .scale(yScale)
 			        .orient("left")
-			        .ticks(nbTicks);
+			        .tickFormat(format);
 			        
 		          vis.selectAll("g.y.axis")
 		            .transition()
