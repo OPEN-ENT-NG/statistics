@@ -6,7 +6,6 @@
 				<span class="three cell">
 					<select ng-hide="schools.length === 1" 
 						ng-model="form.school_id"
-						ng-init="form.school_id = schools[0].id"
 						ng-options="school.id as school.name for school in schools">
 					</select>
 					<span ng-if="schools.length === 1">[[schools[0].name]]</span>
@@ -15,7 +14,6 @@
 			<label class="one cell"><i18n>statistics.form.from</i18n></label>
 			<span class="six cell">
 				<select ng-model="form.from" 
-					ng-init="form.from = dates[0].moment"
 					ng-options="date.moment as date.label for date in dates">
 				</select>
 			</span>
@@ -24,14 +22,12 @@
 			<label class="two cell"><i18n>statistics.form.indicator</i18n></label>
 			<span class="three cell">
 				<select ng-model="form.indicator" 
-					ng-init="form.indicator = indicators[0]"
 					ng-options="translate(indicator) for indicator in indicators">
 				</select>
 			</span>
 			<label class="one cell"><i18n>statistics.form.to</i18n></label>
 			<span class="six cell">
 				<select ng-model="form.to" 
-					ng-init="form.to = dates[dates.length-1].moment"
 					ng-options="date.moment as date.label for date in dates">
 				</select>
 			</span>

@@ -26,8 +26,19 @@ function StatisticsController($scope, template, model) {
 		
 		$scope.dates = getDates();
 		
+		displayDefaultChart();
 		template.open('main', 'form');
 	};
+	
+	function displayDefaultChart() {
+		$scope.form.school_id = $scope.schools[0].id;
+		$scope.form.from = $scope.dates[0].moment;
+		$scope.form.indicator = 'LOGIN';
+		$scope.form.to = $scope.dates[$scope.dates.length-1].moment;
+		
+		$scope.getData();
+	}
+	
 	
 	// Init dates used in form
 	function getDates() {
@@ -228,6 +239,6 @@ function StatisticsController($scope, template, model) {
     		return colorsMatch.defaultColor;
     	}
     }
-	
-	this.initialize();
+    
+    this.initialize();
 }
