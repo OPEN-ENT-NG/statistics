@@ -24,7 +24,11 @@ function StatisticsController($scope, template, model) {
 			}
 		});
 		
-		$scope.dates = getDates();
+		var fromDates = [];
+		var toDates = [];
+		initDateArrays(fromDates, toDates);
+		$scope.dates = fromDates;
+		$scope.toDates = toDates;
 		
 		displayDefaultChart();
 		template.open('main', 'form');
@@ -34,14 +38,17 @@ function StatisticsController($scope, template, model) {
 		$scope.form.school_id = $scope.schools[0].id;
 		$scope.form.from = $scope.dates[0].moment;
 		$scope.form.indicator = 'LOGIN';
-		$scope.form.to = $scope.dates[$scope.dates.length-1].moment;
+		$scope.form.to = $scope.toDates[$scope.toDates.length-1].moment;
 		
 		$scope.getData();
 	}
 	
-	
-	// Init dates used in form
-	function getDates() {
+	function initDateArrays(fromDates, toDates) {
+		if(!Array.isArray(fromDates) || !Array.isArray(toDates)) {
+			console.log("Error : parameter fromDates or toDates is not an  array");
+			return;
+		}
+		
 		var maxDate = moment().startOf('month'); // 1st day of current month
 		
 		// Set minDate to september 1st of current school year
@@ -51,36 +58,39 @@ function StatisticsController($scope, template, model) {
 			year = year - 1;
 		}
 		var minDate = moment().year(year).month(september).startOf('month');
-
-		var dates = [];
-		dates.push(getDateObjectForNgOptions(minDate.clone()));
+		fromDates.push(getDateObjectForNgOptions(minDate.clone()));
+		
 		while(minDate.isBefore(maxDate)) {
 			var date = minDate.add(1, 'months').clone();
-			dates.push(getDateObjectForNgOptions(date));
+			fromDates.push(getDateObjectForNgOptions(date));
+			toDates.push(getDateObjectForNgOptions(date, true));
 		}
 		
 		// Add yesterday
-		var yesterday = moment().startOf('day').add(-1, 'days');
-		if(yesterday.isAfter(maxDate)) {
-			dates.push({
+		var yesterday = moment().startOf('day');
+		if(yesterday.isAfter(maxDate) || toDates.length===0) {
+			toDates.push({
 				label: lang.translate('yesterday'),
 				moment: yesterday
 			});
 		}
-		
-		return dates;
 	}
 	
 	// Return a date object, formatted for ng-options
-	function getDateObjectForNgOptions(moment) {
+	// Parameter "displayPreviousMonthForLabel" is a boolean to display previous month (e.g. "september" instead of "october")
+	function getDateObjectForNgOptions(moment, displayPreviousMonthForLabel) {
 		return {
-			label: formatMoment(moment),
+			label: (displayPreviousMonthForLabel===true) ? formatMomentAsPreviousMonth(moment) : formatMoment(moment),
 			moment: moment
 		};
 	}
 	
 	function formatMoment(moment) {
 		return moment.lang('fr').format('MMMM YYYY');
+	}
+	
+	function formatMomentAsPreviousMonth(moment) {
+		return formatMoment(moment.clone().add(-1, 'months'));
 	}
 	
 	$scope.translate = function(label) {
