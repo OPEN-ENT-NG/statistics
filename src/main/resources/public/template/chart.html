@@ -2,10 +2,10 @@
 	<div class="diag">
 		<h2>[[chart.title]]</h2>
 		<div ng-if="chart.data && chart.data.length > 0">
-			<form>
+			<span ng-if="chart.profiles && chart.profiles.length > 1">
 				<i18n>statistics.chart.separate.by.profile</i18n>
 				<input type="checkbox" ng-model="chart.grouped">
-			</form>
+			</span>
 			<chart val="chart.data" grouped="chart.grouped"></chart>
 		</div>
 		<div ng-if="!(chart.data && chart.data.length > 0)">

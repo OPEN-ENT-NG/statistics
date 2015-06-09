@@ -124,6 +124,7 @@ function StatisticsController($scope, template, model) {
 		var dates = _.chain(inputData).pluck("date").sort().uniq().value();
 		var profiles = _.chain(inputData).pluck("profil_id").sort().uniq().value();
 		var outputData = [];
+		$scope.chart.profiles = profiles;
 
 		for(var i=0; i < profiles.length; i++) {
 			outputData[i] = [];
