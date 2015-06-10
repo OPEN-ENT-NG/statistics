@@ -30,6 +30,13 @@ public class StatisticsController extends MongoDbControllerHelper {
 
 	private final StatisticsService statsService;
 
+	public static final String PARAM_SCHOOL_ID = "schoolId";
+	public static final String PARAM_INDICATOR = "indicator";
+	public static final String PARAM_START_DATE = "startDate";
+	public static final String PARAM_END_DATE = "endDate";
+	public static final String PARAM_MODULE = "module";
+
+
 	public StatisticsController(String collection) {
 		super(collection);
 		statsService = new StatisticsServiceMongoImpl(collection);
@@ -93,13 +100,13 @@ public class StatisticsController extends MongoDbControllerHelper {
 				if (user != null) {
 					// TODO : add error messages for all bad requests
 
-					List<String> schoolIds = request.params().getAll("schoolId");
+					List<String> schoolIds = request.params().getAll(PARAM_SCHOOL_ID);
 					if (schoolIds==null || schoolIds.size()==0 || !user.getStructures().containsAll(schoolIds)) {
 						badRequest(request);
 						return;
 					};
 
-					String indicator = request.params().get("indicator");
+					String indicator = request.params().get(PARAM_INDICATOR);
 					if(indicator==null || indicator.trim().isEmpty() || !indicators.contains(indicator)) {
 						badRequest(request);
 						return;
@@ -107,15 +114,15 @@ public class StatisticsController extends MongoDbControllerHelper {
 
 					String module = "";
 					if(TRACE_TYPE_SVC_ACCESS.equals(indicator)) {
-						module = request.params().get("module");
+						module = request.params().get(PARAM_MODULE);
 						if(module==null || module.trim().isEmpty() || !modules.contains(module)) {
 							badRequest(request);
 							return;
 						}
 					}
 
-					String startDate = request.params().get("startDate");
-					String endDate = request.params().get("endDate");
+					String startDate = request.params().get(PARAM_START_DATE);
+					String endDate = request.params().get(PARAM_END_DATE);
 					long start, end;
 					try {
 						start = DateUtils.parseStringDate(startDate);
@@ -131,10 +138,10 @@ public class StatisticsController extends MongoDbControllerHelper {
 					}
 
 					JsonObject params = new JsonObject();
-					params.putString("indicator", indicator)
-						.putNumber("startDate", start)
-						.putNumber("endDate", end)
-						.putString("module", module);
+					params.putString(PARAM_INDICATOR, indicator)
+						.putNumber(PARAM_START_DATE, start)
+						.putNumber(PARAM_END_DATE, end)
+						.putString(PARAM_MODULE, module);
 
 					statsService.getStats(schoolIds, params, new Handler<Either<String,JsonArray>>() {
 						@Override

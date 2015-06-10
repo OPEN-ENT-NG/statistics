@@ -1,7 +1,11 @@
 package net.atos.entng.statistics.services;
 
 import static net.atos.entng.statistics.DateUtils.formatTimestamp;
+import static net.atos.entng.statistics.controllers.StatisticsController.*;
 import static org.entcore.common.aggregation.MongoConstants.TRACE_TYPE_SVC_ACCESS;
+import static org.entcore.common.aggregation.MongoConstants.TRACE_FIELD_MODULE;
+import static org.entcore.common.aggregation.MongoConstants.TRACE_FIELD_PROFILE;
+import static org.entcore.common.aggregation.MongoConstants.TRACE_FIELD_STRUCTURES;
 import static org.entcore.common.aggregation.MongoConstants.STATS_FIELD_DATE;
 import static org.entcore.common.aggregation.MongoConstants.STATS_FIELD_GROUPBY;
 
@@ -25,6 +29,10 @@ public class StatisticsServiceMongoImpl extends MongoDbCrudService implements St
 	private final String collection;
 	private final MongoDb mongo;
 
+	static final String MODULE_ID = TRACE_FIELD_MODULE + "_id";
+	static final String PROFILE_ID = TRACE_FIELD_PROFILE + "_id";
+	static final String STRUCTURES_ID = TRACE_FIELD_STRUCTURES + "_id";
+
 	public StatisticsServiceMongoImpl(String collection) {
 		super(collection);
 		this.collection = collection;
@@ -37,9 +45,9 @@ public class StatisticsServiceMongoImpl extends MongoDbCrudService implements St
 			throw new IllegalArgumentException("schoolIds is null or empty");
 		}
 
-		String indicator = params.getString("indicator");
-		Long start = (Long) params.getNumber("startDate");
-		Long end = (Long) params.getNumber("endDate");
+		String indicator = params.getString(PARAM_INDICATOR);
+		Long start = (Long) params.getNumber(PARAM_START_DATE);
+		Long end = (Long) params.getNumber(PARAM_END_DATE);
 
 		boolean isAccessIndicator = TRACE_TYPE_SVC_ACCESS.equals(indicator);
 		String groupedBy = isAccessIndicator ? "module/structures/profil" : "structures/profil";
@@ -48,17 +56,17 @@ public class StatisticsServiceMongoImpl extends MongoDbCrudService implements St
 				.and(STATS_FIELD_DATE).greaterThanEquals(formatTimestamp(start)).lessThan(formatTimestamp(end))
 				.and(indicator).exists(true);
 		if(isAccessIndicator) {
-			criteriaQuery.and("module_id").is(params.getString("module"));
+			criteriaQuery.and(MODULE_ID).is(params.getString(PARAM_MODULE));
 		}
 
 		if(schoolIds.size() == 1) {
-			criteriaQuery.and("structures_id").is(schoolIds.get(0));
+			criteriaQuery.and(STRUCTURES_ID).is(schoolIds.get(0));
 
 			JsonObject projection = new JsonObject();
 			projection.putNumber("_id", 0)
 				.putNumber(indicator, 1)
-				.putNumber("profil_id", 1)
-				.putNumber("date", 1);
+				.putNumber(PROFILE_ID, 1)
+				.putNumber(STATS_FIELD_DATE, 1);
 
 			mongo.find(collection, MongoQueryBuilder.build(criteriaQuery), null, projection, MongoDbResult.validResultsHandler(handler));
 		}
@@ -71,17 +79,17 @@ public class StatisticsServiceMongoImpl extends MongoDbCrudService implements St
 				.putBoolean("allowDiskUse", true)
 				.putArray("pipeline", pipeline);
 
-			criteriaQuery.and("structures_id").in(schoolIds);
+			criteriaQuery.and(STRUCTURES_ID).in(schoolIds);
 			pipeline.addObject(new JsonObject().putObject("$match", MongoQueryBuilder.build(criteriaQuery)));
 
 			JsonObject groupBy = new JsonObject().putObject("$group", new JsonObject()
-				.putObject("_id", new JsonObject().putString("date", "$date").putString("profil_id", "$profil_id"))
+				.putObject("_id", new JsonObject().putString(STATS_FIELD_DATE, "$"+STATS_FIELD_DATE).putString(PROFILE_ID, "$"+PROFILE_ID))
 				.putObject(indicator, new JsonObject().putString("$sum", "$"+indicator)));
 			pipeline.addObject(groupBy);
 
 			QueryBuilder projection = QueryBuilder.start("_id").is(0)
 					.and(STATS_FIELD_DATE).is("$_id.date")
-					.and("profil_id").is("$_id.profil_id")
+					.and(PROFILE_ID).is("$_id.profil_id")
 					.and(indicator).is(1);
 			pipeline.addObject(new JsonObject().putObject("$project", MongoQueryBuilder.build(projection)));
 
