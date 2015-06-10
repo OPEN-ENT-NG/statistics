@@ -132,7 +132,18 @@ function StatisticsController($scope, template, model) {
 	// Format raw data for d3.js
 	function formatData(inputData) {
 		var dates = _.chain(inputData).pluck("date").sort().uniq().value();
-		var profiles = _.chain(inputData).pluck("profil_id").sort().uniq().value();
+		var orderedProfileArray = ['Teacher', 'Personnel', 'Student', 'Parent', 'Guest'];
+		var profiles = _.chain(inputData).pluck("profil_id").uniq().sort(function(thisProfile, thatProfile){
+			var thisIndex = orderedProfileArray.indexOf(thisProfile);
+			var thatIndex = orderedProfileArray.indexOf(thatProfile);
+			if(thisIndex === -1) {
+				return 1;
+			}
+			else if(thatIndex === -1) {
+				return -1;
+			}
+			return thisIndex - thatIndex;
+		}).value();
 		var outputData = [];
 		$scope.chart.profiles = profiles;
 

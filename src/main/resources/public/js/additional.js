@@ -71,6 +71,7 @@ module.directive('chart', function ($window) {
 	              });
 	            }),
 	            x = function(d) { return d.x * width / mx; },
+	            xPadding = function(d) { return (paddingLeft + d.x*width / mx); },
 	            y0 = function(d) { return height - d.y0 * height / my; },
 	            y1 = function(d) { return height - (d.y + d.y0) * height / my; },
 	            y2 = function(d) { return d.y * height / mz; }; // or `my` not rescale
@@ -131,7 +132,7 @@ module.directive('chart', function ($window) {
 	            .data(data[0])
 	          .enter().append("text")
 	            .attr("class", "label")
-	            .attr("x", x)
+	            .attr("x", xPadding)
 	            .attr("y", height + 6)
 	            .attr("dx", x({x: 0.45}))
 	            .attr("dy", ".71em")
@@ -168,12 +169,12 @@ module.directive('chart', function ($window) {
 	          .enter().append("text")
 	            .attr("class", "key")
 	            .attr("y", function (d, i) {
-	              return height + 42 + 30*(i%3);
+	              return height + 42 + 30*(i%2);
 	            })
 	            .attr("x", function (d, i) {
-	              return 155 * Math.floor(i/3) + 15;
+	              return 155 * Math.floor(i/2) + 15;
 	            })
-	            .attr("dx", x({x: 0.1}))
+	            .attr("dx", 15)
 	            .attr("dy", ".71em")
 	            .attr("text-anchor", "left")
 	            .text(function(d, i) {
@@ -190,10 +191,10 @@ module.directive('chart', function ($window) {
 	            	return d[0].color;
 	            })
 	            .attr("y", function (d, i) {
-	              return height + 36 + 30*(i%3);
+	              return height + 36 + 30*(i%2);
 	            })
 	            .attr("x", function (d, i) {
-	              return 155 * Math.floor(i/3);
+	              return 155 * Math.floor(i/2);
 	            });
 
 	        // Animate between grouped and stacked
