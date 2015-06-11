@@ -1,5 +1,6 @@
 package net.atos.entng.statistics.controllers;
 
+import static net.atos.entng.statistics.converter.Converter.*;
 import static net.atos.entng.statistics.aggregation.indicators.IndicatorFactory.STATS_FIELD_UNIQUE_VISITORS;
 import static org.entcore.common.aggregation.MongoConstants.TRACE_TYPE_ACTIVATION;
 import static org.entcore.common.aggregation.MongoConstants.TRACE_TYPE_CONNEXION;
@@ -17,6 +18,7 @@ import org.entcore.common.mongodb.MongoDbControllerHelper;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
@@ -35,6 +37,7 @@ public class StatisticsController extends MongoDbControllerHelper {
 	public static final String PARAM_START_DATE = "startDate";
 	public static final String PARAM_END_DATE = "endDate";
 	public static final String PARAM_MODULE = "module";
+	public static final String PARAM_FORMAT = "format";
 
 
 	public StatisticsController(String collection) {
@@ -143,18 +146,62 @@ public class StatisticsController extends MongoDbControllerHelper {
 						.putNumber(PARAM_END_DATE, end)
 						.putString(PARAM_MODULE, module);
 
-					statsService.getStats(schoolIds, params, new Handler<Either<String,JsonArray>>() {
-						@Override
-						public void handle(Either<String, JsonArray> event) {
-							if(event.isLeft()) {
-								log.error(event.left().getValue());
-								renderError(request);
-							}
-							else {
-								renderJson(request, event.right().getValue());
-							}
+					String format = request.params().get(PARAM_FORMAT);
+					if(format!=null && !format.isEmpty()) {
+						if(!"csv".equals(format)) {
+							badRequest(request);
+							return;
 						}
-					});
+
+						// Return data as csv
+						statsService.getStats(schoolIds, params, new Handler<Either<String,JsonArray>>() {
+							@Override
+							public void handle(Either<String, JsonArray> event) {
+								if(event.isLeft()) {
+									log.error(event.left().getValue());
+									renderError(request);
+								}
+								else {
+									JsonObject message = new JsonObject();
+									message.putArray(PARAM_DATA, event.right().getValue());
+									message.putString(PARAM_ACTION, JSON_TO_CSV);
+									eb.send(CONVERTER_ADDRESS, message, new Handler<Message<JsonObject>>() {
+										@Override
+										public void handle(Message<JsonObject> reply) {
+											String status = reply.body().getString("status",null);
+											if("ok".equals(status)) {
+												request.response().putHeader("Content-Type", "application/csv");
+												request.response().putHeader("Content-Disposition",
+														"attachment; filename=export.csv");
+												String csv = reply.body().getString("result");
+												request.response().end(csv);
+											}
+											else {
+												log.error(reply.body().getString("message"));
+												renderError(request);
+											}
+										}
+									});
+
+								}
+							}
+						});
+					}
+					else {
+						// Return JSON data
+						statsService.getStats(schoolIds, params, new Handler<Either<String,JsonArray>>() {
+							@Override
+							public void handle(Either<String, JsonArray> event) {
+								if(event.isLeft()) {
+									log.error(event.left().getValue());
+									renderError(request);
+								}
+								else {
+									renderJson(request, event.right().getValue());
+								}
+							}
+						});
+					}
 
 				} else {
 					log.debug("User not found in session.");
@@ -162,7 +209,6 @@ public class StatisticsController extends MongoDbControllerHelper {
 				}
 			}
 		});
-
 	}
 
 }

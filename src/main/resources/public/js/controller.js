@@ -97,8 +97,10 @@ function StatisticsController($scope, template, model) {
 		return lang.translate(label);
 	};
 	
-	// Get data and display chart
-	$scope.getData = function() {
+	/* If pFormat = "csv", get data as CSV and save it as a file.
+	 * Else, get data as JSON and display chart 
+	 */
+	$scope.getData = function(pFormat) {
 		$scope.form.processing = true;
 
 		if($scope.form.from.isAfter($scope.form.to) || $scope.form.from.isSame($scope.form.to)) {
@@ -118,15 +120,35 @@ function StatisticsController($scope, template, model) {
 			query += '&module=' + $scope.form.module;
 		}
 		
-		$scope.chart = {};
-		
-		template.open('chart', 'chart');
-		model.getData(query, function(data) {
-			$scope.chart.data = formatData(data);
-			$scope.form.processing = false;
-			$scope.chart.title = getChartTitle($scope.form.indicator, schoolIdArray, $scope.form.module);
-			$scope.$apply();
-		});
+		if ('csv' === pFormat) {
+			query += '&format=' + pFormat;
+			model.getData(query, function(data) {
+				$scope.form.processing = false;
+				
+				// Process the response as if it was a file
+			    var hiddenElement = document.createElement('a');
+			    hiddenElement.href = 'data:attachment/csv,' + encodeURI(data);
+			    hiddenElement.target = '_blank';
+			    hiddenElement.download = 'export.csv';
+			    
+			    document.body.appendChild(hiddenElement);
+			    hiddenElement.click();
+
+				$scope.$apply();
+			});
+		}
+		else {
+			$scope.chart = {};
+
+			model.getData(query, function(data) {
+				$scope.chart.data = formatData(data);
+				template.open('chart', 'chart');
+				$scope.form.processing = false;
+				$scope.chart.title = getChartTitle($scope.form.indicator, schoolIdArray, $scope.form.module);
+				$scope.$apply();
+			});
+		}
+
 	};
 
 	// Format raw data for d3.js

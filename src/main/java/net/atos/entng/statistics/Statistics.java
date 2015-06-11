@@ -6,6 +6,7 @@ import java.util.Date;
 
 import net.atos.entng.statistics.aggregation.AggregateTask;
 import net.atos.entng.statistics.controllers.StatisticsController;
+import net.atos.entng.statistics.converter.Converter;
 
 import org.entcore.common.aggregation.MongoConstants;
 import org.entcore.common.http.BaseServer;
@@ -50,7 +51,15 @@ public class Statistics extends BaseServer {
 		}
 
 
-		// 2) Init controller
+		// 2) Deploy worker verticle, used to convert from JSON to CSV
+		int nbConverters = container.config().getNumber("nbConverters", 1).intValue();
+		if(nbConverters < 1) {
+			log.warn("nbConverters must be >= 1. Deploying 1 converter...");
+			nbConverters = 1;
+		}
+		container.deployWorkerVerticle(Converter.class.getName(), nbConverters);
+
+		// 3) Init controller
 		 addController(new StatisticsController(MongoConstants.COLLECTIONS.stats.toString()));
 		 MongoDbConf.getInstance().setCollection(MongoConstants.COLLECTIONS.stats.toString());
 	}
