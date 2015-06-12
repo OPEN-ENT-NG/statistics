@@ -34,6 +34,8 @@ Contenu du fichier deployment/statistics/conf.json.template :
 
 
 Les paramètres spécifiques à l'application Statistiques sont les suivants :
-	"aggregate-cron" : paramètre optionnel permettant de définir quand les documents de la collection "events" sont agrégés dans la collection "stats". Il est valorisé à "0 15 1 ? * * *" par défaut ( l'agrégation est donc lancée par défaut toutes les nuits à 1h15). Attention, il faut éviter de planifier un cron entre minuit et une heure, car le changement d'heure peut entraîner la répétion d'un cron ou son non-exécution 
+	"aggregate-cron" : paramètre optionnel permettant de définir quand les documents de la collection "events" sont agrégés dans la collection "stats". Il est valorisé à "0 15 1 ? * * *" par défaut ( l'agrégation est donc lancée par défaut toutes les nuits à 1h15). Attention, il faut éviter de planifier un cron entre minuit et une heure, car le changement d'heure peut entraîner la répétion d'un cron ou sa non-exécution 
 
 	"aggregateOnStart" : paramètre optionnel. Booléen permettant de lancer une agrégation au démarrage du module, en environnement de développement (le paramètre mode doit valoir "dev")
+
+    "nbConverters" : paramètre optionnel. Nombre de worker verticles, utilisés pour convertir du format JSON vers le format CSV. Vaut 1 par défaut
