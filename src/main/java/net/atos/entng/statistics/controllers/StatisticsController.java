@@ -1,5 +1,6 @@
 package net.atos.entng.statistics.controllers;
 
+import fr.wseduc.webutils.I18n;
 import static net.atos.entng.statistics.converter.Converter.*;
 import static net.atos.entng.statistics.aggregation.indicators.IndicatorFactory.STATS_FIELD_UNIQUE_VISITORS;
 import static org.entcore.common.aggregation.MongoConstants.TRACE_TYPE_ACTIVATION;
@@ -38,7 +39,6 @@ public class StatisticsController extends MongoDbControllerHelper {
 	public static final String PARAM_END_DATE = "endDate";
 	public static final String PARAM_MODULE = "module";
 	public static final String PARAM_FORMAT = "format";
-
 
 	public StatisticsController(String collection) {
 		super(collection);
@@ -109,7 +109,7 @@ public class StatisticsController extends MongoDbControllerHelper {
 						return;
 					};
 
-					String indicator = request.params().get(PARAM_INDICATOR);
+					final String indicator = request.params().get(PARAM_INDICATOR);
 					if(indicator==null || indicator.trim().isEmpty() || !indicators.contains(indicator)) {
 						badRequest(request);
 						return;
@@ -165,6 +165,9 @@ public class StatisticsController extends MongoDbControllerHelper {
 									JsonObject message = new JsonObject();
 									message.putArray(PARAM_DATA, event.right().getValue());
 									message.putString(PARAM_ACTION, JSON_TO_CSV);
+									message.putString(PARAM_ACCEPT_LANGUAGE, I18n.acceptLanguage(request));
+									message.putString(PARAM_INDICATOR, indicator);
+
 									eb.send(CONVERTER_ADDRESS, message, new Handler<Message<JsonObject>>() {
 										@Override
 										public void handle(Message<JsonObject> reply) {

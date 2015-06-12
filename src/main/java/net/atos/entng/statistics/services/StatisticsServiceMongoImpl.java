@@ -29,9 +29,9 @@ public class StatisticsServiceMongoImpl extends MongoDbCrudService implements St
 	private final String collection;
 	private final MongoDb mongo;
 
-	static final String MODULE_ID = TRACE_FIELD_MODULE + "_id";
-	static final String PROFILE_ID = TRACE_FIELD_PROFILE + "_id";
-	static final String STRUCTURES_ID = TRACE_FIELD_STRUCTURES + "_id";
+	public static final String MODULE_ID = TRACE_FIELD_MODULE + "_id";
+	public static final String PROFILE_ID = TRACE_FIELD_PROFILE + "_id";
+	public static final String STRUCTURES_ID = TRACE_FIELD_STRUCTURES + "_id";
 
 	public StatisticsServiceMongoImpl(String collection) {
 		super(collection);
