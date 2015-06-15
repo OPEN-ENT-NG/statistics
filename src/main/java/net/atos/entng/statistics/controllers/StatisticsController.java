@@ -154,7 +154,7 @@ public class StatisticsController extends MongoDbControllerHelper {
 						}
 
 						// Return data as csv
-						statsService.getStats(schoolIds, params, new Handler<Either<String,JsonArray>>() {
+						statsService.getSortedStats(schoolIds, params, new Handler<Either<String,JsonArray>>() {
 							@Override
 							public void handle(Either<String, JsonArray> event) {
 								if(event.isLeft()) {

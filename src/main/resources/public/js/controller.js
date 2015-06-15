@@ -129,7 +129,7 @@ function StatisticsController($scope, template, model) {
 			    var hiddenElement = document.createElement('a');
 			    hiddenElement.href = 'data:attachment/csv,' + encodeURI(data);
 			    hiddenElement.target = '_blank';
-			    hiddenElement.download = 'export.csv';
+			    hiddenElement.download = getCsvFilename();
 			    
 			    document.body.appendChild(hiddenElement);
 			    hiddenElement.click();
@@ -150,6 +150,16 @@ function StatisticsController($scope, template, model) {
 		}
 
 	};
+	
+	function getCsvFilename() {
+		var separator = "-";
+		var filename = lang.translate($scope.form.indicator).toLowerCase() + separator;
+		if($scope.form.module!==undefined && $scope.form.module!==null) {
+			filename += $scope.form.module + separator;
+		}
+		return filename + moment().lang('fr').format('YYYY-MM-DD') + ".csv";
+	}
+	
 
 	// Format raw data for d3.js
 	function formatData(inputData) {

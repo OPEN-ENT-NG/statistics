@@ -41,6 +41,16 @@ public class StatisticsServiceMongoImpl extends MongoDbCrudService implements St
 
 	@Override
 	public void getStats(final List<String> schoolIds, final JsonObject params, final Handler<Either<String, JsonArray>> handler) {
+		this.getStatistics(schoolIds, params, handler, false);
+	}
+
+	@Override
+	public void getSortedStats(final List<String> schoolIds, final JsonObject params, final Handler<Either<String, JsonArray>> handler) {
+		this.getStatistics(schoolIds, params, handler, true);
+	}
+
+
+	private void getStatistics(final List<String> schoolIds, final JsonObject params, final Handler<Either<String, JsonArray>> handler, boolean sortResult) {
 		if(schoolIds==null || schoolIds.isEmpty()) {
 			throw new IllegalArgumentException("schoolIds is null or empty");
 		}
@@ -68,7 +78,9 @@ public class StatisticsServiceMongoImpl extends MongoDbCrudService implements St
 				.putNumber(PROFILE_ID, 1)
 				.putNumber(STATS_FIELD_DATE, 1);
 
-			mongo.find(collection, MongoQueryBuilder.build(criteriaQuery), null, projection, MongoDbResult.validResultsHandler(handler));
+			JsonObject sort = !sortResult ? null : getSortJsonObject();
+
+			mongo.find(collection, MongoQueryBuilder.build(criteriaQuery), sort, projection, MongoDbResult.validResultsHandler(handler));
 		}
 		else {
 			// When several school ids are supplied, sum stats for all schools
@@ -93,6 +105,10 @@ public class StatisticsServiceMongoImpl extends MongoDbCrudService implements St
 					.and(indicator).is(1);
 			pipeline.addObject(new JsonObject().putObject("$project", MongoQueryBuilder.build(projection)));
 
+			if(sortResult) {
+				pipeline.addObject(new JsonObject().putObject("$sort", getSortJsonObject()));
+			}
+
 			mongo.command(aggregation.toString(), new Handler<Message<JsonObject>>() {
 				@Override
 				public void handle(Message<JsonObject> message) {
@@ -106,7 +122,9 @@ public class StatisticsServiceMongoImpl extends MongoDbCrudService implements St
 				}
 			});
 		}
-
 	}
 
+	private JsonObject getSortJsonObject() {
+		return new JsonObject().putNumber(STATS_FIELD_DATE, 1).putNumber(PROFILE_ID, 1);
+	}
 }
