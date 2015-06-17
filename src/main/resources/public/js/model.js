@@ -17,6 +17,14 @@ model.getData = function(query, callback){
 	}.bind(this));
 };
 
+model.getStructures = function(query, callback){
+	var url = '/statistics/structures?' + query;
+	http().get(url).done(function(result){
+		if(typeof callback === 'function'){
+			callback(result);
+		}
+	}.bind(this));
+};
 
 model.build = function() {
 	// custom directives loading

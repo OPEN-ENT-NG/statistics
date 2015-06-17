@@ -5,37 +5,71 @@ function StatisticsController($scope, template, model) {
 
 		// Init variables used in template form.html
 		$scope.form = {};
-		$scope.form.school_id = $scope.getAllSchoolIds();
 		
 		$scope.schools = [];
-		if(model.me.structures.length > 1) {
-			$scope.schools.push({id: $scope.getAllSchoolIds(), name: lang.translate('statistics.all.my.schools')});
-		}
 		for (var i=0; i < model.me.structures.length; i++) {
 			$scope.schools.push({id: model.me.structures[i], name: model.me.structureNames[i]});
 		}
 
+		var isLocalAdmin = (model.me.functions && 
+				model.me.functions.ADMIN_LOCAL && 
+				model.me.functions.ADMIN_LOCAL.scope);
+		if(isLocalAdmin) {
+			// Get names of schools that are in ADMIN_LOCAL.scope, but not in model.me.structures
+			var schools = _.difference(model.me.functions.ADMIN_LOCAL.scope, model.me.structures);
+			if(schools && schools.length > 0) {
+				var query = http().serialize({schoolId: schools});
+				model.getStructures(query, function(structures) {
+					if (Array.isArray(structures) && structures.length > 0) {
+						for (var j=0; j < structures.length; j++) {
+							$scope.schools.push({id: structures[j].id, name: structures[j].name});						
+						}
+					}
+					endInitialization();
+				});
+			}
+			else {
+				endInitialization();
+			}
+		}
+		else {
+			endInitialization();
+		}
+	};
+	
+	function endInitialization() {
+		
+		if($scope.schools.length > 1) { 
+			var allSchoolIds = _.pluck($scope.schools, "id").join(",");
+			$scope.schools.push({id: allSchoolIds, name: lang.translate('statistics.all.my.schools')});
+		}
+		
 		$scope.indicators = [];
 		$scope.modules = [];
 		model.getMetadata(function(result){
 			if (result && result.indicators && result.modules) {
 				$scope.indicators = result.indicators;
 				$scope.modules = formatModules(result.modules);
+				
+				var fromDates = [];
+				var toDates = [];
+				initDateArrays(fromDates, toDates);
+				$scope.dates = fromDates;
+				$scope.toDates = toDates;
+				
+				displayDefaultChart();
+				template.open('main', 'form');		
+			}
+			else {
+				notify.error('statistics.initialization.error');
 			}
 		});
-		
-		var fromDates = [];
-		var toDates = [];
-		initDateArrays(fromDates, toDates);
-		$scope.dates = fromDates;
-		$scope.toDates = toDates;
-		
-		displayDefaultChart();
-		template.open('main', 'form');
-	};
+	}
+	
 	
 	function displayDefaultChart() {
-		$scope.form.school_id = $scope.schools[0].id;
+		// Display the number of connections
+		$scope.form.school_id = $scope.schools[$scope.schools.length-1].id;
 		$scope.form.from = $scope.dates[0].moment;
 		$scope.form.indicator = 'LOGIN';
 		$scope.form.to = $scope.toDates[$scope.toDates.length-1].moment;
@@ -261,18 +295,14 @@ function StatisticsController($scope, template, model) {
 	}
 	
 	function getSchoolName(schoolId) {
-		var index = model.me.structures.indexOf(schoolId);
-		var schoolName;
-		if(index >= 0) {
-			schoolName = model.me.structureNames[index];
+		var school = _.find($scope.schools, function(school) {
+			return school.id === schoolId;
+		});
+		if (school && school.name) {
+			return school.name;
 		}
-		return schoolName;
+		return '';
 	}
-	
-	// Return a string like "schoolId1,schoolId2,...,schoolIdn"
-	$scope.getAllSchoolIds = function() {
-		return model.me.structures.toString();
-	};
 	
 	// TODO : get colors from theme.css	
     var colorsMatch = {

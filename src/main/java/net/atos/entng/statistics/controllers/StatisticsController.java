@@ -7,16 +7,24 @@ import static org.entcore.common.aggregation.MongoConstants.TRACE_TYPE_ACTIVATIO
 import static org.entcore.common.aggregation.MongoConstants.TRACE_TYPE_CONNEXION;
 import static org.entcore.common.aggregation.MongoConstants.TRACE_TYPE_SVC_ACCESS;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import net.atos.entng.statistics.DateUtils;
+import net.atos.entng.statistics.filters.LocalAdmin;
 import net.atos.entng.statistics.services.StatisticsService;
 import net.atos.entng.statistics.services.StatisticsServiceMongoImpl;
+import net.atos.entng.statistics.services.StructureService;
+import net.atos.entng.statistics.services.StructureServiceNeo4jImpl;
 
+import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.mongodb.MongoDbControllerHelper;
+import org.entcore.common.user.DefaultFunctions;
 import org.entcore.common.user.UserInfos;
+import org.entcore.common.user.UserInfos.Function;
 import org.entcore.common.user.UserUtils;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.Message;
@@ -32,6 +40,7 @@ import fr.wseduc.webutils.Either;
 public class StatisticsController extends MongoDbControllerHelper {
 
 	private final StatisticsService statsService;
+	private final StructureService structureService;
 
 	public static final String PARAM_SCHOOL_ID = "schoolId";
 	public static final String PARAM_INDICATOR = "indicator";
@@ -43,6 +52,7 @@ public class StatisticsController extends MongoDbControllerHelper {
 	public StatisticsController(String collection) {
 		super(collection);
 		statsService = new StatisticsServiceMongoImpl(collection);
+		structureService = new StructureServiceNeo4jImpl();
 	}
 
 	private final static Set<String> indicators, modules;
@@ -54,6 +64,7 @@ public class StatisticsController extends MongoDbControllerHelper {
 		indicators.add(TRACE_TYPE_CONNEXION);
 		indicators.add(TRACE_TYPE_SVC_ACCESS);
 
+		// TODO : read modules from configuration
 		modules = new HashSet<>();
 		modules.add("Blog");
 		modules.add("Workspace");
@@ -104,7 +115,7 @@ public class StatisticsController extends MongoDbControllerHelper {
 					// TODO : add error messages for all bad requests
 
 					List<String> schoolIds = request.params().getAll(PARAM_SCHOOL_ID);
-					if (schoolIds==null || schoolIds.size()==0 || !user.getStructures().containsAll(schoolIds)) {
+					if (schoolIds==null || schoolIds.size()==0 || !isValidSchools(user, schoolIds)) {
 						badRequest(request);
 						return;
 					};
@@ -212,6 +223,62 @@ public class StatisticsController extends MongoDbControllerHelper {
 				}
 			}
 		});
+	}
+
+	private boolean isValidSchools(UserInfos user, Collection<String> schoolIds) {
+		Set<String> validSchoolIds = new HashSet<>(user.getStructures());
+
+		Map<String, Function> functions = user.getFunctions();
+		if(functions!=null && functions.containsKey(DefaultFunctions.ADMIN_LOCAL)) {
+			List<String> scope = functions.get(DefaultFunctions.ADMIN_LOCAL).getScope();
+			validSchoolIds.addAll(scope);
+		}
+
+		return validSchoolIds.containsAll(schoolIds);
+	}
+
+
+	@Get("/structures")
+	@ResourceFilter(LocalAdmin.class)
+	public void getStructures(final HttpServerRequest request) {
+
+		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+			@Override
+			public void handle(final UserInfos user) {
+				if (user != null) {
+					List<String> schoolIds = request.params().getAll(PARAM_SCHOOL_ID);
+					if (schoolIds==null || schoolIds.size()==0) {
+						badRequest(request);
+						return;
+					};
+
+					List<String> scope = user.getFunctions().get(DefaultFunctions.ADMIN_LOCAL).getScope();
+					if(scope == null || !scope.containsAll(schoolIds)) {
+						badRequest(request);
+						return;
+					}
+
+					JsonArray structureIds = new JsonArray();
+					for (String school : schoolIds) {
+						structureIds.addString(school);
+					}
+
+					structureService.list(structureIds, new Handler<Either<String,JsonArray>>() {
+						@Override
+						public void handle(Either<String, JsonArray> event) {
+							if(event.isLeft()) {
+								log.error(event.left().getValue());
+								renderError(request);
+							}
+							else if(event.isRight()) {
+								renderJson(request, event.right().getValue());
+							}
+						}
+					});
+				}
+			}
+		});
+
 	}
 
 }

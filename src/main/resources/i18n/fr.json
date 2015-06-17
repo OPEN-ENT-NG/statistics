@@ -39,6 +39,7 @@
     "statistics.form.to": "à",
     "statictics.no.data.found": "Les critères que vous avez choisis ne renvoient aucune donnée.",
     "statistics.invalid.dates": "La date de fin doit être supérieure à la date de début.",
+    "statistics.initialization.error" : "Erreur durant l'initialisation de l'application",
     "statistics.chart.separate.by.profile": "Séparer par profil",
     "statistics.number.of": "Nombre de {0}",
     "statistics.number.of.to.module": "Nombre d'{0} à l'application {1}",
