@@ -14,6 +14,7 @@
     "auto-redeploy": false,
     "userbook-host": "${host}",
     "integration-mode" : "HTTP",
-    "mode" : "${mode}"
+    "mode" : "${mode}",
+    "access-modules" : ["Blog","Workspace","Conversation","Actualites","Support","Community","Forum","Wiki","Rbs","Mindmap","TimelineGenerator","CollaborativeWall","Poll","Calendar","AdminConsole","Pages","Rack","Annuaire","Archive"]
     }
 }

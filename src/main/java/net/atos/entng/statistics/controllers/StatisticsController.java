@@ -49,46 +49,25 @@ public class StatisticsController extends MongoDbControllerHelper {
 	public static final String PARAM_MODULE = "module";
 	public static final String PARAM_FORMAT = "format";
 
-	public StatisticsController(String collection) {
+	private final Set<String> indicators;
+	private final JsonObject metadata;
+	private final JsonArray accessModules;
+
+	public StatisticsController(String collection, JsonArray pAccessModules) {
 		super(collection);
 		statsService = new StatisticsServiceMongoImpl(collection);
 		structureService = new StructureServiceNeo4jImpl();
-	}
 
-	private final static Set<String> indicators, modules;
-	private final static JsonObject metadata;
-	static {
 		indicators = new HashSet<>();
 		indicators.add(STATS_FIELD_UNIQUE_VISITORS);
 		indicators.add(TRACE_TYPE_ACTIVATION);
 		indicators.add(TRACE_TYPE_CONNEXION);
 		indicators.add(TRACE_TYPE_SVC_ACCESS);
 
-		// TODO : read modules from configuration
-		modules = new HashSet<>();
-		modules.add("Blog");
-		modules.add("Workspace");
-		modules.add("Conversation");
-		modules.add("Actualites");
-		modules.add("Support");
-		modules.add("Community");
-		modules.add("Forum");
-		modules.add("Wiki");
-		modules.add("Rbs");
-		modules.add("Mindmap");
-		modules.add("TimelineGenerator");
-		modules.add("CollaborativeWall");
-		modules.add("Poll");
-		modules.add("Calendar");
-		modules.add("AdminConsole");
-		modules.add("Pages");
-		modules.add("Rack");
-		modules.add("Annuaire");
-		modules.add("Archive");
-
 		metadata = new JsonObject();
 		metadata.putArray("indicators", new JsonArray(indicators.toArray()));
-		metadata.putArray("modules", new JsonArray(modules.toArray()));
+		metadata.putArray("modules", pAccessModules);
+		accessModules = pAccessModules;
 	}
 
 	@Get("")
@@ -129,7 +108,7 @@ public class StatisticsController extends MongoDbControllerHelper {
 					String module = "";
 					if(TRACE_TYPE_SVC_ACCESS.equals(indicator)) {
 						module = request.params().get(PARAM_MODULE);
-						if(module==null || module.trim().isEmpty() || !modules.contains(module)) {
+						if(module==null || module.trim().isEmpty() || !accessModules.contains(module)) {
 							badRequest(request);
 							return;
 						}

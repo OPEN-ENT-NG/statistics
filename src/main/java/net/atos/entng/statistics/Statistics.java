@@ -12,6 +12,7 @@ import org.entcore.common.aggregation.MongoConstants;
 import org.entcore.common.http.BaseServer;
 import org.entcore.common.mongodb.MongoDbConf;
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
 import fr.wseduc.cron.CronTrigger;
@@ -21,6 +22,12 @@ public class Statistics extends BaseServer {
 	@Override
 	public void start() {
 		super.start();
+
+		JsonArray accessModules = container.config().getArray("access-modules", null);
+		if(accessModules==null || accessModules.size()==0) {
+			log.error("Parameter access-module is null or empty");
+			return;
+		}
 
 		// 1) Schedule daily aggregation
 		/* By default, fire aggregate-cron at 1:15am every day.
@@ -60,7 +67,7 @@ public class Statistics extends BaseServer {
 		container.deployWorkerVerticle(Converter.class.getName(), nbConverters);
 
 		// 3) Init controller
-		 addController(new StatisticsController(MongoConstants.COLLECTIONS.stats.toString()));
+		 addController(new StatisticsController(MongoConstants.COLLECTIONS.stats.toString(), accessModules));
 		 MongoDbConf.getInstance().setCollection(MongoConstants.COLLECTIONS.stats.toString());
 	}
 
