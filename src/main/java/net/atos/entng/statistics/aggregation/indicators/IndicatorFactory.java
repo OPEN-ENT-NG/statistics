@@ -35,7 +35,7 @@ public class IndicatorFactory {
 	public static Indicator getActivationIndicator(Collection<IndicatorFilterMongoImpl> filters, Date pWriteDate) {
 		Collection<IndicatorGroup> indicatorGroups = new ArrayList<>();
 		indicatorGroups.add(new IndicatorGroup(TRACE_FIELD_STRUCTURES).setArray(true)
-				.addChild(TRACE_FIELD_PROFILE)
+				.addAndReturnChild(TRACE_FIELD_PROFILE)
 		);
 
 		Indicator indicator = new IndicatorMongoImpl(TRACE_TYPE_ACTIVATION, filters, indicatorGroups);
@@ -46,9 +46,8 @@ public class IndicatorFactory {
 	// Connections
 	public static Indicator getConnectionIndicator(Collection<IndicatorFilterMongoImpl> filters, Date pWriteDate) {
 		Collection<IndicatorGroup> indicatorGroups = new ArrayList<IndicatorGroup>();
-		indicatorGroups.add(
-			new IndicatorGroup(TRACE_FIELD_STRUCTURES).setArray(true)
-			.addChild(TRACE_FIELD_PROFILE));
+		indicatorGroups.add(new IndicatorGroup(TRACE_FIELD_STRUCTURES).setArray(true)
+			.addAndReturnChild(TRACE_FIELD_PROFILE));
 
 		Indicator indicator = new IndicatorMongoImpl(TRACE_TYPE_CONNEXION, filters, indicatorGroups);
 		indicator.setWriteDate(pWriteDate);
@@ -58,10 +57,9 @@ public class IndicatorFactory {
 	// Access to applications
 	public static Indicator getAccessIndicator(Collection<IndicatorFilterMongoImpl> filters, Date pWriteDate) {
 		Collection<IndicatorGroup> indicatorGroups = new ArrayList<IndicatorGroup>();
-		indicatorGroups.add(
-			new IndicatorGroup(TRACE_FIELD_MODULE)
-			.addChild(new IndicatorGroup(TRACE_FIELD_STRUCTURES).setArray(true)
-					.addChild(TRACE_FIELD_PROFILE)));
+		indicatorGroups.add(new IndicatorGroup(TRACE_FIELD_MODULE)
+			.addAndReturnChild(new IndicatorGroup(TRACE_FIELD_STRUCTURES).setArray(true))
+			.addAndReturnChild(TRACE_FIELD_PROFILE));
 
 		Indicator indicator = new IndicatorMongoImpl(TRACE_TYPE_SVC_ACCESS, filters, indicatorGroups);
 		indicator.setWriteDate(pWriteDate);
