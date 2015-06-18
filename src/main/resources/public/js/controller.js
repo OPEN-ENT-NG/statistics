@@ -268,7 +268,9 @@ function StatisticsController($scope, template, model) {
 		var app = _.find(model.me.apps, function(app){
 			return '/'+ moduleName.toLowerCase() === app.prefix;
 		});
-		var label = (app !== undefined) ? lang.translate(app.displayName) : moduleName;
+		var label = (app !== undefined) ? 
+				lang.translate(app.displayName) : 
+				lang.translate(moduleName); // used for modules that are not apps (e.g. "AdminConsole")
 		return label;
 	}
 	
