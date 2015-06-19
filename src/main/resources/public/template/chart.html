@@ -6,7 +6,7 @@
 				<i18n>statistics.chart.separate.by.profile</i18n>
 				<input type="checkbox" ng-model="chart.grouped">
 			</span>
-			<chart val="chart.data" grouped="chart.grouped"></chart>
+			<chart val="chart.data" grouped="chart.grouped" indicator="chart.indicatorName"></chart>
 		</div>
 		<div ng-if="!(chart.data && chart.data.length > 0)">
 			<i18n>statictics.no.data.found</i18n>

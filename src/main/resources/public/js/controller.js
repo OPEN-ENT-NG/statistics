@@ -186,6 +186,7 @@ function StatisticsController($scope, template, model) {
 			$scope.chart = {};
 
 			model.getData(query, function(data) {
+				$scope.chart.indicatorName = lang.translate($scope.form.indicator).toLowerCase();
 				$scope.chart.data = formatData(data);
 				template.open('chart', 'chart');
 				$scope.form.processing = false;
@@ -281,7 +282,7 @@ function StatisticsController($scope, template, model) {
 		});
 		var label = (app !== undefined) ? 
 				lang.translate(app.displayName) : 
-				lang.translate(moduleName); // used for modules that are not apps (e.g. "AdminConsole")
+				lang.translate(moduleName); // used for apps that do not have a dedicated vert.x module (e.g. "AdminConsole")
 		return label;
 	}
 	

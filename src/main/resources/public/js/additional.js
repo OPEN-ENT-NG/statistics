@@ -11,7 +11,8 @@ module.directive('chart', function ($window) {
 	    restrict: 'E',
 	    scope: {
 	      val: '=',
-	      grouped: '='
+	      grouped: '=',
+	      indicator: '='
 	    },
 	    link: function (scope, element, attrs) {
 
@@ -94,7 +95,9 @@ module.directive('chart', function ($window) {
 	        .attr('class', 'd3-tip')
 	        .offset([-10, 0])
 	        .html(function(d) {
-	          return "<span style='color:red'>" + d.y + "</span>";
+	          return "<span style='color:red'>" + d.y +
+	          		" " + scope.indicator +
+	          		" " + d.profile + "s</span>";
 	        });
 	        
 	        vis.call(tip);
