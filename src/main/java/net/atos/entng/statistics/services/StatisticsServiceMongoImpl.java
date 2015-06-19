@@ -33,7 +33,9 @@ public class StatisticsServiceMongoImpl extends MongoDbCrudService implements St
 	public static final String PROFILE_ID = TRACE_FIELD_PROFILE + "_id";
 	public static final String STRUCTURES_ID = TRACE_FIELD_STRUCTURES + "_id";
 
-	private static final JsonObject sortJsonObject = new JsonObject().putNumber(STATS_FIELD_DATE, 1).putNumber(PROFILE_ID, 1);
+	private static final JsonObject sortByDateProfile = new JsonObject().putNumber(STATS_FIELD_DATE, 1).putNumber(PROFILE_ID, 1);
+	private static final JsonObject sortByStructureDateProfile = new JsonObject()
+		.putNumber(STRUCTURES_ID, 1).putNumber(STATS_FIELD_DATE, 1).putNumber(PROFILE_ID, 1);
 
 	public StatisticsServiceMongoImpl(String collection) {
 		super(collection);
@@ -80,7 +82,7 @@ public class StatisticsServiceMongoImpl extends MongoDbCrudService implements St
 				.putNumber(PROFILE_ID, 1)
 				.putNumber(STATS_FIELD_DATE, 1);
 
-			JsonObject sort = isExport ? sortJsonObject : null;
+			JsonObject sort = isExport ? sortByDateProfile : null;
 
 			mongo.find(collection, MongoQueryBuilder.build(criteriaQuery), sort, projection, MongoDbResult.validResultsHandler(handler));
 		}
@@ -111,9 +113,12 @@ public class StatisticsServiceMongoImpl extends MongoDbCrudService implements St
 				// Export stats for each structure_id
 				id.putString(STRUCTURES_ID, "$"+STRUCTURES_ID);
 				projection.and(STRUCTURES_ID).is("$_id."+STRUCTURES_ID);
-				pipeline.addObject(new JsonObject().putObject("$sort", sortJsonObject));
+				pipeline.addObject(new JsonObject().putObject("$project", MongoQueryBuilder.build(projection)));
+				pipeline.addObject(new JsonObject().putObject("$sort", sortByStructureDateProfile));
 			}
-			pipeline.addObject(new JsonObject().putObject("$project", MongoQueryBuilder.build(projection)));
+			else {
+				pipeline.addObject(new JsonObject().putObject("$project", MongoQueryBuilder.build(projection)));
+			}
 
 			mongo.command(aggregation.toString(), new Handler<Message<JsonObject>>() {
 				@Override
