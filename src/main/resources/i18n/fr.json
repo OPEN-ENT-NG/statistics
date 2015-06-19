@@ -48,6 +48,7 @@
     "statistics.for.school": "pour l'établissement {0}",
     "statistics.for.my.schools": "pour tous mes établissements",
     "statistics.all.my.schools": "Tous mes établissements",
-    "statistics.profile": "profil",
+    "statistics.export.profile": "profil",
+    "statistics.export.structure": "établissement",
     "yesterday" : "hier"
 }

@@ -12,5 +12,5 @@ public interface StatisticsService {
 
 	public void getStats(List<String> schoolIds, JsonObject params, Handler<Either<String, JsonArray>> handler);
 
-	public void getSortedStats(final List<String> schoolIds, final JsonObject params, final Handler<Either<String, JsonArray>> handler);
+	public void getStatsForExport(final List<String> schoolIds, final JsonObject params, final Handler<Either<String, JsonArray>> handler);
 }

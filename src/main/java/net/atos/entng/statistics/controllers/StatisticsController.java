@@ -93,7 +93,7 @@ public class StatisticsController extends MongoDbControllerHelper {
 				if (user != null) {
 					// TODO : add error messages for all bad requests
 
-					List<String> schoolIds = request.params().getAll(PARAM_SCHOOL_ID);
+					final List<String> schoolIds = request.params().getAll(PARAM_SCHOOL_ID);
 					if (schoolIds==null || schoolIds.size()==0 || !isValidSchools(user, schoolIds)) {
 						badRequest(request);
 						return;
@@ -144,7 +144,7 @@ public class StatisticsController extends MongoDbControllerHelper {
 						}
 
 						// Return data as csv
-						statsService.getSortedStats(schoolIds, params, new Handler<Either<String,JsonArray>>() {
+						statsService.getStatsForExport(schoolIds, params, new Handler<Either<String,JsonArray>>() {
 							@Override
 							public void handle(Either<String, JsonArray> event) {
 								if(event.isLeft()) {
@@ -152,30 +152,13 @@ public class StatisticsController extends MongoDbControllerHelper {
 									renderError(request);
 								}
 								else {
-									JsonObject message = new JsonObject();
+									final JsonObject message = new JsonObject();
 									message.putArray(PARAM_DATA, event.right().getValue());
 									message.putString(PARAM_ACTION, JSON_TO_CSV);
 									message.putString(PARAM_ACCEPT_LANGUAGE, I18n.acceptLanguage(request));
 									message.putString(PARAM_INDICATOR, indicator);
 
-									eb.send(CONVERTER_ADDRESS, message, new Handler<Message<JsonObject>>() {
-										@Override
-										public void handle(Message<JsonObject> reply) {
-											String status = reply.body().getString("status",null);
-											if("ok".equals(status)) {
-												request.response().putHeader("Content-Type", "application/csv");
-												request.response().putHeader("Content-Disposition",
-														"attachment; filename=export.csv");
-												String csv = reply.body().getString("result");
-												request.response().end(csv);
-											}
-											else {
-												log.error(reply.body().getString("message"));
-												renderError(request);
-											}
-										}
-									});
-
+									StatisticsController.this.convert(message, request);
 								}
 							}
 						});
@@ -199,6 +182,26 @@ public class StatisticsController extends MongoDbControllerHelper {
 				} else {
 					log.debug("User not found in session.");
 					unauthorized(request);
+				}
+			}
+		});
+	}
+
+	private void convert(final JsonObject message, final HttpServerRequest request) {
+		eb.send(CONVERTER_ADDRESS, message, new Handler<Message<JsonObject>>() {
+			@Override
+			public void handle(Message<JsonObject> reply) {
+				String status = reply.body().getString("status",null);
+				if("ok".equals(status)) {
+					request.response().putHeader("Content-Type", "application/csv");
+					request.response().putHeader("Content-Disposition",
+							"attachment; filename=export.csv");
+					String csv = reply.body().getString("result");
+					request.response().end(csv);
+				}
+				else {
+					log.error(reply.body().getString("message"));
+					renderError(request);
 				}
 			}
 		});

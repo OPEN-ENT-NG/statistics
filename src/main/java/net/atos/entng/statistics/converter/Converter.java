@@ -1,6 +1,7 @@
 package net.atos.entng.statistics.converter;
 
 import static net.atos.entng.statistics.services.StatisticsServiceMongoImpl.PROFILE_ID;
+import static net.atos.entng.statistics.services.StatisticsServiceMongoImpl.STRUCTURES_ID;
 import static net.atos.entng.statistics.controllers.StatisticsController.PARAM_INDICATOR;
 
 import fr.wseduc.webutils.I18n;
@@ -78,16 +79,23 @@ public class Converter extends BusModBase implements Handler<Message<JsonObject>
 		for (int i = 0; i < data.size(); i++) {
 			JsonObject jo = data.get(i);
 
-			String indicatorLabel = i18n.translate(indicator, acceptLanguage);
+			String indicatorLabel = i18n.translate(indicator, acceptLanguage).toLowerCase();
 			Number indicatorValue = jo.getNumber(indicator);
 			jo.putNumber(indicatorLabel, indicatorValue);
 			jo.removeField(indicator);
 
 			String profile = jo.getString(PROFILE_ID);
 			jo.removeField(PROFILE_ID);
-			String profileLabel = i18n.translate("statistics.profile", acceptLanguage);
+			String profileLabel = i18n.translate("statistics.export.profile", acceptLanguage);
 			String profileValue = i18n.translate(profile, acceptLanguage);
 			jo.putString(profileLabel, profileValue);
+
+			String structureId = jo.getString(STRUCTURES_ID);
+			jo.removeField(STRUCTURES_ID);
+			if(structureId!=null) {
+				String structureLabel = i18n.translate("statistics.export.structure", acceptLanguage);
+				jo.putString(structureLabel, structureId);
+			}
 
 			String date = jo.getString("date");
 			if(date.length() > 7) { // Keep 'yyyy-MM' from 'yyyy-MM-dd HH:mm.ss.SSS'
@@ -95,5 +103,6 @@ public class Converter extends BusModBase implements Handler<Message<JsonObject>
 			}
 		}
 	}
+
 
 }

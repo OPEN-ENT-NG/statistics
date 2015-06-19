@@ -159,9 +159,20 @@ function StatisticsController($scope, template, model) {
 			model.getData(query, function(data) {
 				$scope.form.processing = false;
 				
+				// Replace structureIds by structureNames
+				var formattedData = data;
+				_.map(schoolIdArray, function(schoolId) {
+					var school = _.find($scope.schools, function(school) {
+						return schoolId === school.id;
+					});
+					if(school && school.name) {
+						formattedData = formattedData.replace(new RegExp(schoolId, 'g'), school.name);
+					}
+				});
+				
 				// Process the response as if it was a file
 			    var hiddenElement = document.createElement('a');
-			    hiddenElement.href = 'data:attachment/csv,' + encodeURI(data);
+			    hiddenElement.href = 'data:attachment/csv,' + encodeURI(formattedData);
 			    hiddenElement.target = '_blank';
 			    hiddenElement.download = getCsvFilename();
 			    
