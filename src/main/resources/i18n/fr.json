@@ -44,6 +44,7 @@
     "statistics.initialization.error" : "Erreur durant l'initialisation de l'application",
     "statistics.chart.separate.by.profile": "Séparer par profil",
     "statistics.number.of": "Nombre de {0}",
+    "statistics.number.of.with.apostrophe": "Nombre d'{0}",
     "statistics.number.of.to.module": "Nombre d'{0} à l'application {1}",
     "statistics.for.school": "pour l'établissement {0}",
     "statistics.for.my.schools": "pour tous mes établissements",

@@ -293,6 +293,9 @@ function StatisticsController($scope, template, model) {
 						.replace(/\{0\}/g, indicatorName)
 						.replace(/\{1\}/g, getApplicationName(module));
 		}
+		else if(indicator === 'ACTIVATION') {
+			title = lang.translate('statistics.number.of.with.apostrophe').replace(/\{0\}/g, indicatorName);
+		}
 		else {
 			title = lang.translate('statistics.number.of').replace(/\{0\}/g, indicatorName);
 		}
