@@ -128,7 +128,11 @@ function StatisticsController($scope, template, model) {
 	}
 	
 	$scope.translate = function(label) {
-		return lang.translate(label);
+		var result = lang.translate(label);
+		if(label === "ACCESS") {
+			result = result + ' ' + lang.translate("statistics.form.to.applications");
+		}
+		return result;
 	};
 	
 	/* If pFormat = "csv", get data as CSV and save it as a file.
