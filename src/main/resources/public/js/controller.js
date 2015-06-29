@@ -329,7 +329,7 @@ function StatisticsController($scope, template, model) {
     var colorsMatch = {
         relative: '#4bafd5',
         teacher: '#46bfaf',
-        student: '#ff8500',
+        student: '#138c17', // different from value in theme.css, because tooltip and student have the same color in theme.css
         personnel: '#763294',
         guest: '#db6087',
         defaultColor: 'black'
