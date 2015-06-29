@@ -1,4 +1,4 @@
-// Get indicators and module
+// Get indicators and modules
 model.getMetadata = function(callback){
 	http().get('/statistics/indicators').done(function(result){
 		if(typeof callback === 'function'){

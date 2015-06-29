@@ -1,15 +1,15 @@
 <article class="twelve cell">
-	<div class="diag">
-		<h2>[[chart.title]]</h2>
-		<div ng-if="chart.data && chart.data.length > 0">
-			<span ng-if="chart.profiles && chart.profiles.length > 1">
-				<i18n>statistics.chart.separate.by.profile</i18n>
-				<input type="checkbox" ng-model="chart.grouped">
-			</span>
-			<chart val="chart.data" grouped="chart.grouped" indicator="chart.indicatorName"></chart>
-		</div>
-		<div ng-if="!(chart.data && chart.data.length > 0)">
-			<i18n>statictics.no.data.found</i18n>
-		</div>
+	<div class="row">
+		<span class="nine cell"><h2>[[chart.title]]</h2></span>
+		<label class="right-magnet" ng-if="chart.profiles && chart.profiles.length > 1">
+			<input type="checkbox" ng-model="chart.grouped">
+			<i18n>statistics.chart.separate.by.profile</i18n>
+		</label>
+	</div>
+	<div ng-if="chart.data && chart.data.length > 0">
+		<chart val="chart.data" grouped="chart.grouped" indicator="chart.indicatorName"></chart>
+	</div>
+	<div ng-if="!(chart.data && chart.data.length > 0)">
+		<i18n>statictics.no.data.found</i18n>
 	</div>
 </article>

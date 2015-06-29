@@ -25,7 +25,7 @@ public class Statistics extends BaseServer {
 
 		JsonArray accessModules = container.config().getArray("access-modules", null);
 		if(accessModules==null || accessModules.size()==0) {
-			log.error("Parameter access-module is null or empty");
+			log.error("Parameter access-modules is null or empty");
 			return;
 		}
 
