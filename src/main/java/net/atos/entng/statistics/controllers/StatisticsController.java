@@ -108,10 +108,11 @@ public class StatisticsController extends MongoDbControllerHelper {
 					String module = "";
 					if(TRACE_TYPE_SVC_ACCESS.equals(indicator)) {
 						module = request.params().get(PARAM_MODULE);
-						if(module==null || module.trim().isEmpty() || !accessModules.contains(module)) {
+						if(module!=null && !module.trim().isEmpty() && !accessModules.contains(module)) {
 							badRequest(request);
 							return;
 						}
+						// Else (when module is not specified), return data for all modules
 					}
 
 					String startDate = request.params().get(PARAM_START_DATE);

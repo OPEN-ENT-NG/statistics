@@ -53,5 +53,6 @@
     "statistics.all.my.schools": "Tous mes établissements",
     "statistics.export.profile": "profil",
     "statistics.export.structure": "établissement",
+    "statistics.export.module": "application",
     "yesterday" : "hier"
 }

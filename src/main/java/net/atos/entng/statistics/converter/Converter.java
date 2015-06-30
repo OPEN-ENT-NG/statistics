@@ -1,5 +1,6 @@
 package net.atos.entng.statistics.converter;
 
+import static net.atos.entng.statistics.services.StatisticsServiceMongoImpl.MODULE_ID;
 import static net.atos.entng.statistics.services.StatisticsServiceMongoImpl.PROFILE_ID;
 import static net.atos.entng.statistics.services.StatisticsServiceMongoImpl.STRUCTURES_ID;
 import static net.atos.entng.statistics.controllers.StatisticsController.PARAM_INDICATOR;
@@ -92,9 +93,14 @@ public class Converter extends BusModBase implements Handler<Message<JsonObject>
 
 			String structureId = jo.getString(STRUCTURES_ID);
 			jo.removeField(STRUCTURES_ID);
-			if(structureId!=null) {
-				String structureLabel = i18n.translate("statistics.export.structure", acceptLanguage);
-				jo.putString(structureLabel, structureId);
+			String structureLabel = i18n.translate("statistics.export.structure", acceptLanguage);
+			jo.putString(structureLabel, structureId);
+
+			String module = jo.getString(MODULE_ID);
+			if(module!=null) {
+				jo.removeField(MODULE_ID);
+				String moduleLabel = i18n.translate("statistics.export.module", acceptLanguage);
+				jo.putString(moduleLabel, module);
 			}
 
 			String date = jo.getString("date");

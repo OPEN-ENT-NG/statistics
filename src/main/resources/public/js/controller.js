@@ -50,6 +50,12 @@ function StatisticsController($scope, template, model) {
 			if (result && result.indicators && result.modules) {
 				$scope.indicators = result.indicators;
 				$scope.modules = formatModules(result.modules);
+				if($scope.modules && $scope.modules.length > 0) {
+					$scope.modules.push({
+						// technicalName : "",
+						name : "Toutes les applications" // TODO i18n
+					});
+				}
 				
 				var fromDates = [];
 				var toDates = [];
@@ -293,10 +299,16 @@ function StatisticsController($scope, template, model) {
 	function getChartTitle(indicator, schoolIdArray, module) {
 		var indicatorName = lang.translate(indicator).toLowerCase();
 		var title;
-		if(indicator === 'ACCESS' && module) {
-			title = lang.translate('statistics.number.of.to.module')
-						.replace(/\{0\}/g, indicatorName)
-						.replace(/\{1\}/g, getApplicationName(module));
+		if(indicator === 'ACCESS') {
+			if(module) {
+				title = lang.translate('statistics.number.of.to.module')
+					.replace(/\{0\}/g, indicatorName)
+					.replace(/\{1\}/g, getApplicationName(module));
+			}
+			else {
+				title = lang.translate('statistics.number.of.with.apostrophe').replace(/\{0\}/g, indicatorName) + 
+					" " + lang.translate('statistics.form.to.applications');
+			}
 		}
 		else if(indicator === 'ACTIVATION') {
 			title = lang.translate('statistics.number.of.with.apostrophe').replace(/\{0\}/g, indicatorName);
