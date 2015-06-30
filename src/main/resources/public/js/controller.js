@@ -158,7 +158,7 @@ function StatisticsController($scope, template, model) {
 		
 		var query = http().serialize({ schoolId: schoolIdArray}) +
 			"&indicator=" + $scope.form.indicator +
-		  "&startDate=" +  $scope.form.from.unix() +
+			"&startDate=" +  $scope.form.from.unix() +
 			"&endDate=" + $scope.form.to.unix();
 		if($scope.form.module!==undefined && $scope.form.module!==null) {
 			query += '&module=' + $scope.form.module;
@@ -213,6 +213,15 @@ function StatisticsController($scope, template, model) {
 		if($scope.form.module!==undefined && $scope.form.module!==null) {
 			filename += $scope.form.module + separator;
 		}
+		
+		var schoolIdArray = $scope.form.school_id.split(",");
+		if(schoolIdArray.length > 1) {
+			filename += 'multi' + separator;
+		}
+		else {
+			filename += getSchoolName(schoolIdArray[0]) + separator;
+		}
+		
 		return filename + moment().lang('fr').format('YYYY-MM-DD') + ".csv";
 	}
 	
