@@ -44,10 +44,7 @@
 				</span>
 			</div>
 			
-			<div ng-if="!form.processing">
-				<button class="right-magnet" ng-click="getData()"><i18n>statistics.form.display.chart</i18n></button>
-				<button class="right-magnet" ng-click="getData('csv')"><i18n>statistics.form.export.to.csv</i18n></button>
-			</div>
+			<button ng-if="!form.processing" class="right-magnet" ng-click="getData()"><i18n>statistics.form.display.chart</i18n></button>
 			<i18n ng-if="form.processing === true" class="right-magnet">statistics.form.processing</i18n>
 		</div>
 		

@@ -41,6 +41,7 @@
     "statistics.form.to": "à",
     "statistics.form.processing": "Traitement en cours...",
     "statistics.form.to.applications": "aux applications",
+    "statistics.form.all.applications": "Toutes les applications",
     "statictics.no.data.found": "Il n'y a pas de résultat pour votre sélection.",
     "statistics.invalid.dates": "La date de fin doit être supérieure à la date de début.",
     "statistics.initialization.error" : "Erreur durant l'initialisation de l'application",

@@ -51,10 +51,7 @@ function StatisticsController($scope, template, model) {
 				$scope.indicators = result.indicators;
 				$scope.modules = formatModules(result.modules);
 				if($scope.modules && $scope.modules.length > 0) {
-					$scope.modules.push({
-						// technicalName : "",
-						name : "Toutes les applications" // TODO i18n
-					});
+					$scope.modules.push({name: lang.translate('statistics.form.all.applications')});
 				}
 				
 				var fromDates = [];
@@ -147,25 +144,12 @@ function StatisticsController($scope, template, model) {
 	$scope.getData = function(pFormat) {
 		$scope.form.processing = true;
 
-		if($scope.form.from.isAfter($scope.form.to) || $scope.form.from.isSame($scope.form.to)) {
-			notify.error('statistics.invalid.dates');
-			$scope.form.processing = false;
-			return;
-		}
-		
-		
-		var schoolIdArray = $scope.form.school_id.split(",");
-		
-		var query = http().serialize({ schoolId: schoolIdArray}) +
-			"&indicator=" + $scope.form.indicator +
-			"&startDate=" +  $scope.form.from.unix() +
-			"&endDate=" + $scope.form.to.unix();
-		if($scope.form.module!==undefined && $scope.form.module!==null) {
-			query += '&module=' + $scope.form.module;
-		}
-		
 		if ('csv' === pFormat) {
+			// Export data corresponding to displayed chart (i.e. data from $scope.chart.form, not $scope.form)
+			var schoolIdArray = getSchoolIdArray($scope.chart.form);
+			var query = generateQuery($scope.chart.form, schoolIdArray);
 			query += '&format=' + pFormat;
+			
 			model.getData(query, function(data) {
 				$scope.form.processing = false;
 				
@@ -184,7 +168,7 @@ function StatisticsController($scope, template, model) {
 			    var hiddenElement = document.createElement('a');
 			    hiddenElement.href = 'data:attachment/csv,' + encodeURI(formattedData);
 			    hiddenElement.target = '_blank';
-			    hiddenElement.download = getCsvFilename();
+			    hiddenElement.download = getCsvFilename($scope.chart.form);
 			    
 			    document.body.appendChild(hiddenElement);
 			    hiddenElement.click();
@@ -193,9 +177,19 @@ function StatisticsController($scope, template, model) {
 			});
 		}
 		else {
+			if($scope.form.from.isAfter($scope.form.to) || $scope.form.from.isSame($scope.form.to)) {
+				notify.error('statistics.invalid.dates');
+				$scope.form.processing = false;
+				return;
+			}
+
+			var schoolIdArray = getSchoolIdArray($scope.form);
+			var query = generateQuery($scope.form, schoolIdArray);
 			$scope.chart = {};
 
 			model.getData(query, function(data) {
+				$scope.chart.form = angular.copy($scope.form); // "Save" form data for CSV export
+				
 				$scope.chart.indicatorName = lang.translate($scope.form.indicator).toLowerCase();
 				$scope.chart.data = formatData(data);
 				template.open('chart', 'chart');
@@ -207,14 +201,31 @@ function StatisticsController($scope, template, model) {
 
 	};
 	
-	function getCsvFilename() {
-		var separator = "-";
-		var filename = lang.translate($scope.form.indicator).toLowerCase() + separator;
-		if($scope.form.module!==undefined && $scope.form.module!==null) {
-			filename += $scope.form.module + separator;
+	function getSchoolIdArray(form) {
+		return form.school_id.split(",");
+	}
+	
+	function generateQuery(form, schoolIdArray) {
+		var query = http().serialize({ schoolId: schoolIdArray}) +
+		"&indicator=" + form.indicator +
+		"&startDate=" +  form.from.unix() +
+		"&endDate=" + form.to.unix();
+		
+		if(form.module!==undefined && form.module!==null) {
+			query += '&module=' + form.module;
 		}
 		
-		var schoolIdArray = $scope.form.school_id.split(",");
+		return query;
+	}
+	
+	function getCsvFilename(form) {
+		var separator = "-";
+		var filename = lang.translate(form.indicator).toLowerCase() + separator;
+		if(form.module!==undefined && form.module!==null) {
+			filename += form.module + separator;
+		}
+		
+		var schoolIdArray = form.school_id.split(",");
 		if(schoolIdArray.length > 1) {
 			filename += 'multi' + separator;
 		}

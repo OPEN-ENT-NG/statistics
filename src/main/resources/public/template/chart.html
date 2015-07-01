@@ -8,6 +8,8 @@
 	</div>
 	<div ng-if="chart.data && chart.data.length > 0">
 		<chart val="chart.data" grouped="chart.grouped" indicator="chart.indicatorName"></chart>
+		<button ng-if="!form.processing" class="right-magnet" ng-click="getData('csv')"><i18n>statistics.form.export.to.csv</i18n></button>
+		<i18n ng-if="form.processing === true" class="right-magnet">statistics.form.processing</i18n>
 	</div>
 	<div ng-if="!(chart.data && chart.data.length > 0)">
 		<i18n>statictics.no.data.found</i18n>
