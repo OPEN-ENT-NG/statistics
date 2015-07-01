@@ -1,7 +1,5 @@
 package net.atos.entng.statistics.controllers;
 
-import fr.wseduc.webutils.I18n;
-import static net.atos.entng.statistics.converter.Converter.*;
 import static net.atos.entng.statistics.aggregation.indicators.IndicatorFactory.STATS_FIELD_UNIQUE_VISITORS;
 import static org.entcore.common.aggregation.MongoConstants.TRACE_TYPE_ACTIVATION;
 import static org.entcore.common.aggregation.MongoConstants.TRACE_TYPE_CONNEXION;
@@ -27,7 +25,6 @@ import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserInfos.Function;
 import org.entcore.common.user.UserUtils;
 import org.vertx.java.core.Handler;
-import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
@@ -153,13 +150,25 @@ public class StatisticsController extends MongoDbControllerHelper {
 									renderError(request);
 								}
 								else {
-									final JsonObject message = new JsonObject();
-									message.putArray(PARAM_DATA, event.right().getValue());
-									message.putString(PARAM_ACTION, JSON_TO_CSV);
-									message.putString(PARAM_ACCEPT_LANGUAGE, I18n.acceptLanguage(request));
-									message.putString(PARAM_INDICATOR, indicator);
+									JsonObject params = new JsonObject()
+										.putBoolean("is"+indicator, true)
+										.putArray("list", event.right().getValue())
+										.putString("indicator", indicator);
 
-									StatisticsController.this.convert(message, request);
+									processTemplate(request, "text/export.txt", params, new Handler<String>() {
+										@Override
+										public void handle(final String export) {
+											if (export != null) {
+												request.response().putHeader("Content-Type", "application/csv");
+												request.response().putHeader("Content-Disposition",
+														"attachment; filename=export.csv");
+												request.response().end('\ufeff' + export);
+											} else {
+												renderError(request);
+											}
+										}
+									});
+
 								}
 							}
 						});
@@ -183,26 +192,6 @@ public class StatisticsController extends MongoDbControllerHelper {
 				} else {
 					log.debug("User not found in session.");
 					unauthorized(request);
-				}
-			}
-		});
-	}
-
-	private void convert(final JsonObject message, final HttpServerRequest request) {
-		eb.send(CONVERTER_ADDRESS, message, new Handler<Message<JsonObject>>() {
-			@Override
-			public void handle(Message<JsonObject> reply) {
-				String status = reply.body().getString("status",null);
-				if("ok".equals(status)) {
-					request.response().putHeader("Content-Type", "application/csv");
-					request.response().putHeader("Content-Disposition",
-							"attachment; filename=export.csv");
-					String csv = reply.body().getString("result");
-					request.response().end(csv);
-				}
-				else {
-					log.error(reply.body().getString("message"));
-					renderError(request);
 				}
 			}
 		});

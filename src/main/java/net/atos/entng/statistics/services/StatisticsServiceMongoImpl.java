@@ -18,6 +18,9 @@ import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
+import com.mongodb.BasicDBList;
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBObject;
 import com.mongodb.QueryBuilder;
 
 import fr.wseduc.mongodb.MongoDb;
@@ -82,8 +85,8 @@ public class StatisticsServiceMongoImpl extends MongoDbCrudService implements St
 		else {
 			criteriaQuery.and(STRUCTURES_ID).is(schoolIds.get(0));
 
-			// When exporting data, or getting data for only one module, a "find" is enough (no need to aggregate data)
-			if(isExport || !allModules) {
+			// When getting data for only one module, a "find" is enough (no need to aggregate data)
+			if(!isExport && !allModules) {
 				JsonObject projection = new JsonObject();
 				projection.putNumber("_id", 0)
 					.putNumber(indicator, 1)
@@ -123,15 +126,27 @@ public class StatisticsServiceMongoImpl extends MongoDbCrudService implements St
 		pipeline.addObject(groupBy);
 
 		QueryBuilder projection = QueryBuilder.start("_id").is(0)
-				.and(STATS_FIELD_DATE).is("$_id."+STATS_FIELD_DATE)
 				.and(PROFILE_ID).is("$_id."+PROFILE_ID)
 				.and(indicator).is(1);
 
 		if(!isExport) {
+			projection.and(STATS_FIELD_DATE).is("$_id."+STATS_FIELD_DATE);
+
 			// Sum stats for all structure_ids
 			pipeline.addObject(new JsonObject().putObject("$project", MongoQueryBuilder.build(projection)));
 		}
 		else {
+			// Projection : keep 'yyyy-MM' from 'yyyy-MM-dd HH:mm.ss.SSS'
+			DBObject dateSubstring = new BasicDBObject();
+			BasicDBList dbl = new BasicDBList();
+			dbl.add("$_id."+STATS_FIELD_DATE);
+			dbl.add(0);
+			dbl.add(7);
+			dateSubstring.put("$substr", dbl);
+
+			projection.and(STATS_FIELD_DATE).is(dateSubstring);
+
+
 			JsonObject sort = sortByStructureDateProfile;
 
 			// Export stats for each structure_id

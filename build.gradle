@@ -6,7 +6,6 @@ import groovy.json.JsonOutput
 dependencies {
 	compile "org.entcore:common:$entCoreVersion"
   compile "fr.wseduc:vertx-cron-timer:$vertxCronTimer"
-  compile "org.json:json:$orgJsonVersion"
   testCompile "org.entcore:tests:$entCoreVersion"
 }
 
