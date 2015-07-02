@@ -311,7 +311,11 @@ function StatisticsController($scope, template, model) {
 	
 	function getApplicationName(moduleName) {
 		var app = _.find(model.me.apps, function(app){
-			return '/'+ moduleName.toLowerCase() === app.prefix;
+			if(app.address && app.address.indexOf('/') !== -1) {
+				var appPrefix = app.address.split('/')[1];
+				return moduleName.toLowerCase() === appPrefix;
+			}
+			return false;
 		});
 		var label = (app !== undefined) ? 
 				lang.translate(app.displayName) : 
