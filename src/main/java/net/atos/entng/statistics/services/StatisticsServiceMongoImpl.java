@@ -126,11 +126,11 @@ public class StatisticsServiceMongoImpl extends MongoDbCrudService implements St
 		pipeline.addObject(groupBy);
 
 		QueryBuilder projection = QueryBuilder.start("_id").is(0)
-				.and(PROFILE_ID).is("$_id."+PROFILE_ID)
-				.and(indicator).is(1);
+				.and(PROFILE_ID).is("$_id."+PROFILE_ID);
 
 		if(!isExport) {
-			projection.and(STATS_FIELD_DATE).is("$_id."+STATS_FIELD_DATE);
+			projection.and(STATS_FIELD_DATE).is("$_id."+STATS_FIELD_DATE)
+				.and(indicator).is(1);
 
 			// Sum stats for all structure_ids
 			pipeline.addObject(new JsonObject().putObject("$project", MongoQueryBuilder.build(projection)));
@@ -144,7 +144,8 @@ public class StatisticsServiceMongoImpl extends MongoDbCrudService implements St
 			dbl.add(7);
 			dateSubstring.put("$substr", dbl);
 
-			projection.and(STATS_FIELD_DATE).is(dateSubstring);
+			projection.and(STATS_FIELD_DATE).is(dateSubstring)
+				.and("indicatorValue").is("$"+indicator); // Replace indicatorName by label "indicatorValue", so that the mustache template can be generic
 
 
 			JsonObject sort = sortByStructureDateProfile;

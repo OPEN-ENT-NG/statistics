@@ -1,4 +1,4 @@
 "Etablissement";"Date";"Profil";"{{#i18n}}{{indicator}}{{/i18n}}"{{#isACCESS}};"Application"{{/isACCESS}}
 {{#list}}
-"{{structures_id}}";"{{date}}";"{{#i18n}}{{profil_id}}{{/i18n}}";{{#isLOGIN}}"{{LOGIN}}"{{/isLOGIN}}{{#isACTIVATION}}"{{ACTIVATION}}"{{/isACTIVATION}}{{#isUNIQUE_VISITORS}}"{{UNIQUE_VISITORS}}"{{/isUNIQUE_VISITORS}}{{#isACCESS}}"{{ACCESS}}";"{{module_id}}"{{/isACCESS}}
+"{{structures_id}}";"{{date}}";"{{#i18n}}{{profil_id}}{{/i18n}}";"{{indicatorValue}}"{{#isACCESS}};"{{module_id}}"{{/isACCESS}}
 {{/list}}
