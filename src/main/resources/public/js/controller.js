@@ -164,9 +164,12 @@ function StatisticsController($scope, template, model) {
 					}
 				});
 				
+				// Prepend BOM character ('\uFEFF') : it forces Excel 2007+ to open a CSV file with charset UTF-8
+				formattedData = '\uFEFF' + encodeURIComponent(formattedData);
+				
 				// Process the response as if it was a file
 			    var hiddenElement = document.createElement('a');
-			    hiddenElement.href = 'data:attachment/csv,' + encodeURI(formattedData);
+			    hiddenElement.href = 'data:application/csv;charset=utf-8,' + formattedData;
 			    hiddenElement.target = '_blank';
 			    hiddenElement.download = getCsvFilename($scope.chart.form);
 			    
