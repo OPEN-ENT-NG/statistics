@@ -151,8 +151,6 @@ function StatisticsController($scope, template, model) {
 			query += '&format=' + pFormat;
 			
 			model.getData(query, function(data) {
-				$scope.form.processing = false;
-				
 				// Replace structureIds by structureNames
 				var formattedData = data;
 				_.map(schoolIdArray, function(schoolId) {
@@ -161,6 +159,13 @@ function StatisticsController($scope, template, model) {
 					});
 					if(school && school.name) {
 						formattedData = formattedData.replace(new RegExp(schoolId, 'g'), school.name);
+					}
+				});
+				
+				// Replace applications' technicalNames by displayNames
+				_.map($scope.modules, function(module) {
+					if(module && module.name && module.technicalName) {
+						formattedData = formattedData.replace(new RegExp(module.technicalName, 'g'), module.name);
 					}
 				});
 				
@@ -176,6 +181,7 @@ function StatisticsController($scope, template, model) {
 			    document.body.appendChild(hiddenElement);
 			    hiddenElement.click();
 
+				$scope.form.processing = false;
 				$scope.$apply();
 			});
 		}
