@@ -102,9 +102,10 @@ module.directive('chart', function ($window, $timeout) {
 		        .attr('class', 'tooltip')
 		        .offset([-10, 0])
 		        .html(function(d) {
-		          return '<div class="arrow"></div><div class="content">' + d.y +
-		          		" " + scope.indicator +
-		          		" " + d.profile + "s</div>";
+		          var label = (d.y > 1) ? 
+		        		  d.y + " " + scope.indicator.plural + " " + d.profile + "s" :
+		        		  d.y + " " + scope.indicator.singular + " " + d.profile;
+		          return '<div class="arrow"></div><div class="content">' + label + "</div>";
 		        });
 		        
 		        vis.call(tip);

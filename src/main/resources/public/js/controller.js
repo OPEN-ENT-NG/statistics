@@ -199,7 +199,9 @@ function StatisticsController($scope, template, model) {
 			model.getData(query, function(data) {
 				$scope.chart.form = angular.copy($scope.form); // "Save" form data for CSV export
 				
-				$scope.chart.indicatorName = lang.translate($scope.form.indicator).toLowerCase();
+				$scope.chart.indicatorName = {};
+				$scope.chart.indicatorName.plural = lang.translate($scope.form.indicator).toLowerCase();
+				$scope.chart.indicatorName.singular = lang.translate($scope.form.indicator + '.singular').toLowerCase();
 				$scope.chart.data = formatData(data);
 				template.open('chart', 'chart');
 				$scope.form.processing = false;
