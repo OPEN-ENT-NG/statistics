@@ -49,6 +49,7 @@
     "statictics.no.data.found": "Il n'y a pas de résultat pour votre sélection.",
     "statistics.invalid.dates": "La date de fin doit être supérieure à la date de début.",
     "statistics.initialization.error" : "Erreur durant l'initialisation de l'application",
+    "statistics.get.structures.error" : "Erreur : impossible d'obtenir le rne et la commune des établissements. Export CSV impossible",
     "statistics.chart.separate.by.profile": "Répartition par profil",
     "statistics.number.of": "Nombre de {0}",
     "statistics.number.of.with.apostrophe": "Nombre d'{0}",
@@ -56,8 +57,11 @@
     "statistics.for.school": "pour l'établissement {0}",
     "statistics.for.my.schools": "pour tous mes établissements",
     "statistics.all.my.schools": "Tous mes établissements",
-    "statistics.export.profile": "profil",
-    "statistics.export.structure": "établissement",
-    "statistics.export.module": "application",
+    "csv.profile": "Profil",
+    "csv.structure": "Etablissement",
+    "csv.city": "Commune",
+    "csv.uai": "Rne",
+    "csv.date": "Date",
+    "csv.module": "Application",
     "yesterday" : "hier"
 }

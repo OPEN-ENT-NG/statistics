@@ -12,13 +12,11 @@ import java.util.Map;
 import java.util.Set;
 
 import net.atos.entng.statistics.DateUtils;
-import net.atos.entng.statistics.filters.LocalAdmin;
 import net.atos.entng.statistics.services.StatisticsService;
 import net.atos.entng.statistics.services.StatisticsServiceMongoImpl;
 import net.atos.entng.statistics.services.StructureService;
 import net.atos.entng.statistics.services.StructureServiceNeo4jImpl;
 
-import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.mongodb.MongoDbControllerHelper;
 import org.entcore.common.user.DefaultFunctions;
 import org.entcore.common.user.UserInfos;
@@ -209,26 +207,19 @@ public class StatisticsController extends MongoDbControllerHelper {
 		return validSchoolIds.containsAll(schoolIds);
 	}
 
-
 	@Get("/structures")
-	@ResourceFilter(LocalAdmin.class)
+	@ApiDoc("Get structures' names, UAIs and cities")
+	@SecuredAction("statistics.get.structures")
 	public void getStructures(final HttpServerRequest request) {
-
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 			@Override
 			public void handle(final UserInfos user) {
 				if (user != null) {
 					List<String> schoolIds = request.params().getAll(PARAM_SCHOOL_ID);
-					if (schoolIds==null || schoolIds.size()==0) {
+					if (schoolIds==null || schoolIds.size()==0 || !isValidSchools(user, schoolIds)) {
 						badRequest(request);
 						return;
 					};
-
-					List<String> scope = user.getFunctions().get(DefaultFunctions.ADMIN_LOCAL).getScope();
-					if(scope == null || !scope.containsAll(schoolIds)) {
-						badRequest(request);
-						return;
-					}
 
 					JsonArray structureIds = new JsonArray();
 					for (String school : schoolIds) {
@@ -250,7 +241,6 @@ public class StatisticsController extends MongoDbControllerHelper {
 				}
 			}
 		});
-
 	}
 
 }

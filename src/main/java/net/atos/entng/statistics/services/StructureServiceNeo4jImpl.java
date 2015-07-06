@@ -15,7 +15,7 @@ public class StructureServiceNeo4jImpl implements StructureService {
 
 	@Override
 	public void list(JsonArray structureIds, Handler<Either<String, JsonArray>> handler) {
-		String query = 	"MATCH (s:Structure) WHERE s.id IN {structureIds} RETURN s.id as id, s.name as name";
+		String query = "MATCH (s:Structure) WHERE s.id IN {structureIds} RETURN s.id as id, s.name as name, s.UAI as uai, s.city as city";
 		JsonObject params = new JsonObject().putArray("structureIds", structureIds);
 		neo4j.execute(query, params, validResultHandler(handler));
 	}

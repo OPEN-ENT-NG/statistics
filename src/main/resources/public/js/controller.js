@@ -2,10 +2,9 @@ function StatisticsController($scope, template, model) {
 
 	this.initialize = function() {
 		$scope.template = template;
-
-		// Init variables used in template form.html
 		$scope.form = {};
-		
+
+		// Get Schools
 		$scope.schools = [];
 		for (var i=0; i < model.me.structures.length; i++) {
 			$scope.schools.push({id: model.me.structures[i], name: model.me.structureNames[i]});
@@ -14,36 +13,33 @@ function StatisticsController($scope, template, model) {
 		var isLocalAdmin = (model.me.functions && 
 				model.me.functions.ADMIN_LOCAL && 
 				model.me.functions.ADMIN_LOCAL.scope);
-		if(isLocalAdmin) {
-			// Get names of schools that are in ADMIN_LOCAL.scope, but not in model.me.structures
-			var schools = _.difference(model.me.functions.ADMIN_LOCAL.scope, model.me.structures);
-			if(schools && schools.length > 0) {
-				var query = http().serialize({schoolId: schools});
-				model.getStructures(query, function(structures) {
-					if (Array.isArray(structures) && structures.length > 0) {
-						for (var j=0; j < structures.length; j++) {
-							$scope.schools.push({id: structures[j].id, name: structures[j].name});						
-						}
-					}
-					endInitialization();
-				});
-			}
-			else {
-				endInitialization();
-			}
+		
+		if(!isLocalAdmin) {
+			endInitialization();
+			return;
+		}
+		
+		var schools = _.union(model.me.functions.ADMIN_LOCAL.scope, model.me.structures);
+		if(schools.length === model.me.structures.length) {
+			endInitialization();
 		}
 		else {
-			endInitialization();
+			// ADMIN_LOCAL.scope has schools that are not in model.me.structures. We need to get their names
+
+			var query = http().serialize({schoolId: schools});
+			model.getStructures(query, function(structures) {
+				if (Array.isArray(structures) && structures.length > 0) {
+					$scope.schools = structures;
+				}
+				endInitialization();
+			});
 		}
 	};
 	
 	function endInitialization() {
+		addAllMySchools();
 		
-		if($scope.schools.length > 1) { 
-			var allSchoolIds = _.pluck($scope.schools, "id").join(",");
-			$scope.schools.push({id: allSchoolIds, name: lang.translate('statistics.all.my.schools')});
-		}
-		
+		// Get indicators and modules. Initialize dates
 		$scope.indicators = [];
 		$scope.modules = [];
 		model.getMetadata(function(result){
@@ -69,9 +65,15 @@ function StatisticsController($scope, template, model) {
 		});
 	}
 	
+	function addAllMySchools() {
+		if($scope.schools.length > 1) {
+			var allSchoolIds = _.pluck($scope.schools, "id").join(",");
+			$scope.schools.push({id: allSchoolIds, name: lang.translate('statistics.all.my.schools')});
+		}
+	}
 	
 	function displayDefaultChart() {
-		// Display the number of connections
+		// Display chart "number of connections"
 		$scope.form.school_id = $scope.schools[$scope.schools.length-1].id;
 		$scope.form.from = $scope.dates[0].moment;
 		$scope.form.indicator = 'LOGIN';
@@ -113,7 +115,7 @@ function StatisticsController($scope, template, model) {
 		}
 	}
 	
-	// Return a date object, formatted for ng-options
+	// Return a date object, formatted for ng-options.
 	// Parameter "displayPreviousMonthForLabel" is a boolean to display previous month (e.g. "september" instead of "october")
 	function getDateObjectForNgOptions(moment, displayPreviousMonthForLabel) {
 		return {
@@ -139,50 +141,30 @@ function StatisticsController($scope, template, model) {
 	};
 	
 	/* If pFormat = "csv", get data as CSV and save it as a file.
-	 * Else, get data as JSON and display chart 
-	 */
+	 * Else, get data as JSON and display chart */
 	$scope.getData = function(pFormat) {
 		$scope.form.processing = true;
 
 		if ('csv' === pFormat) {
-			// Export data corresponding to displayed chart (i.e. data from $scope.chart.form, not $scope.form)
-			var schoolIdArray = getSchoolIdArray($scope.chart.form);
-			var query = generateQuery($scope.chart.form, schoolIdArray);
-			query += '&format=' + pFormat;
+			var aSchool = $scope.schools[0];
+			var getStructuresMetadata = (aSchool && aSchool.city === undefined && aSchool.uai === undefined);
 			
-			model.getData(query, function(data) {
-				// Replace structureIds by structureNames
-				var formattedData = data;
-				_.map(schoolIdArray, function(schoolId) {
-					var school = _.find($scope.schools, function(school) {
-						return schoolId === school.id;
-					});
-					if(school && school.name) {
-						formattedData = formattedData.replace(new RegExp(schoolId, 'g'), school.name);
-					}
-				});
-				
-				// Replace applications' technicalNames by displayNames
-				_.map($scope.modules, function(module) {
-					if(module && module.name && module.technicalName) {
-						formattedData = formattedData.replace(new RegExp(module.technicalName, 'g'), module.name);
-					}
-				});
-				
-				// Prepend BOM character ('\uFEFF') : it forces Excel 2007+ to open a CSV file with charset UTF-8
-				formattedData = '\uFEFF' + encodeURIComponent(formattedData);
-				
-				// Process the response as if it was a file
-			    var hiddenElement = document.createElement('a');
-			    hiddenElement.href = 'data:application/csv;charset=utf-8,' + formattedData;
-			    hiddenElement.target = '_blank';
-			    hiddenElement.download = getCsvFilename($scope.chart.form);
-			    
-			    document.body.appendChild(hiddenElement);
-			    hiddenElement.click();
+			if(!getStructuresMetadata) {
+				getCsvData();
+				return;
+			}
 
-				$scope.form.processing = false;
-				$scope.$apply();
+			// Get UAI and city of structures
+			var query = http().serialize({schoolId: model.me.structures});
+			model.getStructures(query, function(structures) {
+				if (Array.isArray(structures) && structures.length > 0) {
+					$scope.schools = structures;
+					addAllMySchools();
+					getCsvData();
+				}
+				else {
+					notify.error('statistics.get.structures.error');
+				}
 			});
 		}
 		else {
@@ -211,6 +193,51 @@ function StatisticsController($scope, template, model) {
 		}
 
 	};
+	
+	function getCsvData() {
+		// Export data corresponding to displayed chart (i.e. data from $scope.chart.form, not from $scope.form)
+		var schoolIdArray = getSchoolIdArray($scope.chart.form);
+		var query = generateQuery($scope.chart.form, schoolIdArray);
+		query += '&format=csv';
+		
+		model.getData(query, function(data) {
+			// Replace string "rne"+structureId by rne, string "city"+structureId by city, and structureIds by structureNames
+			var formattedData = data;
+			_.map(schoolIdArray, function(schoolId) {
+				var school = _.find($scope.schools, function(school) {
+					return schoolId === school.id;
+				});
+				if(school && school.name) {
+					formattedData = formattedData.replace(new RegExp('uai'+schoolId, 'g'), school.uai)
+						.replace(new RegExp('city'+schoolId, 'g'), school.city)
+						.replace(new RegExp(schoolId, 'g'), school.name);
+				}
+			});
+			
+			// Replace applications' technicalNames by displayNames
+			_.map($scope.modules, function(module) {
+				if(module && module.name && module.technicalName) {
+					formattedData = formattedData.replace(new RegExp(module.technicalName, 'g'), module.name);
+				}
+			});
+			
+			// Prepend BOM character ('\uFEFF') : it forces Excel 2007+ to open a CSV file with charset UTF-8
+			formattedData = '\uFEFF' + encodeURIComponent(formattedData);
+			
+			// Process the response as if it was a file
+		    var hiddenElement = document.createElement('a');
+		    hiddenElement.href = 'data:application/csv;charset=utf-8,' + formattedData;
+		    hiddenElement.target = '_blank';
+		    hiddenElement.download = getCsvFilename($scope.chart.form);
+		    
+		    document.body.appendChild(hiddenElement);
+		    hiddenElement.click();
+
+			$scope.form.processing = false;
+			$scope.$apply();
+		});
+	}
+	
 	
 	function getSchoolIdArray(form) {
 		return form.school_id.split(",");
