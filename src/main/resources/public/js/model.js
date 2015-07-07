@@ -4,17 +4,23 @@ model.getMetadata = function(callback){
 		if(typeof callback === 'function'){
 			callback(result);
 		}
-	}.bind(this));
+	});
 };
 
-// Get data to display chart
-model.getData = function(query, callback){
+
+model.getData = function(query, callback, errorCallback){
 	var url = '/statistics/data?' + query;
 	http().get(url).done(function(result){
 		if(typeof callback === 'function'){
 			callback(result);
 		}
-	}.bind(this));
+	}).e400(function(e){
+		var responseText = JSON.parse(e.responseText);
+		notify.error(responseText.error);
+		if(typeof errorCallback === 'function'){
+			errorCallback();
+		}
+	});
 };
 
 model.getStructures = function(query, callback){
@@ -23,7 +29,7 @@ model.getStructures = function(query, callback){
 		if(typeof callback === 'function'){
 			callback(result);
 		}
-	}.bind(this));
+	});
 };
 
 model.build = function() {

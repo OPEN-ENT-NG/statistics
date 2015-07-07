@@ -189,6 +189,9 @@ function StatisticsController($scope, template, model) {
 				$scope.form.processing = false;
 				$scope.chart.title = getChartTitle($scope.form.indicator, schoolIdArray, $scope.form.module);
 				$scope.$apply();
+			}, function() {
+				$scope.form.processing = false;
+				$scope.$apply();
 			});
 		}
 
@@ -233,6 +236,10 @@ function StatisticsController($scope, template, model) {
 		    document.body.appendChild(hiddenElement);
 		    hiddenElement.click();
 
+			$scope.form.processing = false;
+			$scope.$apply();
+			
+		}, function() {
 			$scope.form.processing = false;
 			$scope.$apply();
 		});

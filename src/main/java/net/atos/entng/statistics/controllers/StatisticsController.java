@@ -1,10 +1,12 @@
 package net.atos.entng.statistics.controllers;
 
+import static fr.wseduc.webutils.I18n.acceptLanguage;
 import static net.atos.entng.statistics.aggregation.indicators.IndicatorFactory.STATS_FIELD_UNIQUE_VISITORS;
 import static org.entcore.common.aggregation.MongoConstants.TRACE_TYPE_ACTIVATION;
 import static org.entcore.common.aggregation.MongoConstants.TRACE_TYPE_CONNEXION;
 import static org.entcore.common.aggregation.MongoConstants.TRACE_TYPE_SVC_ACCESS;
 
+import fr.wseduc.webutils.I18n;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -36,6 +38,7 @@ public class StatisticsController extends MongoDbControllerHelper {
 
 	private final StatisticsService statsService;
 	private final StructureService structureService;
+	private I18n i18n;
 
 	public static final String PARAM_SCHOOL_ID = "schoolId";
 	public static final String PARAM_INDICATOR = "indicator";
@@ -52,6 +55,7 @@ public class StatisticsController extends MongoDbControllerHelper {
 		super(collection);
 		statsService = new StatisticsServiceMongoImpl(collection);
 		structureService = new StructureServiceNeo4jImpl();
+		i18n = I18n.getInstance();
 
 		indicators = new HashSet<>();
 		indicators.add(STATS_FIELD_UNIQUE_VISITORS);
@@ -86,17 +90,17 @@ public class StatisticsController extends MongoDbControllerHelper {
 			@Override
 			public void handle(final UserInfos user) {
 				if (user != null) {
-					// TODO : add error messages for all bad requests
-
 					final List<String> schoolIds = request.params().getAll(PARAM_SCHOOL_ID);
 					if (schoolIds==null || schoolIds.size()==0 || !isValidSchools(user, schoolIds)) {
-						badRequest(request);
+						String errorMsg = i18n.translate("statistics.bad.request.invalid.schools", acceptLanguage(request));
+						badRequest(request, errorMsg);
 						return;
 					};
 
 					final String indicator = request.params().get(PARAM_INDICATOR);
 					if(indicator==null || indicator.trim().isEmpty() || !indicators.contains(indicator)) {
-						badRequest(request);
+						String errorMsg = i18n.translate("statistics.bad.request.invalid.indicator", acceptLanguage(request));
+						badRequest(request, errorMsg);
 						return;
 					}
 
@@ -104,7 +108,8 @@ public class StatisticsController extends MongoDbControllerHelper {
 					if(TRACE_TYPE_SVC_ACCESS.equals(indicator)) {
 						module = request.params().get(PARAM_MODULE);
 						if(module!=null && !module.trim().isEmpty() && !accessModules.contains(module)) {
-							badRequest(request);
+							String errorMsg = i18n.translate("statistics.bad.request.invalid.module", acceptLanguage(request));
+							badRequest(request, errorMsg);
 							return;
 						}
 						// Else (when module is not specified), return data for all modules
@@ -117,12 +122,14 @@ public class StatisticsController extends MongoDbControllerHelper {
 						start = DateUtils.parseStringDate(startDate);
 						end = DateUtils.parseStringDate(endDate);
 						if(end < start || end < 0L || start < 0L) {
-							badRequest(request);
+							String errorMsg = i18n.translate("statistics.bad.request.invalid.dates", acceptLanguage(request));
+							badRequest(request, errorMsg);
 							return;
 						}
 					} catch (Exception e) {
 						log.error("Error when casting startDate or endDate to long", e);
-						badRequest(request);
+						String errorMsg = i18n.translate("statistics.bad.request.invalid.date.format", acceptLanguage(request));
+						badRequest(request, errorMsg);
 						return;
 					}
 
@@ -135,7 +142,8 @@ public class StatisticsController extends MongoDbControllerHelper {
 					String format = request.params().get(PARAM_FORMAT);
 					if(format!=null && !format.isEmpty()) {
 						if(!"csv".equals(format)) {
-							badRequest(request);
+							String errorMsg = i18n.translate("statistics.bad.request.invalid.export.format", acceptLanguage(request));
+							badRequest(request, errorMsg);
 							return;
 						}
 
@@ -217,7 +225,8 @@ public class StatisticsController extends MongoDbControllerHelper {
 				if (user != null) {
 					List<String> schoolIds = request.params().getAll(PARAM_SCHOOL_ID);
 					if (schoolIds==null || schoolIds.size()==0 || !isValidSchools(user, schoolIds)) {
-						badRequest(request);
+						String errorMsg = i18n.translate("statistics.bad.request.invalid.schools", acceptLanguage(request));
+						badRequest(request, errorMsg);
 						return;
 					};
 
