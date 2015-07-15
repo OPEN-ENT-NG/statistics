@@ -445,4 +445,23 @@ function StatisticsController($scope, template, model) {
     }
     
     this.initialize();
+    
+    //  temp
+    var salesData=[
+   	{label:"Basic", color:"#3366CC"},
+   	{label:"Plus", color:"#DC3912"},
+   	{label:"Lite", color:"#FF9900"},
+   	{label:"Elite", color:"#109618"},
+   	{label:"Delux", color:"#990099"}
+   ];
+
+   function randomData(){
+	   return salesData.map(function(d){ 
+		   return {label:d.label, value:1000*Math.random(), color:d.color};
+	   });
+   }
+   
+   $scope.testdmt = {}
+   $scope.testdmt.piechartData = randomData();
+
 }
