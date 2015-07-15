@@ -110,7 +110,10 @@ public class StatisticsServiceMongoImpl extends MongoDbCrudService implements St
 
 		pipeline.addObject(new JsonObject().putObject("$match", MongoQueryBuilder.build(criteriaQuery)));
 
-		JsonObject id = new JsonObject().putString(STATS_FIELD_DATE, "$"+STATS_FIELD_DATE).putString(PROFILE_ID, "$"+PROFILE_ID);
+		JsonObject id = new JsonObject().putString(PROFILE_ID, "$"+PROFILE_ID);
+		if(!allModules && !isExport) { // Do not group by date when getting data for the case "access to all modules"
+			id.putString(STATS_FIELD_DATE, "$"+STATS_FIELD_DATE);
+		}
 		JsonObject groupBy = new JsonObject().putObject("$group", new JsonObject()
 			.putObject("_id", id)
 			.putObject(indicator, new JsonObject().putString("$sum", "$"+indicator)));
@@ -120,8 +123,13 @@ public class StatisticsServiceMongoImpl extends MongoDbCrudService implements St
 				.and(PROFILE_ID).is("$_id."+PROFILE_ID);
 
 		if(!isExport) {
-			projection.and(STATS_FIELD_DATE).is("$_id."+STATS_FIELD_DATE)
-				.and(indicator).is(1);
+			projection.and(indicator).is(1);
+			if(!allModules) {
+				projection.and(STATS_FIELD_DATE).is("$_id."+STATS_FIELD_DATE);
+			}
+			else {
+				projection.and(MODULE_ID).is("$_id."+MODULE_ID);
+			}
 
 			// Sum stats for all structure_ids
 			pipeline.addObject(new JsonObject().putObject("$project", MongoQueryBuilder.build(projection)));

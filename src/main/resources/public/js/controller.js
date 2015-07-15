@@ -177,17 +177,26 @@ function StatisticsController($scope, template, model) {
 			var schoolIdArray = getSchoolIdArray($scope.form);
 			var query = generateQuery($scope.form, schoolIdArray);
 			$scope.chart = {};
+			$scope.chart.form = angular.copy($scope.form); // "Save" form data for CSV export
 
 			model.getData(query, function(data) {
-				$scope.chart.form = angular.copy($scope.form); // "Save" form data for CSV export
-				
+				var chartForm = $scope.chart.form;
 				$scope.chart.indicatorName = {};
-				$scope.chart.indicatorName.plural = lang.translate($scope.form.indicator).toLowerCase();
-				$scope.chart.indicatorName.singular = lang.translate($scope.form.indicator + '.singular').toLowerCase();
-				$scope.chart.data = formatData(data);
+				$scope.chart.indicatorName.plural = lang.translate(chartForm.indicator).toLowerCase();
+				$scope.chart.indicatorName.singular = lang.translate(chartForm.indicator + '.singular').toLowerCase();
+				
+				if(chartForm.indicator==="ACCESS" && chartForm.module===undefined) {
+					$scope.chart.accessAllModules = true;
+					// TODO : formatData for piechart
+					$scope.chart.data = data;
+				}
+				else {
+					$scope.chart.data = formatData(data);
+				}
+				
 				template.open('chart', 'chart');
 				$scope.form.processing = false;
-				$scope.chart.title = getChartTitle($scope.form.indicator, schoolIdArray, $scope.form.module);
+				$scope.chart.title = getChartTitle(chartForm.indicator, schoolIdArray, chartForm.module);
 				$scope.$apply();
 			}, function() {
 				$scope.form.processing = false;
@@ -446,7 +455,7 @@ function StatisticsController($scope, template, model) {
     
     this.initialize();
     
-    //  temp
+    // TODO : remove temporary code
     var salesData=[
    	{label:"Basic", color:"#3366CC"},
    	{label:"Plus", color:"#DC3912"},
@@ -461,7 +470,7 @@ function StatisticsController($scope, template, model) {
 	   });
    }
    
-   $scope.testdmt = {}
+   $scope.testdmt = {};
    $scope.testdmt.piechartData = randomData();
 
 }
