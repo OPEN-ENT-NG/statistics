@@ -91,19 +91,10 @@ public class StatisticsServiceMongoImpl extends MongoDbCrudService implements St
 				projection.putNumber("_id", 0)
 					.putNumber(indicator, 1)
 					.putNumber(PROFILE_ID, 1)
-					.putNumber(STATS_FIELD_DATE, 1)
-					.putNumber(STRUCTURES_ID, 1);
+					.putNumber(STATS_FIELD_DATE, 1);
 
-				JsonObject sort = sortByDateProfile;
-
-				if(isAccessIndicator) {
-					projection.putNumber(MODULE_ID, 1);
-					if (allModules) {
-						sort = sort.copy().putNumber(MODULE_ID, 1);
-					}
-				}
-
-				mongo.find(collection, MongoQueryBuilder.build(criteriaQuery), sort, projection, MongoDbResult.validResultsHandler(handler));
+				mongo.find(collection, MongoQueryBuilder.build(criteriaQuery), sortByDateProfile,
+						projection, MongoDbResult.validResultsHandler(handler));
 				return;
 			}
 		}
