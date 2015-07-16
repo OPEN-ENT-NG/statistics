@@ -187,11 +187,10 @@ function StatisticsController($scope, template, model) {
 				
 				if(chartForm.indicator==="ACCESS" && chartForm.module===undefined) {
 					$scope.chart.accessAllModules = true;
-					// TODO : formatData for piechart
-					$scope.chart.data = data;
+					$scope.chart.data = formatDataForPieChart(data);
 				}
 				else {
-					$scope.chart.data = formatData(data);
+					$scope.chart.data = formatDataForBarChart(data);
 				}
 				
 				template.open('chart', 'chart');
@@ -310,8 +309,61 @@ function StatisticsController($scope, template, model) {
 	}
 	
 
-	// Format raw data for d3.js
-	function formatData(inputData) {
+	// Format raw data for directive 'piechart'
+	function formatDataForPieChart(inputData) {
+		var indicator = $scope.chart.form.indicator;
+		
+		// Group data by module_id
+		var groupedData = _.groupBy(inputData, function(element){ 
+			return element.module_id; 
+		});
+		var keys = _.keys(groupedData);
+
+		var result = _.map(keys, function(key){
+            // Keep only fields "indicator" and "module_id"
+            var cleanedData = _.map(groupedData[key], function(elem){
+                var output = { "module_id": elem.module_id};
+                output[indicator] = elem[indicator];
+                return output;
+            });
+            // Sum indicator's values for each module_id
+            return _.reduce(cleanedData, function(a,b){ 
+                var out = { "module_id":a.module_id };
+                out[indicator] = a[indicator]+b[indicator];
+                return out; 
+            });
+		});
+		result = _.sortBy(result, function(element){ return - element[indicator]; });
+		
+		var nbTop = 3;
+		if(result.length <= nbTop) {
+			console.log(JSON.stringify(result));
+			return result;
+		}
+		
+		// Keep values for the top 3 applications. Sum the remaining values and label it as "others"
+		var n = result.length - nbTop;
+		var topModules = _.initial(result, n);
+		
+		var remainingModules = _.last(result, n);
+		var totalForRemaining = remainingModules.map(function(elem){ 
+			return elem[indicator];
+		}).reduce(function(a,b){ 
+			return a + b; 
+		});
+		
+		var otherModules = {
+			module_id: lang.translate("statistics.others")			
+		};
+		otherModules[indicator] = totalForRemaining;
+		topModules.push(otherModules);
+		
+		console.log(JSON.stringify(topModules));
+		return topModules;
+	}
+	
+	// Format raw data for directive 'barchart'
+	function formatDataForBarChart(inputData) {
 		var dates = _.chain(inputData).pluck("date").sort().uniq().value();
 		var orderedProfileArray = ['Teacher', 'Personnel', 'Student', 'Parent', 'Guest'];
 		var profiles = _.chain(inputData).pluck("profil_id").uniq().sort(function(thisProfile, thatProfile){
@@ -352,7 +404,7 @@ function StatisticsController($scope, template, model) {
 
 				var data = _.chain(inputData).where({"profil_id":profiles[i], "date":dates[j]}).value();
 				if(data && data.length > 0) {
-					outputData[i][j].y = data[0][$scope.form.indicator];
+					outputData[i][j].y = data[0][$scope.chart.form.indicator];
 				}
 				else {
 					// Set default values when no data is found for the specified profile and date

@@ -57,6 +57,7 @@
     "statistics.for.school": "pour l'établissement {0}",
     "statistics.for.my.schools": "pour tous mes établissements",
     "statistics.all.my.schools": "Tous mes établissements",
+    "statistics.others": "Autres",
     "statistics.bad.request.invalid.schools": "Etablissement(s) sélectionné(s) invalide(s)",
     "statistics.bad.request.invalid.indicator": "Indicateur invalide",
     "statistics.bad.request.invalid.module": "Application invalide",

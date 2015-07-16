@@ -368,47 +368,47 @@ module.directive('piechart', function ($window, $timeout) {
 	        				Math.round(1000*(d.endAngle-d.startAngle)/(Math.PI*2))/10+'%' : '');
 	        	}	
 	        	
-	        	Donut3D.transition = function(id, data, rx, ry, h, ir){
-	        		function arcTweenInner(a) {
-	        		  var i = d3.interpolate(this._current, a);
-	        		  this._current = i(0);
-	        		  return function(t) { return pieInner(i(t), rx+0.5, ry+0.5, h, ir);  };
-	        		}
-	        		function arcTweenTop(a) {
-	        		  var i = d3.interpolate(this._current, a);
-	        		  this._current = i(0);
-	        		  return function(t) { return pieTop(i(t), rx, ry, ir);  };
-	        		}
-	        		function arcTweenOuter(a) {
-	        		  var i = d3.interpolate(this._current, a);
-	        		  this._current = i(0);
-	        		  return function(t) { return pieOuter(i(t), rx-0.5, ry-0.5, h);  };
-	        		}
-	        		function textTweenX(a) {
-	        		  var i = d3.interpolate(this._current, a);
-	        		  this._current = i(0);
-	        		  return function(t) { return 0.6*rx*Math.cos(0.5*(i(t).startAngle+i(t).endAngle));  };
-	        		}
-	        		function textTweenY(a) {
-	        		  var i = d3.interpolate(this._current, a);
-	        		  this._current = i(0);
-	        		  return function(t) { return 0.6*rx*Math.sin(0.5*(i(t).startAngle+i(t).endAngle));  };
-	        		}
-	        		
-	        		var _data = d3.layout.pie().sort(null).value(function(d) {return d.value;})(data);
-	        		
-	        		d3.select("#"+id).selectAll(".innerSlice").data(_data)
-	        			.transition().duration(750).attrTween("d", arcTweenInner);
-	        			
-	        		d3.select("#"+id).selectAll(".topSlice").data(_data)
-	        			.transition().duration(750).attrTween("d", arcTweenTop);
-	        			
-	        		d3.select("#"+id).selectAll(".outerSlice").data(_data)
-	        			.transition().duration(750).attrTween("d", arcTweenOuter);
-	        			
-	        		d3.select("#"+id).selectAll(".percent").data(_data).transition().duration(750)
-	        			.attrTween("x",textTweenX).attrTween("y",textTweenY).text(getPercent);
-	        	};
+//	        	Donut3D.transition = function(id, data, rx, ry, h, ir){
+//	        		function arcTweenInner(a) {
+//	        		  var i = d3.interpolate(this._current, a);
+//	        		  this._current = i(0);
+//	        		  return function(t) { return pieInner(i(t), rx+0.5, ry+0.5, h, ir);  };
+//	        		}
+//	        		function arcTweenTop(a) {
+//	        		  var i = d3.interpolate(this._current, a);
+//	        		  this._current = i(0);
+//	        		  return function(t) { return pieTop(i(t), rx, ry, ir);  };
+//	        		}
+//	        		function arcTweenOuter(a) {
+//	        		  var i = d3.interpolate(this._current, a);
+//	        		  this._current = i(0);
+//	        		  return function(t) { return pieOuter(i(t), rx-0.5, ry-0.5, h);  };
+//	        		}
+//	        		function textTweenX(a) {
+//	        		  var i = d3.interpolate(this._current, a);
+//	        		  this._current = i(0);
+//	        		  return function(t) { return 0.6*rx*Math.cos(0.5*(i(t).startAngle+i(t).endAngle));  };
+//	        		}
+//	        		function textTweenY(a) {
+//	        		  var i = d3.interpolate(this._current, a);
+//	        		  this._current = i(0);
+//	        		  return function(t) { return 0.6*rx*Math.sin(0.5*(i(t).startAngle+i(t).endAngle));  };
+//	        		}
+//	        		
+//	        		var _data = d3.layout.pie().sort(null).value(function(d) {return d.value;})(data);
+//	        		
+//	        		d3.select("#"+id).selectAll(".innerSlice").data(_data)
+//	        			.transition().duration(750).attrTween("d", arcTweenInner);
+//	        			
+//	        		d3.select("#"+id).selectAll(".topSlice").data(_data)
+//	        			.transition().duration(750).attrTween("d", arcTweenTop);
+//	        			
+//	        		d3.select("#"+id).selectAll(".outerSlice").data(_data)
+//	        			.transition().duration(750).attrTween("d", arcTweenOuter);
+//	        			
+//	        		d3.select("#"+id).selectAll(".percent").data(_data).transition().duration(750)
+//	        			.attrTween("x",textTweenX).attrTween("y",textTweenY).text(getPercent);
+//	        	};
 	        	
 	        	Donut3D.draw=function(id, data, x /*center x*/, y/*center y*/, 
 	        			rx/*radius x*/, ry/*radius y*/, h/*height*/, ir/*inner radius*/){
