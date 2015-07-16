@@ -111,7 +111,11 @@ public class StatisticsServiceMongoImpl extends MongoDbCrudService implements St
 		pipeline.addObject(new JsonObject().putObject("$match", MongoQueryBuilder.build(criteriaQuery)));
 
 		JsonObject id = new JsonObject().putString(PROFILE_ID, "$"+PROFILE_ID);
-		if(isExport || !allModules) { // Do not group by date when getting JSON data for the case "access to all modules"
+		if(allModules && !isExport) {
+			// Case : get JSON data for indicator "access to all modules"
+			id.putString(MODULE_ID, "$"+MODULE_ID);
+		}
+		else {
 			id.putString(STATS_FIELD_DATE, "$"+STATS_FIELD_DATE);
 		}
 
@@ -125,11 +129,11 @@ public class StatisticsServiceMongoImpl extends MongoDbCrudService implements St
 
 		if(!isExport) {
 			projection.and(indicator).is(1);
-			if(!allModules) {
-				projection.and(STATS_FIELD_DATE).is("$_id."+STATS_FIELD_DATE);
+			if(allModules) {
+				projection.and(MODULE_ID).is("$_id."+MODULE_ID);
 			}
 			else {
-				projection.and(MODULE_ID).is("$_id."+MODULE_ID);
+				projection.and(STATS_FIELD_DATE).is("$_id."+STATS_FIELD_DATE);
 			}
 
 			// Sum stats for all structure_ids
