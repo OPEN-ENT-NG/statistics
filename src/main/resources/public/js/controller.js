@@ -322,21 +322,22 @@ function StatisticsController($scope, template, model) {
 		var result = _.map(keys, function(key){
             // Only keep fields "indicator" and "module_id"
             var cleanedData = _.map(groupedData[key], function(elem){
-                var output = { "module_id": elem.module_id};
-                output[indicator] = elem[indicator];
+                var output = { module_id: elem.module_id};
+                output.count = elem[indicator];
                 return output;
             });
             // Sum indicator's values for each module_id
             return _.reduce(cleanedData, function(a,b){ 
-                var out = { "module_id":a.module_id };
-                out[indicator] = a[indicator]+b[indicator];
-                return out; 
+            	return { 
+            		module_id: a.module_id, 
+            		count: a.count + b.count
+                };
             });
 		});
-		result = _.sortBy(result, function(element){ return - element[indicator]; });
+		result = _.sortBy(result, function(element){ return - element.count; });
 		
 		var nbTop = 3;
-		var colors = ["#3366CC", "#DC3912", "#FF9900", "#109618", "#990099"];
+		var colors = ["#3366CC", "#DC3912", "#109618", "#990099"];
 		
 		if(result.length > nbTop) {
 			// Keep values for the top 3 applications. Sum the remaining values and label it as "others"
@@ -347,9 +348,9 @@ function StatisticsController($scope, template, model) {
 			var totalOfRemainingModules = countTotal(remainingModules, indicator);
 			
 			var otherModules = {
-				module_id: lang.translate("statistics.others")
+				module_id: lang.translate("statistics.others"),
+				count : totalOfRemainingModules
 			};
-			otherModules[indicator] = totalOfRemainingModules;
 			topModules.push(otherModules);
 
 			result = topModules;
@@ -358,9 +359,10 @@ function StatisticsController($scope, template, model) {
 		var totalCount = countTotal(result, indicator);
 		for(var i=0; i < result.length; i++) {
 			result[i].total = totalCount;
-			result[i].value = result[i][indicator] / totalCount;
+			result[i].value = result[i].count / totalCount;
 			console.log(result[i].value);
 			result[i].color = colors[i];
+			result[i].module_id = getApplicationName(result[i].module_id);
 		}
 		
 		console.log(JSON.stringify(result));
@@ -369,7 +371,7 @@ function StatisticsController($scope, template, model) {
 	
 	function countTotal(dataArray, indicator) {
 		return dataArray.map(function(elem){ 
-			return elem[indicator];
+			return elem.count;
 		}).reduce(function(a,b){ 
 			return a + b; 
 		});

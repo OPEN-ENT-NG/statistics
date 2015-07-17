@@ -302,7 +302,7 @@ module.directive('piechart', function ($window, $timeout) {
 			var vis = d3.select(element[0])
 			.append("svg")
 			.style('width', '100%')
-			.attr("height", height + margin.top + margin.bottom + 100)
+			.attr("height", height + margin.top + margin.bottom + 180)
 			.append("g")
 			.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
@@ -427,21 +427,78 @@ module.directive('piechart', function ($window, $timeout) {
 	        			.style("fill", function(d) { return d.data.color; })
 	        			.style("stroke", function(d) { return d.data.color; })
 	        			.attr("d",function(d){ return pieTop(d, rx, ry, ir);})
-	        			.each(function(d){this._current=d;});
+	        			.each(function(d){this._current=d;})
+	        			.on('mouseover', tip.show)
+	        			.on('mouseout', tip.hide);
 	        		
 	        		slices.selectAll(".outerSlice").data(_data).enter().append("path").attr("class", "outerSlice")
 	        			.style("fill", function(d) { return d3.hsl(d.data.color).darker(0.7); })
 	        			.attr("d",function(d){ return pieOuter(d, rx-0.5,ry-0.5, h);})
-	        			.each(function(d){this._current=d;});
+	        			.each(function(d){this._current=d;})
+	        			.on('mouseover', tip.show)
+	        			.on('mouseout', tip.hide);
 
 	        		slices.selectAll(".percent").data(_data).enter().append("text").attr("class", "percent")
 	        			.attr("x",function(d){ return 0.6*rx*Math.cos(0.5*(d.startAngle+d.endAngle));})
 	        			.attr("y",function(d){ return 0.6*ry*Math.sin(0.5*(d.startAngle+d.endAngle));})
 	        			.text(getPercent).each(function(d){this._current=d;});
 	        	};
-	        	
+
+		        // Tooltip
+		        // =======
+		    
+		        var tip = d3.tip()
+		        .attr('class', 'tooltip')
+		        .offset([+30, 0])
+		        .html(function(d) {
+		          var label = d.data.count + " " + scope.indicator.plural + " " + d.data.module_id;
+		          return '<div class="arrow"></div><div class="content">' + label + "</div>";
+		        });
+		        
+		        vis.call(tip);
+		        
+		        
+		        //
 		        vis.append("g").attr("id","piechart");
 		        Donut3D.draw("piechart", newVal, 150, 90, 130, 100, 30, 0);
+		        
+		        
+		        // Chart Key
+		        // =========
+
+		        var keyText = vis.selectAll("text.key")
+		            .data(newVal)
+		          .enter().append("text")
+		            .attr("class", "key")
+		            .attr("y", function (d, i) {
+		              return height + 70 + 30*(i%4);
+		            })
+		            .attr("x", function (d, i) {
+		              return 155 * Math.floor(i/4) + 15;
+		            })
+		            .attr("dx", 15)
+		            .attr("dy", ".71em")
+		            .attr("text-anchor", "left")
+		            .text(function(d, i) {
+		              return d.module_id;
+		            });
+
+		        var keySwatches = vis.selectAll("rect.swatch")
+		            .data(newVal)
+		          .enter().append("rect")
+		            .attr("class", "swatch")
+		            .attr("width", 20)
+		            .attr("height", 20)
+		            .style("fill", function(d, i) {
+		            	return d.color;
+		            })
+		            .attr("y", function (d, i) {
+		              return height + 64 + 30*(i%4);
+		            })
+		            .attr("x", function (d, i) {
+		              return 155 * Math.floor(i/4);
+		            });
+		        
 			};
 		}
 	};
