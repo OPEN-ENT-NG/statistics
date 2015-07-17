@@ -342,6 +342,7 @@ function StatisticsController($scope, template, model) {
 		result = _.sortBy(result, function(element){ return - element.count; });
 		
 		var nbTop = 3;
+		var colors = ["#3366CC", "#DC3912", "#109618", "#990099"];
 		
 		if(result.length > nbTop) {
 			// Keep values for the top 3 applications. Sum the remaining values and label it as "others"
@@ -362,15 +363,14 @@ function StatisticsController($scope, template, model) {
 		}
 		
 		var totalCount = countTotal(result);
-//		for(var i=0; i < result.length; i++) {
-//			result[i].total = totalCount;
-//			result[i].value = result[i].count / totalCount;
-//			console.log(result[i].value);
-//			result[i].color = colors[i];
-//			result[i].module_id = getApplicationName(result[i].module_id);
-//		}
-		formatDataForPieChartDirective(result, totalCount);
+		var colorsMap = {};
+		for(var i=0; i < result.length; i++) {
+			colorsMap[result[i].module_id] = colors[i];
+		}
+		$scope.chart.colorsMap = colorsMap;
+		console.log(JSON.stringify(colorsMap));
 		
+		formatDataForPieChartDirective(result, totalCount);
 		
 		console.log(JSON.stringify(result));
 		return result;
@@ -388,13 +388,11 @@ function StatisticsController($scope, template, model) {
 	}
 	
 	function formatDataForPieChartDirective(dataArray, totalCount) {
-		var colors = ["#3366CC", "#DC3912", "#109618", "#990099"];
-		
 		for(var i=0; i < dataArray.length; i++) {
 			dataArray[i].total = totalCount;
 			dataArray[i].value = dataArray[i].count / totalCount;
 			console.log(dataArray[i].value);
-			dataArray[i].color = colors[i];
+			dataArray[i].color = $scope.chart.colorsMap[dataArray[i].module_id];
 			dataArray[i].module_id = getApplicationName(dataArray[i].module_id);
 		}
 	}

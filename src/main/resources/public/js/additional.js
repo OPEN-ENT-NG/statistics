@@ -502,7 +502,16 @@ module.directive('piechart', function () {
 		        // setup a watch on 'grouped' to switch between views
 		        scope.$watch('grouped', function (newValue, oldValue) {
 		        	if(newValue) {
-		        		Donut3D.transition("piechart", newVal.detailData[0], 130, 100, 30, 0);
+		        		// Sort newVal.detailData[0] so that it has the same order as newVal.globalData ; the order must be kept for the transition
+		        		var sortedDetailedData = [];
+		        		for (var j=0; j < newVal.globalData.length; j++) {
+		        			var foundElement = _.findWhere(newVal.detailData[0], {module_id: newVal.globalData[j].module_id});
+		        			if(foundElement!==undefined) {
+		        				sortedDetailedData.push(foundElement);
+		        			}
+		        		}
+		        		Donut3D.transition("piechart", sortedDetailedData, 130, 100, 30, 0);
+		        		
 		        		for(var i=1; i < newVal.detailData.length; i++) {
 		        			vis.append("g").attr("id","piechart"+i);
 		        			Donut3D.draw("piechart"+i, newVal.detailData[i], 150 + 300*i, 90, 130, 100, 30, 0);
