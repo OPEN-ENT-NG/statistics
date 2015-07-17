@@ -187,7 +187,8 @@ function StatisticsController($scope, template, model) {
 				
 				if(chartForm.indicator==="ACCESS" && chartForm.module===undefined) {
 					$scope.chart.accessAllModules = true;
-					$scope.chart.data = formatDataForPieChart(data);
+					$scope.chart.globalData = formatDataForPieChart(data);
+					$scope.chart.detailedData = extractDetailedData(data); 
 				}
 				else {
 					$scope.chart.data = formatDataForBarChart(data);
@@ -314,17 +315,18 @@ function StatisticsController($scope, template, model) {
 		var indicator = $scope.chart.form.indicator;
 		
 		// Group data by module_id
-		var groupedData = _.groupBy(inputData, function(element){ 
+		var dataGroupedByModule = _.groupBy(inputData, function(element){ 
 			return element.module_id; 
 		});
-		var keys = _.keys(groupedData);
+		var keys = _.keys(dataGroupedByModule);
 
 		var result = _.map(keys, function(key){
             // Only keep fields "indicator" and "module_id"
-            var cleanedData = _.map(groupedData[key], function(elem){
-                var output = { module_id: elem.module_id};
-                output.count = elem[indicator];
-                return output;
+            var cleanedData = _.map(dataGroupedByModule[key], function(elem){
+                return { 
+            		module_id: elem.module_id,
+            		count: elem[indicator]
+                };
             });
             // Sum indicator's values for each module_id
             return _.reduce(cleanedData, function(a,b){ 
@@ -343,9 +345,10 @@ function StatisticsController($scope, template, model) {
 			// Keep values for the top 3 applications. Sum the remaining values and label it as "others"
 			var n = result.length - nbTop;
 			var topModules = _.initial(result, n);
+			$scope.chart.topModules = _.pluck(topModules, 'module_id');
 			
 			var remainingModules = _.last(result, n);
-			var totalOfRemainingModules = countTotal(remainingModules, indicator);
+			var totalOfRemainingModules = countTotal(remainingModules);
 			
 			var otherModules = {
 				module_id: lang.translate("statistics.others"),
@@ -356,7 +359,7 @@ function StatisticsController($scope, template, model) {
 			result = topModules;
 		}
 		
-		var totalCount = countTotal(result, indicator);
+		var totalCount = countTotal(result);
 		for(var i=0; i < result.length; i++) {
 			result[i].total = totalCount;
 			result[i].value = result[i].count / totalCount;
@@ -370,10 +373,53 @@ function StatisticsController($scope, template, model) {
 	}
 	
 	function countTotal(dataArray, indicator) {
+    if(indicator===undefined) {
+      indicator = 'count';
+    }
+      
 		return dataArray.map(function(elem){ 
-			return elem.count;
+			return elem[indicator];
 		}).reduce(function(a,b){ 
-			return a + b; 
+			return a + b;
+		});
+	}
+	
+	function extractDetailedData(data) {
+		var indicator = $scope.chart.form.indicator;
+		var dataGroupedByProfile = _.groupBy(data, function(element){ return element.profil_id; });
+		var profiles = _.keys(dataGroupedByProfile);
+
+		var result = {};
+		_.map(profiles, function(key){
+			// TODO when upgrading to a newer version of underscore : use function "_.partition"
+			var topModules = [];
+			var remainingModules = [];
+			var dataArray = dataGroupedByProfile[key];
+			for(var i=0; i < dataArray.length; i++) {
+				var element = {
+					module_id: dataArray[i].module_id,
+					profil_id: dataArray[i].profil_id,
+					count: dataArray[i][indicator]
+				};
+				if(_.contains($scope.chart.topModules, dataArray[i].module_id)) {
+					topModules.push(element);
+				}
+				else {
+					remainingModules.push(element);
+				}
+			}
+			
+			var totalOfRemainingModules = countTotal(remainingModules);
+			
+			var otherModules = {
+				module_id: lang.translate("statistics.others"),
+				profil_id: dataArray[0].profil_id,
+				count : totalOfRemainingModules
+			};
+			topModules.push(otherModules);
+
+			console.log(JSON.stringify(topModules));
+			return topModules;
 		});
 	}
 	
