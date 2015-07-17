@@ -187,8 +187,11 @@ function StatisticsController($scope, template, model) {
 				
 				if(chartForm.indicator==="ACCESS" && chartForm.module===undefined) {
 					$scope.chart.accessAllModules = true;
-					$scope.chart.globalData = formatDataForPieChart(data);
-					$scope.chart.detailedData = extractDetailedData(data); 
+					$scope.chart.data = formatDataForPieChart(data);
+					$scope.chart.allData = {
+						globalData: $scope.chart.data,
+						detailData: extractDetailedData(data)
+					};
 				}
 				else {
 					$scope.chart.data = formatDataForBarChart(data);
@@ -339,7 +342,6 @@ function StatisticsController($scope, template, model) {
 		result = _.sortBy(result, function(element){ return - element.count; });
 		
 		var nbTop = 3;
-		var colors = ["#3366CC", "#DC3912", "#109618", "#990099"];
 		
 		if(result.length > nbTop) {
 			// Keep values for the top 3 applications. Sum the remaining values and label it as "others"
@@ -360,23 +362,24 @@ function StatisticsController($scope, template, model) {
 		}
 		
 		var totalCount = countTotal(result);
-		for(var i=0; i < result.length; i++) {
-			result[i].total = totalCount;
-			result[i].value = result[i].count / totalCount;
-			console.log(result[i].value);
-			result[i].color = colors[i];
-			result[i].module_id = getApplicationName(result[i].module_id);
-		}
+//		for(var i=0; i < result.length; i++) {
+//			result[i].total = totalCount;
+//			result[i].value = result[i].count / totalCount;
+//			console.log(result[i].value);
+//			result[i].color = colors[i];
+//			result[i].module_id = getApplicationName(result[i].module_id);
+//		}
+		formatDataForPieChartDirective(result, totalCount);
+		
 		
 		console.log(JSON.stringify(result));
 		return result;
 	}
 	
 	function countTotal(dataArray, indicator) {
-    if(indicator===undefined) {
-      indicator = 'count';
-    }
-      
+	    if(indicator===undefined) {
+	      indicator = 'count';
+	    }
 		return dataArray.map(function(elem){ 
 			return elem[indicator];
 		}).reduce(function(a,b){ 
@@ -384,13 +387,24 @@ function StatisticsController($scope, template, model) {
 		});
 	}
 	
+	function formatDataForPieChartDirective(dataArray, totalCount) {
+		var colors = ["#3366CC", "#DC3912", "#109618", "#990099"];
+		
+		for(var i=0; i < dataArray.length; i++) {
+			dataArray[i].total = totalCount;
+			dataArray[i].value = dataArray[i].count / totalCount;
+			console.log(dataArray[i].value);
+			dataArray[i].color = colors[i];
+			dataArray[i].module_id = getApplicationName(dataArray[i].module_id);
+		}
+	}
+	
 	function extractDetailedData(data) {
 		var indicator = $scope.chart.form.indicator;
 		var dataGroupedByProfile = _.groupBy(data, function(element){ return element.profil_id; });
 		var profiles = _.keys(dataGroupedByProfile);
 
-		var result = {};
-		_.map(profiles, function(key){
+		return _.map(profiles, function(key){
 			// TODO when upgrading to a newer version of underscore : use function "_.partition"
 			var topModules = [];
 			var remainingModules = [];
@@ -419,6 +433,9 @@ function StatisticsController($scope, template, model) {
 			topModules.push(otherModules);
 
 			console.log(JSON.stringify(topModules));
+			var totalCount = countTotal(topModules);
+			formatDataForPieChartDirective(topModules, totalCount);
+			
 			return topModules;
 		});
 	}

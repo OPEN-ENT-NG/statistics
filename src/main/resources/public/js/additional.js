@@ -285,7 +285,7 @@ module.directive('barchart', function ($window, $timeout) {
 
 
 
-module.directive('piechart', function ($window, $timeout) {
+module.directive('piechart', function () {
 	// constants
 	var margin = {top: 20, right: 10, bottom: 20, left: 0},
 	height = 200 - 0.5 - margin.top - margin.bottom;
@@ -368,47 +368,47 @@ module.directive('piechart', function ($window, $timeout) {
 	        				Math.round(1000*(d.endAngle-d.startAngle)/(Math.PI*2))/10+'%' : '');
 	        	}	
 	        	
-//	        	Donut3D.transition = function(id, data, rx, ry, h, ir){
-//	        		function arcTweenInner(a) {
-//	        		  var i = d3.interpolate(this._current, a);
-//	        		  this._current = i(0);
-//	        		  return function(t) { return pieInner(i(t), rx+0.5, ry+0.5, h, ir);  };
-//	        		}
-//	        		function arcTweenTop(a) {
-//	        		  var i = d3.interpolate(this._current, a);
-//	        		  this._current = i(0);
-//	        		  return function(t) { return pieTop(i(t), rx, ry, ir);  };
-//	        		}
-//	        		function arcTweenOuter(a) {
-//	        		  var i = d3.interpolate(this._current, a);
-//	        		  this._current = i(0);
-//	        		  return function(t) { return pieOuter(i(t), rx-0.5, ry-0.5, h);  };
-//	        		}
-//	        		function textTweenX(a) {
-//	        		  var i = d3.interpolate(this._current, a);
-//	        		  this._current = i(0);
-//	        		  return function(t) { return 0.6*rx*Math.cos(0.5*(i(t).startAngle+i(t).endAngle));  };
-//	        		}
-//	        		function textTweenY(a) {
-//	        		  var i = d3.interpolate(this._current, a);
-//	        		  this._current = i(0);
-//	        		  return function(t) { return 0.6*rx*Math.sin(0.5*(i(t).startAngle+i(t).endAngle));  };
-//	        		}
-//	        		
-//	        		var _data = d3.layout.pie().sort(null).value(function(d) {return d.value;})(data);
-//	        		
-//	        		d3.select("#"+id).selectAll(".innerSlice").data(_data)
-//	        			.transition().duration(750).attrTween("d", arcTweenInner);
-//	        			
-//	        		d3.select("#"+id).selectAll(".topSlice").data(_data)
-//	        			.transition().duration(750).attrTween("d", arcTweenTop);
-//	        			
-//	        		d3.select("#"+id).selectAll(".outerSlice").data(_data)
-//	        			.transition().duration(750).attrTween("d", arcTweenOuter);
-//	        			
-//	        		d3.select("#"+id).selectAll(".percent").data(_data).transition().duration(750)
-//	        			.attrTween("x",textTweenX).attrTween("y",textTweenY).text(getPercent);
-//	        	};
+	        	Donut3D.transition = function(id, data, rx, ry, h, ir){
+	        		function arcTweenInner(a) {
+	        		  var i = d3.interpolate(this._current, a);
+	        		  this._current = i(0);
+	        		  return function(t) { return pieInner(i(t), rx+0.5, ry+0.5, h, ir);  };
+	        		}
+	        		function arcTweenTop(a) {
+	        		  var i = d3.interpolate(this._current, a);
+	        		  this._current = i(0);
+	        		  return function(t) { return pieTop(i(t), rx, ry, ir);  };
+	        		}
+	        		function arcTweenOuter(a) {
+	        		  var i = d3.interpolate(this._current, a);
+	        		  this._current = i(0);
+	        		  return function(t) { return pieOuter(i(t), rx-0.5, ry-0.5, h);  };
+	        		}
+	        		function textTweenX(a) {
+	        		  var i = d3.interpolate(this._current, a);
+	        		  this._current = i(0);
+	        		  return function(t) { return 0.6*rx*Math.cos(0.5*(i(t).startAngle+i(t).endAngle));  };
+	        		}
+	        		function textTweenY(a) {
+	        		  var i = d3.interpolate(this._current, a);
+	        		  this._current = i(0);
+	        		  return function(t) { return 0.6*rx*Math.sin(0.5*(i(t).startAngle+i(t).endAngle));  };
+	        		}
+	        		
+	        		var _data = d3.layout.pie().sort(null).value(function(d) {return d.value;})(data);
+	        		
+	        		d3.select("#"+id).selectAll(".innerSlice").data(_data)
+	        			.transition().duration(750).attrTween("d", arcTweenInner);
+	        			
+	        		d3.select("#"+id).selectAll(".topSlice").data(_data)
+	        			.transition().duration(750).attrTween("d", arcTweenTop);
+	        			
+	        		d3.select("#"+id).selectAll(".outerSlice").data(_data)
+	        			.transition().duration(750).attrTween("d", arcTweenOuter);
+	        			
+	        		d3.select("#"+id).selectAll(".percent").data(_data).transition().duration(750)
+	        			.attrTween("x",textTweenX).attrTween("y",textTweenY).text(getPercent);
+	        	};
 	        	
 	        	Donut3D.draw=function(id, data, x /*center x*/, y/*center y*/, 
 	        			rx/*radius x*/, ry/*radius y*/, h/*height*/, ir/*inner radius*/){
@@ -460,14 +460,14 @@ module.directive('piechart', function ($window, $timeout) {
 		        
 		        //
 		        vis.append("g").attr("id","piechart");
-		        Donut3D.draw("piechart", newVal, 150, 90, 130, 100, 30, 0);
+		        Donut3D.draw("piechart", newVal.globalData, 150, 90, 130, 100, 30, 0);
 		        
 		        
 		        // Chart Key
 		        // =========
 
 		        var keyText = vis.selectAll("text.key")
-		            .data(newVal)
+		            .data(newVal.globalData)
 		          .enter().append("text")
 		            .attr("class", "key")
 		            .attr("y", function (d, i) {
@@ -484,7 +484,7 @@ module.directive('piechart', function ($window, $timeout) {
 		            });
 
 		        var keySwatches = vis.selectAll("rect.swatch")
-		            .data(newVal)
+		            .data(newVal.globalData)
 		          .enter().append("rect")
 		            .attr("class", "swatch")
 		            .attr("width", 20)
@@ -498,7 +498,23 @@ module.directive('piechart', function ($window, $timeout) {
 		            .attr("x", function (d, i) {
 		              return 155 * Math.floor(i/4);
 		            });
-		        
+
+		        // setup a watch on 'grouped' to switch between views
+		        scope.$watch('grouped', function (newValue, oldValue) {
+		        	if(newValue) {
+		        		Donut3D.transition("piechart", newVal.detailData[0], 130, 100, 30, 0);
+		        		for(var i=1; i < newVal.detailData.length; i++) {
+		        			vis.append("g").attr("id","piechart"+i);
+		        			Donut3D.draw("piechart"+i, newVal.detailData[i], 150 + 300*i, 90, 130, 100, 30, 0);
+		        		}
+		        	} else {
+		        		Donut3D.transition("piechart", newVal.globalData, 130, 100, 30, 0);
+		        		for(var i=1; i < newVal.detailData.length; i++) {
+		        			vis.select("#piechart"+i).remove();
+		        		}
+		        	}
+		        });
+
 			};
 		}
 	};
