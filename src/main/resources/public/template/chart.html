@@ -10,7 +10,7 @@
 		<barchart ng-if="!chart.accessAllModules" 
 			val="chart.data" grouped="chart.grouped" indicator="chart.indicatorName"></barchart>
 		<piechart ng-if="chart.accessAllModules===true" 
-			val="testdmt.piechartData" grouped="dummyValue" indicator="chart.indicatorName"></piechart>
+			val="chart.data" grouped="chart.grouped" indicator="chart.indicatorName"></piechart>
 		
 		<button ng-if="!form.processing" class="right-magnet" ng-click="getData('csv')"><i18n>statistics.form.export.to.csv</i18n></button>
 		<i18n ng-if="form.processing === true" class="right-magnet">statistics.form.processing</i18n>

@@ -320,7 +320,7 @@ function StatisticsController($scope, template, model) {
 		var keys = _.keys(groupedData);
 
 		var result = _.map(keys, function(key){
-            // Keep only fields "indicator" and "module_id"
+            // Only keep fields "indicator" and "module_id"
             var cleanedData = _.map(groupedData[key], function(elem){
                 var output = { "module_id": elem.module_id};
                 output[indicator] = elem[indicator];
@@ -336,30 +336,43 @@ function StatisticsController($scope, template, model) {
 		result = _.sortBy(result, function(element){ return - element[indicator]; });
 		
 		var nbTop = 3;
-		if(result.length <= nbTop) {
-			console.log(JSON.stringify(result));
-			return result;
+		var colors = ["#3366CC", "#DC3912", "#FF9900", "#109618", "#990099"];
+		
+		if(result.length > nbTop) {
+			// Keep values for the top 3 applications. Sum the remaining values and label it as "others"
+			var n = result.length - nbTop;
+			var topModules = _.initial(result, n);
+			
+			var remainingModules = _.last(result, n);
+			var totalOfRemainingModules = countTotal(remainingModules, indicator);
+			
+			var otherModules = {
+				module_id: lang.translate("statistics.others")
+			};
+			otherModules[indicator] = totalOfRemainingModules;
+			topModules.push(otherModules);
+
+			result = topModules;
 		}
 		
-		// Keep values for the top 3 applications. Sum the remaining values and label it as "others"
-		var n = result.length - nbTop;
-		var topModules = _.initial(result, n);
+		var totalCount = countTotal(result, indicator);
+		for(var i=0; i < result.length; i++) {
+			result[i].total = totalCount;
+			result[i].value = result[i][indicator] / totalCount;
+			console.log(result[i].value);
+			result[i].color = colors[i];
+		}
 		
-		var remainingModules = _.last(result, n);
-		var totalForRemaining = remainingModules.map(function(elem){ 
+		console.log(JSON.stringify(result));
+		return result;
+	}
+	
+	function countTotal(dataArray, indicator) {
+		return dataArray.map(function(elem){ 
 			return elem[indicator];
 		}).reduce(function(a,b){ 
 			return a + b; 
 		});
-		
-		var otherModules = {
-			module_id: lang.translate("statistics.others")			
-		};
-		otherModules[indicator] = totalForRemaining;
-		topModules.push(otherModules);
-		
-		console.log(JSON.stringify(topModules));
-		return topModules;
 	}
 	
 	// Format raw data for directive 'barchart'
@@ -507,22 +520,4 @@ function StatisticsController($scope, template, model) {
     
     this.initialize();
     
-    // TODO : remove temporary code
-    var salesData=[
-   	{label:"Basic", color:"#3366CC"},
-   	{label:"Plus", color:"#DC3912"},
-   	{label:"Lite", color:"#FF9900"},
-   	{label:"Elite", color:"#109618"},
-   	{label:"Delux", color:"#990099"}
-   ];
-
-   function randomData(){
-	   return salesData.map(function(d){ 
-		   return {label:d.label, value:1000*Math.random(), color:d.color};
-	   });
-   }
-   
-   $scope.testdmt = {};
-   $scope.testdmt.piechartData = randomData();
-
 }
