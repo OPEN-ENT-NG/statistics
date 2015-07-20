@@ -164,6 +164,8 @@ function StatisticsController($scope, template, model) {
 				}
 				else {
 					notify.error('statistics.get.structures.error');
+					$scope.form.processing = false;
+					return;
 				}
 			});
 		}
@@ -377,9 +379,14 @@ function StatisticsController($scope, template, model) {
 	}
 	
 	function countTotal(dataArray, indicator) {
+	    if(dataArray===undefined || dataArray.length===0) {
+	    	return 0;
+	    }
+		
 	    if(indicator===undefined) {
 	      indicator = 'count';
 	    }
+	    
 		return dataArray.map(function(elem){ 
 			return elem[indicator];
 		}).reduce(function(a,b){ 
