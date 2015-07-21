@@ -512,6 +512,8 @@ module.directive('piechart', function () {
 		        		}
 		        		Donut3D.transition("piechart", sortedDetailedData, 130, 100, 30, 0);
 		        		
+		        		// TODO : add a title for each chart
+		        		
 		        		for(var i=1; i < newVal.detailData.length; i++) {
 		        			vis.append("g").attr("id","piechart"+i);
 		        			Donut3D.draw("piechart"+i, newVal.detailData[i], 150 + 300*i, 90, 130, 100, 30, 0);

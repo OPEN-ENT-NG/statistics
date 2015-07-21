@@ -410,6 +410,7 @@ function StatisticsController($scope, template, model) {
 		var profiles = _.keys(dataGroupedByProfile);
 
 		return _.map(profiles, function(key){
+			// Partition data in two groups : "top" modules and "others"
 			// TODO when upgrading to a newer version of underscore : use function "_.partition"
 			var topModules = [];
 			var remainingModules = [];
@@ -427,6 +428,34 @@ function StatisticsController($scope, template, model) {
 					remainingModules.push(element);
 				}
 			}
+			
+			if(topModules.length < $scope.chart.topModules.length) {
+				// Add default values
+				var globalModulesIds = _.pluck($scope.chart.topModules, 'module_id');
+				var detailedModulesIds = _.pluck(topModules, 'module_id');
+		
+				var missingModulesIds = _.difference(globalModulesIds, detailedModulesIds);
+				console.log("missingModulesIds: "+JSON.stringify(missingModulesIds));
+				_.map(missingModulesIds, function(moduleId) {
+					topModules.push({
+						module_id: moduleId,
+						profil_id: dataGroupedByProfile[key].profil_id,
+						count: 0
+					});
+				});
+				console.log("topModules: "+JSON.stringify(topModules));
+				
+//				_.map($scope.chart.topModules, function(module) {
+//					if(!_.contains(topModules, module.module_id)) {
+//						topModules.push({
+//							module_id: module.module_id,
+//							profil_id: key,
+//							count: 0							
+//						});
+//					}
+//				})				
+			}
+
 			
 			var totalOfRemainingModules = countTotal(remainingModules);
 			
