@@ -287,7 +287,7 @@ module.directive('barchart', function ($window, $timeout) {
 
 module.directive('piechart', function () {
 	// constants
-	var margin = {top: 20, right: 10, bottom: 20, left: 0},
+	var margin = {top: 40, right: 10, bottom: 20, left: 0},
 	height = 200 - 0.5 - margin.top - margin.bottom;
 
 	return {
@@ -513,15 +513,33 @@ module.directive('piechart', function () {
 		        		Donut3D.transition("piechart", sortedDetailedData, 130, 100, 30, 0);
 		        		
 		        		// TODO : add a title for each chart
+		        		vis.append("text")
+			        		.attr("id","piechartLabel")
+			                .attr("x", 150)
+			                .attr("y", 0 - (margin.top / 2))
+			                .attr("text-anchor", "middle")
+			                .style("font-size", "16px")
+			                .text(lang.translate(newVal.detailData[0][0].profil_id));
 		        		
 		        		for(var i=1; i < newVal.detailData.length; i++) {
 		        			vis.append("g").attr("id","piechart"+i);
-		        			Donut3D.draw("piechart"+i, newVal.detailData[i], 150 + 300*i, 90, 130, 100, 30, 0);
+		        			Donut3D.draw("piechart"+i, newVal.detailData[i][0], 150 + 300*i, 90, 130, 100, 30, 0);
+		        			
+			        		vis.append("text")
+				        		.attr("id","piechartLabel"+i)
+				                .attr("x", 150 + 300*i)
+				                .attr("y", 0 - (margin.top / 2))
+				                .attr("text-anchor", "middle")
+				                .style("font-size", "16px")
+				                .text(lang.translate(newVal.detailData[i][0].profil_id));
 		        		}
 		        	} else {
 		        		Donut3D.transition("piechart", newVal.globalData, 130, 100, 30, 0);
+		        		vis.select("#piechartLabel").remove();
+		        		
 		        		for(var i=1; i < newVal.detailData.length; i++) {
 		        			vis.select("#piechart"+i).remove();
+		        			vis.select("#piechartLabel"+i).remove();
 		        		}
 		        	}
 		        });

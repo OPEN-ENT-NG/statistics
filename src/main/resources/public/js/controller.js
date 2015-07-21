@@ -409,12 +409,12 @@ function StatisticsController($scope, template, model) {
 		var dataGroupedByProfile = _.groupBy(data, function(element){ return element.profil_id; });
 		var profiles = _.keys(dataGroupedByProfile);
 
-		return _.map(profiles, function(key){
+		return _.map(profiles, function(profile){
 			// Partition data in two groups : "top" modules and "others"
 			// TODO when upgrading to a newer version of underscore : use function "_.partition"
 			var topModules = [];
 			var remainingModules = [];
-			var dataArray = dataGroupedByProfile[key];
+			var dataArray = dataGroupedByProfile[profile];
 			for(var i=0; i < dataArray.length; i++) {
 				var element = {
 					module_id: dataArray[i].module_id,
@@ -438,7 +438,7 @@ function StatisticsController($scope, template, model) {
 				_.map(missingModulesIds, function(moduleId) {
 					topModules.push({
 						module_id: moduleId,
-						profil_id: dataGroupedByProfile[key].profil_id,
+						profil_id: profile,
 						count: 0
 					});
 				});
