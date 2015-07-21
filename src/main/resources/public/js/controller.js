@@ -319,15 +319,15 @@ function StatisticsController($scope, template, model) {
 	function formatDataForPieChart(inputData) {
 		var indicator = $scope.chart.form.indicator;
 		
-		// Group data by module_id
+		// 1) Group data by module_id, then sort data in descending order
 		var dataGroupedByModule = _.groupBy(inputData, function(element){ 
 			return element.module_id; 
 		});
-		var keys = _.keys(dataGroupedByModule);
+		var modules = _.keys(dataGroupedByModule);
 
-		var result = _.map(keys, function(key){
+		var result = _.map(modules, function(module){
             // Only keep fields "indicator" and "module_id"
-            var cleanedData = _.map(dataGroupedByModule[key], function(elem){
+            var cleanedData = _.map(dataGroupedByModule[module], function(elem){
                 return { 
             		module_id: elem.module_id,
             		count: elem[indicator]
@@ -343,11 +343,12 @@ function StatisticsController($scope, template, model) {
 		});
 		result = _.sortBy(result, function(element){ return - element.count; });
 		
+		
 		var nbTop = 3;
 		var colors = ["#3366CC", "#DC3912", "#109618", "#990099"];
 		
 		if(result.length > nbTop) {
-			// Keep values for the top 3 applications. Sum the remaining values and label it as "others"
+			// 2) Keep values for the top 3 applications. Sum the remaining values and label it as "others"
 			var n = result.length - nbTop;
 			var topModules = _.initial(result, n);
 			$scope.chart.topModulesIds = _.pluck(topModules, 'module_id');
@@ -365,16 +366,15 @@ function StatisticsController($scope, template, model) {
 		}
 		
 		var totalCount = countTotal(result);
-		var colorsMap = {};
+		var moduleToColorMap = {};
 		for(var i=0; i < result.length; i++) {
-			colorsMap[result[i].module_id] = colors[i];
+			moduleToColorMap[result[i].module_id] = colors[i];
 		}
-		$scope.chart.colorsMap = colorsMap;
-		console.log(JSON.stringify(colorsMap));
+		$scope.chart.moduleToColorMap = moduleToColorMap;
 		
-		formatDataForPieChartDirective(result, totalCount);
+		// 3) Add fields for directive "piechart"
+		addFieldsForPieChartDirective(result, totalCount);
 		
-		console.log(JSON.stringify(result));
 		return result;
 	}
 	
@@ -394,31 +394,31 @@ function StatisticsController($scope, template, model) {
 		});
 	}
 	
-	function formatDataForPieChartDirective(dataArray, totalCount) {
+	function addFieldsForPieChartDirective(dataArray, totalCount) {
 		for(var i=0; i < dataArray.length; i++) {
 			dataArray[i].total = totalCount;
 			dataArray[i].value = dataArray[i].count / totalCount;
-			console.log(dataArray[i].value);
-			dataArray[i].color = $scope.chart.colorsMap[dataArray[i].module_id];
+			dataArray[i].color = $scope.chart.moduleToColorMap[dataArray[i].module_id];
 			dataArray[i].module_id = getApplicationName(dataArray[i].module_id);
 		}
 	}
 	
+	
+	// Returns the same data than function 'formatDataForPieChart', but detailed by profile
 	function extractDetailedData(data) {
 		var indicator = $scope.chart.form.indicator;
 		var dataGroupedByProfile = _.groupBy(data, function(element){ return element.profil_id; });
 		var profiles = _.keys(dataGroupedByProfile);
 
 		return _.map(profiles, function(profile){
-			// Partition data in two groups : "top" modules and "others"
-			// TODO when upgrading to a newer version of underscore : use function "_.partition"
+			// Partition data in two groups : "top" modules and "others". TODO when upgrading to a newer version of underscore.js : use function "_.partition"
 			var topModules = [];
 			var remainingModules = [];
 			var dataArray = dataGroupedByProfile[profile];
 			for(var i=0; i < dataArray.length; i++) {
 				var element = {
 					module_id: dataArray[i].module_id,
-					profil_id: dataArray[i].profil_id,
+					profil_id: profile,
 					count: dataArray[i][indicator]
 				};
 				if(_.contains($scope.chart.topModulesIds, dataArray[i].module_id)) {
@@ -430,11 +430,9 @@ function StatisticsController($scope, template, model) {
 			}
 			
 			if(topModules.length < $scope.chart.topModulesIds.length) {
-				// Add default values
+				// Add default values to topModules
 				var detailedModulesIds = _.pluck(topModules, 'module_id');
-		
 				var missingModulesIds = _.difference($scope.chart.topModulesIds, detailedModulesIds);
-				console.log("missingModulesIds: "+JSON.stringify(missingModulesIds));
 				_.map(missingModulesIds, function(moduleId) {
 					topModules.push({
 						module_id: moduleId,
@@ -442,22 +440,19 @@ function StatisticsController($scope, template, model) {
 						count: 0
 					});
 				});
-				console.log("topModules: "+JSON.stringify(topModules));
 			}
 
 			
 			var totalOfRemainingModules = countTotal(remainingModules);
-			
 			var otherModules = {
 				module_id: lang.translate("statistics.others"),
-				profil_id: dataArray[0].profil_id,
+				profil_id: profile,
 				count : totalOfRemainingModules
 			};
 			topModules.push(otherModules);
 
-			console.log(JSON.stringify(topModules));
 			var totalCount = countTotal(topModules);
-			formatDataForPieChartDirective(topModules, totalCount);
+			addFieldsForPieChartDirective(topModules, totalCount);
 			
 			return topModules;
 		});

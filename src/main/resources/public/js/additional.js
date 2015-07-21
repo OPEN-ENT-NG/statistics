@@ -523,7 +523,7 @@ module.directive('piechart', function () {
 		        		
 		        		for(var i=1; i < newVal.detailData.length; i++) {
 		        			vis.append("g").attr("id","piechart"+i);
-		        			Donut3D.draw("piechart"+i, newVal.detailData[i][0], 150 + 300*i, 90, 130, 100, 30, 0);
+		        			Donut3D.draw("piechart"+i, newVal.detailData[i], 150 + 300*i, 90, 130, 100, 30, 0);
 		        			
 			        		vis.append("text")
 				        		.attr("id","piechartLabel"+i)
