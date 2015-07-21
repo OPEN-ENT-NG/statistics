@@ -290,6 +290,15 @@ module.directive('piechart', function () {
 	var margin = {top: 40, right: 10, bottom: 20, left: 0},
 	height = 200 - 0.5 - margin.top - margin.bottom;
 
+	var pieConstants = {
+    	centerX: 150,
+    	centerY: 90,
+    	radiusX: 130,
+    	radiusY: 100,
+    	height: 30,
+    	innerRadius: 0
+    };
+	
 	return {
 		restrict: 'E',
 		scope: {
@@ -458,10 +467,13 @@ module.directive('piechart', function () {
 		        vis.call(tip);
 		        
 		        
-		        //
-		        vis.append("g").attr("id","piechart");
-		        Donut3D.draw("piechart", newVal.globalData, 150, 90, 130, 100, 30, 0);
+		        // Draw piechart
+		        // =============
 		        
+		        vis.append("g").attr("id","piechart0");
+		        Donut3D.draw("piechart0", newVal.globalData, pieConstants.centerX, pieConstants.centerY, 
+		        		pieConstants.radiusX, pieConstants.radiusY, 
+		        		pieConstants.height, pieConstants.innerRadius);
 		        
 		        // Chart Key
 		        // =========
@@ -499,10 +511,11 @@ module.directive('piechart', function () {
 		              return 155 * Math.floor(i/4);
 		            });
 
+		        
 		        // setup a watch on 'grouped' to switch between views
 		        scope.$watch('grouped', function (newValue, oldValue) {
 		        	if(newValue) {
-		        		// Sort newVal.detailData[0] so that it has the same order as newVal.globalData ; the order must be kept for the transition
+		        		// Sort newVal.detailData[0] based on the module order of newVal.globalData ; the order must be kept for the transition
 		        		var sortedDetailedData = [];
 		        		for (var j=0; j < newVal.globalData.length; j++) {
 		        			var foundElement = _.findWhere(newVal.detailData[0], {module_id: newVal.globalData[j].module_id});
@@ -510,40 +523,45 @@ module.directive('piechart', function () {
 		        				sortedDetailedData.push(foundElement);
 		        			}
 		        		}
-		        		Donut3D.transition("piechart", sortedDetailedData, 130, 100, 30, 0);
 		        		
-		        		// TODO : add a title for each chart
-		        		vis.append("text")
-			        		.attr("id","piechartLabel")
-			                .attr("x", 150)
-			                .attr("y", 0 - (margin.top / 2))
-			                .attr("text-anchor", "middle")
-			                .style("font-size", "16px")
-			                .text(lang.translate(newVal.detailData[0][0].profil_id));
-		        		
-		        		for(var i=1; i < newVal.detailData.length; i++) {
-		        			vis.append("g").attr("id","piechart"+i);
-		        			Donut3D.draw("piechart"+i, newVal.detailData[i], 150 + 300*i, 90, 130, 100, 30, 0);
+		        		for(var i=0; i < newVal.detailData.length; i++) {
+		        			var id = "piechart"+i;
+		        			if(i===0) {
+				        		Donut3D.transition(id, sortedDetailedData, 
+				        				pieConstants.radiusX, pieConstants.radiusY, 
+			    		        		pieConstants.height, pieConstants.innerRadius);
+		        			}
+		        			else {
+			        			vis.append("g").attr("id",id);
+			        			Donut3D.draw(id, newVal.detailData[i], pieConstants.centerX + 300*i, pieConstants.centerY, 
+			    		        		pieConstants.radiusX, pieConstants.radiusY, 
+			    		        		pieConstants.height, pieConstants.innerRadius);
+		        			}
 		        			
 			        		vis.append("text")
 				        		.attr("id","piechartLabel"+i)
-				                .attr("x", 150 + 300*i)
+				                .attr("x", pieConstants.centerX + 300*i)
 				                .attr("y", 0 - (margin.top / 2))
 				                .attr("text-anchor", "middle")
 				                .style("font-size", "16px")
 				                .text(lang.translate(newVal.detailData[i][0].profil_id));
 		        		}
 		        	} else {
-		        		Donut3D.transition("piechart", newVal.globalData, 130, 100, 30, 0);
-		        		vis.select("#piechartLabel").remove();
-		        		
-		        		for(var i=1; i < newVal.detailData.length; i++) {
-		        			vis.select("#piechart"+i).remove();
+		        		for(var i=0; i < newVal.detailData.length; i++) {
+		        			var id = "piechart"+i;
+		        			if(i===0) {
+				        		Donut3D.transition(id, newVal.globalData, 
+				        				pieConstants.radiusX, pieConstants.radiusY, 
+			    		        		pieConstants.height, pieConstants.innerRadius);
+		        			}
+		        			else {
+		        				vis.select(id).remove();
+		        			}
 		        			vis.select("#piechartLabel"+i).remove();
 		        		}
 		        	}
 		        });
-
+		        
 			};
 		}
 	};
