@@ -350,7 +350,7 @@ function StatisticsController($scope, template, model) {
 			// Keep values for the top 3 applications. Sum the remaining values and label it as "others"
 			var n = result.length - nbTop;
 			var topModules = _.initial(result, n);
-			$scope.chart.topModules = _.pluck(topModules, 'module_id');
+			$scope.chart.topModulesIds = _.pluck(topModules, 'module_id');
 			
 			var remainingModules = _.last(result, n);
 			var totalOfRemainingModules = countTotal(remainingModules);
@@ -421,7 +421,7 @@ function StatisticsController($scope, template, model) {
 					profil_id: dataArray[i].profil_id,
 					count: dataArray[i][indicator]
 				};
-				if(_.contains($scope.chart.topModules, dataArray[i].module_id)) {
+				if(_.contains($scope.chart.topModulesIds, dataArray[i].module_id)) {
 					topModules.push(element);
 				}
 				else {
@@ -429,12 +429,11 @@ function StatisticsController($scope, template, model) {
 				}
 			}
 			
-			if(topModules.length < $scope.chart.topModules.length) {
+			if(topModules.length < $scope.chart.topModulesIds.length) {
 				// Add default values
-				var globalModulesIds = _.pluck($scope.chart.topModules, 'module_id');
 				var detailedModulesIds = _.pluck(topModules, 'module_id');
 		
-				var missingModulesIds = _.difference(globalModulesIds, detailedModulesIds);
+				var missingModulesIds = _.difference($scope.chart.topModulesIds, detailedModulesIds);
 				console.log("missingModulesIds: "+JSON.stringify(missingModulesIds));
 				_.map(missingModulesIds, function(moduleId) {
 					topModules.push({
@@ -444,16 +443,6 @@ function StatisticsController($scope, template, model) {
 					});
 				});
 				console.log("topModules: "+JSON.stringify(topModules));
-				
-//				_.map($scope.chart.topModules, function(module) {
-//					if(!_.contains(topModules, module.module_id)) {
-//						topModules.push({
-//							module_id: module.module_id,
-//							profil_id: key,
-//							count: 0							
-//						});
-//					}
-//				})				
 			}
 
 			
