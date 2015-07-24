@@ -63,6 +63,7 @@
     "statistics.bad.request.invalid.dates": "La date de fin doit être supérieure à la date de début.",
     "statistics.bad.request.invalid.date.format": "Les dates doivent être renseignées au format 'timestamp unix' (nombre de secondes depuis le 01/01/1970).",
     "statistics.bad.request.invalid.export.format": "Le format demandé pour l'export de données n'est pas supporté.",
+    "statistics.rename.downloaded.file.to.csv": "Renommez le fichier téléchargé en export.csv",
     "csv.profile": "Profil",
     "csv.structure": "Etablissement",
     "csv.city": "Commune",

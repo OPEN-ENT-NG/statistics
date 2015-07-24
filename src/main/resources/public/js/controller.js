@@ -223,18 +223,33 @@ function StatisticsController($scope, template, model) {
 					formattedData = formattedData.replace(new RegExp(module.technicalName, 'g'), module.name);
 				}
 			});
-			
-			// Prepend BOM character ('\uFEFF') : it forces Excel 2007+ to open a CSV file with charset UTF-8
-			formattedData = '\uFEFF' + encodeURIComponent(formattedData);
-			
+
+			var csvFilename = getCsvFilename($scope.chart.form);
+
 			// Process the response as if it was a file
-		    var hiddenElement = document.createElement('a');
-		    hiddenElement.href = 'data:application/csv;charset=utf-8,' + formattedData;
-		    hiddenElement.target = '_blank';
-		    hiddenElement.download = getCsvFilename($scope.chart.form);
-		    
-		    document.body.appendChild(hiddenElement);
-		    hiddenElement.click();
+			if (window.navigator.msSaveOrOpenBlob) { // IE 10+
+				formattedData = preprendBOM(formattedData);
+				
+				var blob = new Blob([formattedData]);
+				window.navigator.msSaveOrOpenBlob(blob, csvFilename);
+			}
+			else {
+				formattedData = preprendBOM(encodeURIComponent(formattedData));
+			    var uri = 'data:application/csv;charset=utf-8,' + formattedData;
+			    var hiddenElement = document.createElement('a');
+			    
+			    if ('download' in hiddenElement) { // For browsers that support attribute "download" (e.g. Chrome and Firefox)
+				    hiddenElement.href = uri;
+				    hiddenElement.download = csvFilename;
+				    document.body.appendChild(hiddenElement);
+				    hiddenElement.click();
+				    document.body.removeChild(hiddenElement);
+			    }
+			    else { // Other browsers such as Safari
+			    	location.href = uri;
+			    	notify.info(lang.translate('statistics.rename.downloaded.file.to.csv'));
+			    }
+			}
 
 			$scope.form.processing = false;
 			$scope.$apply();
@@ -245,6 +260,10 @@ function StatisticsController($scope, template, model) {
 		});
 	}
 	
+	// Prepend BOM character ('\uFEFF') : it forces Excel 2007+ to open a CSV file with charset UTF-8
+	function preprendBOM(string) {
+		return '\uFEFF' + string;
+	}
 	
 	function getSchoolIdArray(form) {
 		return form.school_id.split(",");
