@@ -407,11 +407,11 @@ function StatisticsController($scope, template, model) {
 	}
 	
     var colorsMatch = {
-        relative: '#99d4f3',
-        teacher: '#ffcc33',
-        student: '#138c17',
-        personnel: '#542e73',
-        guest: '#db6087',
+        relative: '#48AEDF',
+        teacher: '#6FBE2D',
+        student: '#FE3956',
+        personnel: '#9F47C5',
+        guest: '#FFCC33',
         defaultColor: 'black'
     };
 
