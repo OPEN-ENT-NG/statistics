@@ -291,8 +291,10 @@ module.directive('piechart', function () {
 	height = 200 - 0.5 - margin.top - margin.bottom;
 
 	var pieConstants = {
+		svgHeight: 270,
+		svgWidth: 285,
     	centerX: 150,
-    	centerY: 90,
+    	centerY: 130,
     	radiusX: 130,
     	radiusY: 100,
     	height: 30,
@@ -307,22 +309,11 @@ module.directive('piechart', function () {
 			indicator: '='
 		},
 		link: function (scope, element, attrs) {
-			// set up initial svg object
-			var vis = d3.select(element[0])
-			.append("svg")
-			.style('width', '100%')
-			.attr("height", height + margin.top + margin.bottom + 190)
-			.append("g")
-			.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
 			scope.$watch('val', function (newVal, oldVal) {
 				scope.render(newVal, oldVal);
 			});
 			
 			scope.render = function (newVal, oldVal) {
-		        // clear the elements inside of the directive
-		        vis.selectAll('*').remove();
-
 		        // if 'val' is undefined, exit
 		        if (!newVal) {
 		          return;
@@ -472,13 +463,18 @@ module.directive('piechart', function () {
 		          return '<div class="arrow"></div><div class="content">' + label + "</div>";
 		        });
 		        
-		        vis.call(tip);
-		        
-		        
 		        // Draw piechart
 		        // =============
 		        
-		        vis.append("g").attr("id",getPiechartId(0));
+				var svgElem = d3.select(element[0])
+					.append("svg")
+					.attr("id",getPiechartId(0))
+					.attr("height", pieConstants.svgHeight)
+					.attr("width", pieConstants.svgWidth)
+					.append("g");
+				
+				svgElem.call(tip);
+				
 		        Donut3D.draw(getPiechartId(0), newVal.globalData, pieConstants.centerX, pieConstants.centerY, 
 		        		pieConstants.radiusX, pieConstants.radiusY, 
 		        		pieConstants.height, pieConstants.innerRadius);
@@ -486,39 +482,48 @@ module.directive('piechart', function () {
 		        // Chart Key
 		        // =========
 
-		        var keyText = vis.selectAll("text.key")
-		            .data(newVal.globalData)
-		          .enter().append("text")
-		            .attr("class", "key")
-		            .attr("y", function (d, i) {
-		              return height + 100 + 30*(i%4);
-		            })
-		            .attr("x", function (d, i) {
-		              return 155 * Math.floor(i/4) + 45;
-		            })
-		            .attr("dx", 15)
-		            .attr("dy", ".71em")
-		            .attr("text-anchor", "left")
-		            .text(function(d, i) {
-		              return d.module_id;
-		            });
+//		        var keyText = vis.selectAll("text.key")
+//		            .data(newVal.globalData)
+//		          .enter().append("text")
+//		            .attr("class", "key")
+//		            .attr("y", function (d, i) {
+//		              return height + 100 + 30*(i%4);
+//		            })
+//		            .attr("x", function (d, i) {
+//		              return 155 * Math.floor(i/4) + 45;
+//		            })
+//		            .attr("dx", 15)
+//		            .attr("dy", ".71em")
+//		            .attr("text-anchor", "left")
+//		            .text(function(d, i) {
+//		              return d.module_id;
+//		            });
+//
+//		        var keySwatches = vis.selectAll("rect.swatch")
+//		            .data(newVal.globalData)
+//		          .enter().append("rect")
+//		            .attr("class", "swatch")
+//		            .attr("width", 20)
+//		            .attr("height", 20)
+//		            .style("fill", function(d, i) {
+//		            	return d.color;
+//		            })
+//		            .attr("y", function (d, i) {
+//		              return height + 94 + 30*(i%4);
+//		            })
+//		            .attr("x", function (d, i) {
+//		              return 155 * Math.floor(i/4) + 30;
+//		            });
 
-		        var keySwatches = vis.selectAll("rect.swatch")
-		            .data(newVal.globalData)
-		          .enter().append("rect")
-		            .attr("class", "swatch")
-		            .attr("width", 20)
-		            .attr("height", 20)
-		            .style("fill", function(d, i) {
-		            	return d.color;
-		            })
-		            .attr("y", function (d, i) {
-		              return height + 94 + 30*(i%4);
-		            })
-		            .attr("x", function (d, i) {
-		              return 155 * Math.floor(i/4) + 30;
-		            });
-
+		        function appendProfileText(element, i, profil_id) {
+		        	element.append("text")
+		        		.attr("id",getPiechartLabelId(i))
+		                .attr("x", pieConstants.centerX)
+		                .attr("y", 20)
+		                .attr("text-anchor", "middle")
+		                .style("font-size", "16px")
+		                .text(lang.translate(profil_id));
+		        }
 		        
 		        // setup a watch on 'grouped' to switch between views
 		        scope.$watch('grouped', function (newValue, oldValue) {
@@ -538,22 +543,25 @@ module.directive('piechart', function () {
 				        		Donut3D.transition(id, sortedDetailedData, 
 				        				pieConstants.radiusX, pieConstants.radiusY, 
 			    		        		pieConstants.height, pieConstants.innerRadius);
+				        		
+				        		appendProfileText(d3.select('#'+id), i, newVal.detailData[i][0].profil_id);
 		        			}
 		        			else {
-			        			vis.append("g").attr("id",id);
-			        			Donut3D.draw(id, newVal.detailData[i], pieConstants.centerX + 300*i, pieConstants.centerY, 
+		        				var svgElem = d3.select(element[0])
+			    					.append("svg")
+			    					.attr("id",id)
+			    					.attr("height", pieConstants.svgHeight)
+			    					.attr("width", pieConstants.svgWidth)
+			    					.append("g");
+		        				
+			        			Donut3D.draw(id, newVal.detailData[i], pieConstants.centerX, pieConstants.centerY, 
 			    		        		pieConstants.radiusX, pieConstants.radiusY, 
 			    		        		pieConstants.height, pieConstants.innerRadius);
+			        			
+			        			appendProfileText(svgElem, i, newVal.detailData[i][0].profil_id);			        			
 		        			}
-		        			
-			        		vis.append("text")
-				        		.attr("id",getPiechartLabelId(i))
-				                .attr("x", pieConstants.centerX + 300*i)
-				                .attr("y", 0 - (margin.top / 2))
-				                .attr("text-anchor", "middle")
-				                .style("font-size", "16px")
-				                .text(lang.translate(newVal.detailData[i][0].profil_id));
 		        		}
+		        		
 		        	} else {
 		        		for(var i=0; i < newVal.detailData.length; i++) {
 		        			var id = getPiechartId(i);
@@ -563,9 +571,9 @@ module.directive('piechart', function () {
 			    		        		pieConstants.height, pieConstants.innerRadius);
 		        			}
 		        			else {
-		        				vis.select("#"+id).remove();
+		        				d3.select("#"+id).remove();
 		        			}
-		        			vis.select("#"+getPiechartLabelId(i)).remove();
+		        			d3.select("#"+getPiechartLabelId(i)).remove();
 		        		}
 		        	}
 		        });
