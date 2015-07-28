@@ -311,7 +311,7 @@ module.directive('piechart', function () {
 			var vis = d3.select(element[0])
 			.append("svg")
 			.style('width', '100%')
-			.attr("height", height + margin.top + margin.bottom + 180)
+			.attr("height", height + margin.top + margin.bottom + 190)
 			.append("g")
 			.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
@@ -491,10 +491,10 @@ module.directive('piechart', function () {
 		          .enter().append("text")
 		            .attr("class", "key")
 		            .attr("y", function (d, i) {
-		              return height + 70 + 30*(i%4);
+		              return height + 100 + 30*(i%4);
 		            })
 		            .attr("x", function (d, i) {
-		              return 155 * Math.floor(i/4) + 15;
+		              return 155 * Math.floor(i/4) + 45;
 		            })
 		            .attr("dx", 15)
 		            .attr("dy", ".71em")
@@ -513,10 +513,10 @@ module.directive('piechart', function () {
 		            	return d.color;
 		            })
 		            .attr("y", function (d, i) {
-		              return height + 64 + 30*(i%4);
+		              return height + 94 + 30*(i%4);
 		            })
 		            .attr("x", function (d, i) {
-		              return 155 * Math.floor(i/4);
+		              return 155 * Math.floor(i/4) + 30;
 		            });
 
 		        
