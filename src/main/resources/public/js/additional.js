@@ -453,6 +453,14 @@ module.directive('piechart', function () {
 	        			.text(getPercent).each(function(d){this._current=d;});
 	        	};
 
+	        	function getPiechartId(index) {
+	        		return "piechart"+index;
+	        	}
+	        	
+	        	function getPiechartLabelId(index) {
+	        		return "piechartLabel"+index;
+	        	}
+	        	
 		        // Tooltip
 		        // =======
 		    
@@ -470,8 +478,8 @@ module.directive('piechart', function () {
 		        // Draw piechart
 		        // =============
 		        
-		        vis.append("g").attr("id","piechart0");
-		        Donut3D.draw("piechart0", newVal.globalData, pieConstants.centerX, pieConstants.centerY, 
+		        vis.append("g").attr("id",getPiechartId(0));
+		        Donut3D.draw(getPiechartId(0), newVal.globalData, pieConstants.centerX, pieConstants.centerY, 
 		        		pieConstants.radiusX, pieConstants.radiusY, 
 		        		pieConstants.height, pieConstants.innerRadius);
 		        
@@ -525,7 +533,7 @@ module.directive('piechart', function () {
 		        		}
 		        		
 		        		for(var i=0; i < newVal.detailData.length; i++) {
-		        			var id = "piechart"+i;
+		        			var id = getPiechartId(i);
 		        			if(i===0) {
 				        		Donut3D.transition(id, sortedDetailedData, 
 				        				pieConstants.radiusX, pieConstants.radiusY, 
@@ -539,7 +547,7 @@ module.directive('piechart', function () {
 		        			}
 		        			
 			        		vis.append("text")
-				        		.attr("id","piechartLabel"+i)
+				        		.attr("id",getPiechartLabelId(i))
 				                .attr("x", pieConstants.centerX + 300*i)
 				                .attr("y", 0 - (margin.top / 2))
 				                .attr("text-anchor", "middle")
@@ -548,16 +556,16 @@ module.directive('piechart', function () {
 		        		}
 		        	} else {
 		        		for(var i=0; i < newVal.detailData.length; i++) {
-		        			var id = "piechart"+i;
+		        			var id = getPiechartId(i);
 		        			if(i===0) {
 				        		Donut3D.transition(id, newVal.globalData, 
 				        				pieConstants.radiusX, pieConstants.radiusY, 
 			    		        		pieConstants.height, pieConstants.innerRadius);
 		        			}
 		        			else {
-		        				vis.select(id).remove();
+		        				vis.select("#"+id).remove();
 		        			}
-		        			vis.select("#piechartLabel"+i).remove();
+		        			vis.select("#"+getPiechartLabelId(i)).remove();
 		        		}
 		        	}
 		        });
