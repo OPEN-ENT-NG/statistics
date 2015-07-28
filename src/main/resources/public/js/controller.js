@@ -346,6 +346,7 @@ function StatisticsController($scope, template, model) {
 		
 		var nbTop = 3;
 		var colors = ["#3366CC", "#DC3912", "#109618", "#990099"];
+		$scope.chart.topModulesIds = [];
 		
 		if(result.length > nbTop) {
 			// 2) Keep values for the top 3 applications. Sum the remaining values and label it as "others"
