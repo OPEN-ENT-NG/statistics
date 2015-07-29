@@ -242,7 +242,7 @@ public class StatisticsController extends MongoDbControllerHelper {
 								log.error(event.left().getValue());
 								renderError(request);
 							}
-							else if(event.isRight()) {
+							else {
 								renderJson(request, event.right().getValue());
 							}
 						}
