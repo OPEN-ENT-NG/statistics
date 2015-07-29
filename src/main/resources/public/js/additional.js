@@ -287,9 +287,6 @@ module.directive('barchart', function ($window, $timeout) {
 
 module.directive('piechart', function () {
 	// constants
-	var margin = {top: 40, right: 10, bottom: 20, left: 0},
-	height = 200 - 0.5 - margin.top - margin.bottom;
-
 	var pieConstants = {
 		svgHeight: 270,
 		svgWidth: 285,
@@ -482,39 +479,46 @@ module.directive('piechart', function () {
 		        // Chart Key
 		        // =========
 
-//		        var keyText = vis.selectAll("text.key")
-//		            .data(newVal.globalData)
-//		          .enter().append("text")
-//		            .attr("class", "key")
-//		            .attr("y", function (d, i) {
-//		              return height + 100 + 30*(i%4);
-//		            })
-//		            .attr("x", function (d, i) {
-//		              return 155 * Math.floor(i/4) + 45;
-//		            })
-//		            .attr("dx", 15)
-//		            .attr("dy", ".71em")
-//		            .attr("text-anchor", "left")
-//		            .text(function(d, i) {
-//		              return d.module_id;
-//		            });
-//
-//		        var keySwatches = vis.selectAll("rect.swatch")
-//		            .data(newVal.globalData)
-//		          .enter().append("rect")
-//		            .attr("class", "swatch")
-//		            .attr("width", 20)
-//		            .attr("height", 20)
-//		            .style("fill", function(d, i) {
-//		            	return d.color;
-//		            })
-//		            .attr("y", function (d, i) {
-//		              return height + 94 + 30*(i%4);
-//		            })
-//		            .attr("x", function (d, i) {
-//		              return 155 * Math.floor(i/4) + 30;
-//		            });
+		        var svgLegendId = "svglegend";
+		        var svgLegend = d3.select(element[0]).append("svg")
+					.attr("id", svgLegendId)
+					.attr("height", 200)
+					.attr("width", pieConstants.svgWidth);
+		        
+		        var keyText = svgLegend.selectAll("text.key")
+		            .data(newVal.globalData)
+		          .enter().append("text")
+		            .attr("class", "key")
+		            .attr("y", function (d, i) {
+		              return 6 + 30*(i%4);
+		            })
+		            .attr("x", function (d, i) {
+		              return 155 * Math.floor(i/4) + 45;
+		            })
+		            .attr("dx", 15)
+		            .attr("dy", ".71em")
+		            .attr("text-anchor", "left")
+		            .text(function(d, i) {
+		              return d.module_id;
+		            });
 
+		        var keySwatches = svgLegend.selectAll("rect.swatch")
+		            .data(newVal.globalData)
+		          .enter().append("rect")
+		            .attr("class", "swatch")
+		            .attr("width", 20)
+		            .attr("height", 20)
+		            .style("fill", function(d, i) {
+		            	return d.color;
+		            })
+		            .attr("y", function (d, i) {
+		              return 30*(i%4);
+		            })
+		            .attr("x", function (d, i) {
+		              return 155 * Math.floor(i/4) + 30;
+		            });
+
+		        
 		        function appendProfileText(element, i, profil_id) {
 		        	element.append("text")
 		        		.attr("id",getPiechartLabelId(i))
@@ -547,8 +551,9 @@ module.directive('piechart', function () {
 				        		appendProfileText(d3.select('#'+id), i, newVal.detailData[i][0].profil_id);
 		        			}
 		        			else {
+		        				// Insert piecharts before legend
 		        				var svgElem = d3.select(element[0])
-			    					.append("svg")
+			    					.insert("svg", "#"+svgLegendId)
 			    					.attr("id",id)
 			    					.attr("height", pieConstants.svgHeight)
 			    					.attr("width", pieConstants.svgWidth)
