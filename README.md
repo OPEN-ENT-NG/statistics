@@ -21,7 +21,7 @@ Contenu du fichier deployment/statistics/conf.json.template :
     "port" : 8042,
     "sql" : false,
     "mongodb" : true,
-    "neo4j" : false,
+    "neo4j" : true,
     "app-name" : "Statistiques",
     "app-address" : "/statistics",
     "app-icon" : "statistics-large",
