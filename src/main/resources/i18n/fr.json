@@ -73,5 +73,6 @@
     "csv.uai": "Rne",
     "csv.date": "Date",
     "csv.module": "Application",
+    "csv.total.number.of.accounts": "Nombre total de comptes",
     "yesterday" : "hier"
 }
