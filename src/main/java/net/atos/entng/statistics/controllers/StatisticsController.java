@@ -91,65 +91,69 @@ public class StatisticsController extends MongoDbControllerHelper {
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 			@Override
 			public void handle(final UserInfos user) {
-				if (user != null) {
-					final List<String> schoolIds = request.params().getAll(PARAM_SCHOOL_ID);
-					if (schoolIds==null || schoolIds.size()==0 || !isValidSchools(user, schoolIds)) {
-						String errorMsg = i18n.translate("statistics.bad.request.invalid.schools", acceptLanguage(request));
-						badRequest(request, errorMsg);
-						return;
-					};
+				if(user == null) {
+					log.debug("User not found in session.");
+					unauthorized(request);
+					return;
+				}
 
-					final String indicator = request.params().get(PARAM_INDICATOR);
-					if(indicator==null || indicator.trim().isEmpty() || !indicators.contains(indicator)) {
-						String errorMsg = i18n.translate("statistics.bad.request.invalid.indicator", acceptLanguage(request));
-						badRequest(request, errorMsg);
-						return;
-					}
+				final List<String> schoolIds = request.params().getAll(PARAM_SCHOOL_ID);
+				if (schoolIds==null || schoolIds.size()==0 || !isValidSchools(user, schoolIds)) {
+					String errorMsg = i18n.translate("statistics.bad.request.invalid.schools", acceptLanguage(request));
+					badRequest(request, errorMsg);
+					return;
+				};
 
-					String module = "";
-					if(TRACE_TYPE_SVC_ACCESS.equals(indicator)) {
-						module = request.params().get(PARAM_MODULE);
-						if(module!=null && !module.trim().isEmpty() && !accessModules.contains(module)) {
-							String errorMsg = i18n.translate("statistics.bad.request.invalid.module", acceptLanguage(request));
-							badRequest(request, errorMsg);
-							return;
-						}
-						// Else (when module is not specified), return data for all modules
-					}
+				final String indicator = request.params().get(PARAM_INDICATOR);
+				if(indicator==null || indicator.trim().isEmpty() || !indicators.contains(indicator)) {
+					String errorMsg = i18n.translate("statistics.bad.request.invalid.indicator", acceptLanguage(request));
+					badRequest(request, errorMsg);
+					return;
+				}
 
-					String startDate = request.params().get(PARAM_START_DATE);
-					String endDate = request.params().get(PARAM_END_DATE);
-					long start, end;
-					try {
-						start = DateUtils.parseStringDate(startDate);
-						end = DateUtils.parseStringDate(endDate);
-						if(end < start || end < 0L || start < 0L) {
-							String errorMsg = i18n.translate("statistics.bad.request.invalid.dates", acceptLanguage(request));
-							badRequest(request, errorMsg);
-							return;
-						}
-					} catch (Exception e) {
-						log.error("Error when casting startDate or endDate to long", e);
-						String errorMsg = i18n.translate("statistics.bad.request.invalid.date.format", acceptLanguage(request));
+				String module = "";
+				if(TRACE_TYPE_SVC_ACCESS.equals(indicator)) {
+					module = request.params().get(PARAM_MODULE);
+					if(module!=null && !module.trim().isEmpty() && !accessModules.contains(module)) {
+						String errorMsg = i18n.translate("statistics.bad.request.invalid.module", acceptLanguage(request));
 						badRequest(request, errorMsg);
 						return;
 					}
+					// Else (when module is not specified) return data for all modules
+				}
 
-					JsonObject params = new JsonObject();
-					params.putString(PARAM_INDICATOR, indicator)
-						.putNumber(PARAM_START_DATE, start)
-						.putNumber(PARAM_END_DATE, end)
-						.putString(PARAM_MODULE, module);
+				String startDate = request.params().get(PARAM_START_DATE);
+				String endDate = request.params().get(PARAM_END_DATE);
+				long start, end;
+				try {
+					start = DateUtils.parseStringDate(startDate);
+					end = DateUtils.parseStringDate(endDate);
+					if(end < start || end < 0L || start < 0L) {
+						String errorMsg = i18n.translate("statistics.bad.request.invalid.dates", acceptLanguage(request));
+						badRequest(request, errorMsg);
+						return;
+					}
+				} catch (Exception e) {
+					log.error("Error when casting startDate or endDate to long", e);
+					String errorMsg = i18n.translate("statistics.bad.request.invalid.date.format", acceptLanguage(request));
+					badRequest(request, errorMsg);
+					return;
+				}
 
-					String format = request.params().get(PARAM_FORMAT);
-					if(format!=null && !format.isEmpty()) {
-						if(!"csv".equals(format)) {
-							String errorMsg = i18n.translate("statistics.bad.request.invalid.export.format", acceptLanguage(request));
-							badRequest(request, errorMsg);
-							return;
-						}
+				JsonObject params = new JsonObject();
+				params.putString(PARAM_INDICATOR, indicator)
+					.putNumber(PARAM_START_DATE, start)
+					.putNumber(PARAM_END_DATE, end)
+					.putString(PARAM_MODULE, module);
 
-						// Return data as csv
+				String format = request.params().get(PARAM_FORMAT);
+				if(format==null || format.isEmpty()) {
+					// Default case : return JSON data
+					StatisticsController.this.getJsonData(schoolIds, params, request);
+				}
+				else {
+					switch (format) {
+					case "csv": // CSV export
 						statsService.getStatsForExport(schoolIds, params, new Handler<Either<String,JsonArray>>() {
 							@Override
 							public void handle(Either<String, JsonArray> event) {
@@ -180,27 +184,20 @@ public class StatisticsController extends MongoDbControllerHelper {
 								}
 							}
 						});
-					}
-					else {
-						// Return JSON data
-						statsService.getStats(schoolIds, params, new Handler<Either<String,JsonArray>>() {
-							@Override
-							public void handle(Either<String, JsonArray> event) {
-								if(event.isLeft()) {
-									log.error(event.left().getValue());
-									renderError(request);
-								}
-								else {
-									renderJson(request, event.right().getValue());
-								}
-							}
-						});
+						break;
+
+					case "json":
+						StatisticsController.this.getJsonData(schoolIds, params, request);
+						break;
+
+					default:
+						String errorMsg = i18n.translate("statistics.bad.request.invalid.export.format", acceptLanguage(request));
+						badRequest(request, errorMsg);
+						break;
 					}
 
-				} else {
-					log.debug("User not found in session.");
-					unauthorized(request);
 				}
+
 			}
 		});
 	}
@@ -215,6 +212,21 @@ public class StatisticsController extends MongoDbControllerHelper {
 		}
 
 		return validSchoolIds.containsAll(schoolIds);
+	}
+
+	private void getJsonData(final List<String> schoolIds, final JsonObject params, final HttpServerRequest request) {
+		statsService.getStats(schoolIds, params, new Handler<Either<String,JsonArray>>() {
+			@Override
+			public void handle(Either<String, JsonArray> event) {
+				if(event.isLeft()) {
+					log.error(event.left().getValue());
+					renderError(request);
+				}
+				else {
+					renderJson(request, event.right().getValue());
+				}
+			}
+		});
 	}
 
 	@Get("/structures")
