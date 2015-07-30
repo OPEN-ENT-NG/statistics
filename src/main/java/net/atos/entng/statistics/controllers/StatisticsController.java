@@ -1,7 +1,7 @@
 package net.atos.entng.statistics.controllers;
 
 import static fr.wseduc.webutils.I18n.acceptLanguage;
-import static net.atos.entng.statistics.aggregation.indicators.IndicatorFactory.STATS_FIELD_UNIQUE_VISITORS;
+import static net.atos.entng.statistics.aggregation.indicators.IndicatorConstants.STATS_FIELD_UNIQUE_VISITORS;
 import static org.entcore.common.aggregation.MongoConstants.TRACE_TYPE_ACTIVATION;
 import static org.entcore.common.aggregation.MongoConstants.TRACE_TYPE_CONNEXION;
 import static org.entcore.common.aggregation.MongoConstants.TRACE_TYPE_SVC_ACCESS;

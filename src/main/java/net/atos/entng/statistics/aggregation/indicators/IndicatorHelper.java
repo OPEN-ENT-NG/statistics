@@ -56,5 +56,8 @@ public class IndicatorHelper {
 
 		// Unique visitors
 		aggProcessing.addIndicator(IndicatorFactory.getUniqueVisitorsIndicator(filters, writeDate));
+
+		// Accounts and activated accounts
+		aggProcessing.addIndicator(IndicatorFactory.getActivatedAccountsIndicator(writeDate));
 	}
 }

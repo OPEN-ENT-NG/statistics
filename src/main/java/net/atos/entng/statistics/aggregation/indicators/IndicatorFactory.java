@@ -7,6 +7,7 @@ import static org.entcore.common.aggregation.MongoConstants.TRACE_FIELD_USER;
 import static org.entcore.common.aggregation.MongoConstants.TRACE_TYPE_ACTIVATION;
 import static org.entcore.common.aggregation.MongoConstants.TRACE_TYPE_CONNEXION;
 import static org.entcore.common.aggregation.MongoConstants.TRACE_TYPE_SVC_ACCESS;
+import static net.atos.entng.statistics.aggregation.indicators.IndicatorConstants.STATS_FIELD_UNIQUE_VISITORS;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -27,8 +28,6 @@ import fr.wseduc.mongodb.MongoQueryBuilder;
 import fr.wseduc.mongodb.MongoUpdateBuilder;
 
 public class IndicatorFactory {
-
-	public static final String STATS_FIELD_UNIQUE_VISITORS = "UNIQUE_VISITORS";
 
 	// 1) Indicators that are incremented every day
 	// UserAccount Activation
@@ -104,6 +103,13 @@ public class IndicatorFactory {
 	}
 
 	// 2) Indicators that are recomputed every day
+	// Accounts and activated accounts
+	public static Indicator getActivatedAccountsIndicator(Date pWriteDate) {
+		IndicatorCustomImpl indicator = new IndicatorCustomImpl();
+		indicator.setWriteDate(pWriteDate);
+		return indicator;
+	}
+
 	// Unique visitors
 	public static Indicator getUniqueVisitorsIndicator(Collection<IndicatorFilterMongoImpl> filters, Date pWriteDate) {
 		Collection<IndicatorGroup> indicatorGroups = new ArrayList<IndicatorGroup>();
