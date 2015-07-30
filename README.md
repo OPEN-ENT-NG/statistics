@@ -1,6 +1,8 @@
 # À propos de l'application Statistiques
 
 * licence : [AGPL v3](http://www.gnu.org/licenses/agpl.txt)
+* développeur : ATOS
+* financeur : Région Picardie, Conseil général 91, Région Poitou Charente
 * description : Application permettant d'agréger des traces et de les afficher sous forme de diagramme
 
 
