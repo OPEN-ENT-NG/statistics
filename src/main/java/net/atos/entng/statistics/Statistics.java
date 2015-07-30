@@ -88,7 +88,7 @@ public class Statistics extends BaseServer {
 								toCal.add(Calendar.DAY_OF_MONTH, 1);
 
 								if(fromCal.getTime().before(endDate)) {
-									AggregateTask aggTask = new AggregateTask(fromCal.getTime(), toCal.getTime(), null, this);
+									AggregateTask aggTask = new AggregateTask(fromCal.getTime(), toCal.getTime(), this);
 									aggTask.handle(0L);
 								}
 							}
@@ -98,7 +98,7 @@ public class Statistics extends BaseServer {
 					}
 				};
 
-				AggregateTask aggTask = new AggregateTask(fromCal.getTime(), toCal.getTime(), null, handler);
+				AggregateTask aggTask = new AggregateTask(fromCal.getTime(), toCal.getTime(), handler);
 				aggTask.handle(event);
 			}
 		});

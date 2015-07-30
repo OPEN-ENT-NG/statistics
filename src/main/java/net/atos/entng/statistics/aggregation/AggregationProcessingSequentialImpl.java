@@ -15,16 +15,7 @@ public class AggregationProcessingSequentialImpl extends AggregationProcessing {
 	private static final Logger log = LoggerFactory.getLogger(AggregationProcessingSequentialImpl.class);
 
 	@Override
-	public void process(Handler<JsonObject> callBack) {
-		this.processAgg(null, callBack);
-	}
-
-	@Override
-	public void process(Date marker, Handler<JsonObject> callBack) {
-		this.processAgg(marker, callBack);
-	}
-
-	private void processAgg(Date writeDate, final Handler<JsonObject> callBack) {
+	public void process(final Handler<JsonObject> callBack) {
 		if(indicators == null && indicators.isEmpty()) {
 			log.warn("indicators is empty. Nothing was processed");
 			return;
@@ -45,7 +36,11 @@ public class AggregationProcessingSequentialImpl extends AggregationProcessing {
 				}
 			}
 		});
+	}
 
+	@Override
+	public void process(Date marker, Handler<JsonObject> callBack) {
+		throw new UnsupportedOperationException();
 	}
 
 }

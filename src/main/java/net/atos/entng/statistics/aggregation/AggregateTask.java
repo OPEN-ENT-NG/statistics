@@ -14,14 +14,13 @@ import org.vertx.java.core.logging.impl.LoggerFactory;
 public class AggregateTask implements Handler<Long> {
 
 	private static final Logger log = LoggerFactory.getLogger(AggregateTask.class);
-	private Date writeDate, from, to;
+	private Date from, to;
 	private Handler<JsonObject> handler;
 
 	public AggregateTask() {
 	}
 
-	public AggregateTask(Date pFrom, Date pTo, Date pWriteDate, Handler<JsonObject> pHandler) {
-		writeDate = pWriteDate;
+	public AggregateTask(Date pFrom, Date pTo, Handler<JsonObject> pHandler) {
 		from = pFrom;
 		to = pTo;
 		handler = pHandler;
@@ -47,7 +46,7 @@ public class AggregateTask implements Handler<Long> {
 			}
 		};
 
-		aggProcessing.process(writeDate, handler);
+		aggProcessing.process(handler);
 	}
 
 }
