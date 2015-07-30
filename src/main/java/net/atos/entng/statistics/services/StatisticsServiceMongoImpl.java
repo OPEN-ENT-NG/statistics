@@ -2,6 +2,8 @@ package net.atos.entng.statistics.services;
 
 import static net.atos.entng.statistics.DateUtils.formatTimestamp;
 import static net.atos.entng.statistics.controllers.StatisticsController.*;
+import static net.atos.entng.statistics.aggregation.indicators.IndicatorConstants.STATS_FIELD_ACTIVATED_ACCOUNTS;
+import static net.atos.entng.statistics.aggregation.indicators.IndicatorConstants.STATS_FIELD_ACCOUNTS;
 import static org.entcore.common.aggregation.MongoConstants.TRACE_TYPE_SVC_ACCESS;
 import static org.entcore.common.aggregation.MongoConstants.TRACE_FIELD_MODULE;
 import static org.entcore.common.aggregation.MongoConstants.TRACE_FIELD_PROFILE;
@@ -66,15 +68,17 @@ public class StatisticsServiceMongoImpl extends MongoDbCrudService implements St
 		Long start = (Long) params.getNumber(PARAM_START_DATE);
 		Long end = (Long) params.getNumber(PARAM_END_DATE);
 
+		boolean isActivatedAccountsIndicator = STATS_FIELD_ACTIVATED_ACCOUNTS.equals(indicator);
 		boolean isAccessIndicator = TRACE_TYPE_SVC_ACCESS.equals(indicator);
 		String groupedBy = isAccessIndicator ? "module/structures/profil" : "structures/profil";
-		final QueryBuilder criteriaQuery = QueryBuilder.start(STATS_FIELD_GROUPBY).is(groupedBy)
+		final QueryBuilder criteriaQuery = QueryBuilder
+				.start(STATS_FIELD_GROUPBY).is(groupedBy)
 				.and(STATS_FIELD_DATE).greaterThanEquals(formatTimestamp(start)).lessThan(formatTimestamp(end))
 				.and(indicator).exists(true);
 
 		String module = params.getString(PARAM_MODULE);
 		boolean moduleIsEmpty = module==null || module.trim().isEmpty();
-		boolean allModules = isAccessIndicator && moduleIsEmpty;
+		boolean isAccessAllModules = isAccessIndicator && moduleIsEmpty;
 		if(isAccessIndicator && !moduleIsEmpty) {
 			criteriaQuery.and(MODULE_ID).is(module);
 		}
@@ -86,12 +90,15 @@ public class StatisticsServiceMongoImpl extends MongoDbCrudService implements St
 			criteriaQuery.and(STRUCTURES_ID).is(schoolIds.get(0));
 
 			// When getting data for only one module, a "find" is enough (no need to aggregate data)
-			if(!isExport && !allModules) {
+			if(!isExport && !isAccessAllModules) {
 				JsonObject projection = new JsonObject();
 				projection.putNumber("_id", 0)
 					.putNumber(indicator, 1)
 					.putNumber(PROFILE_ID, 1)
 					.putNumber(STATS_FIELD_DATE, 1);
+				if(isActivatedAccountsIndicator) {
+					projection.putNumber(STATS_FIELD_ACCOUNTS, 1);
+				}
 
 				mongo.find(collection, MongoQueryBuilder.build(criteriaQuery), sortByDateProfile,
 						projection, MongoDbResult.validResultsHandler(handler));
@@ -111,7 +118,7 @@ public class StatisticsServiceMongoImpl extends MongoDbCrudService implements St
 		pipeline.addObject(new JsonObject().putObject("$match", MongoQueryBuilder.build(criteriaQuery)));
 
 		JsonObject id = new JsonObject().putString(PROFILE_ID, "$"+PROFILE_ID);
-		if(allModules && !isExport) {
+		if(isAccessAllModules && !isExport) {
 			// Case : get JSON data for indicator "access to all modules"
 			id.putString(MODULE_ID, "$"+MODULE_ID);
 		}
@@ -119,17 +126,25 @@ public class StatisticsServiceMongoImpl extends MongoDbCrudService implements St
 			id.putString(STATS_FIELD_DATE, "$"+STATS_FIELD_DATE);
 		}
 
-		JsonObject groupBy = new JsonObject().putObject("$group", new JsonObject()
+		JsonObject group = new JsonObject()
 			.putObject("_id", id)
-			.putObject(indicator, new JsonObject().putString("$sum", "$"+indicator)));
+			.putObject(indicator, new JsonObject().putString("$sum", "$"+indicator));
+		if(isActivatedAccountsIndicator) {
+			group.putObject(STATS_FIELD_ACCOUNTS, new JsonObject().putString("$sum", "$"+STATS_FIELD_ACCOUNTS));
+		}
+		JsonObject groupBy = new JsonObject().putObject("$group", group);
+
 		pipeline.addObject(groupBy);
 
 		QueryBuilder projection = QueryBuilder.start("_id").is(0)
 				.and(PROFILE_ID).is("$_id."+PROFILE_ID);
+		if(isActivatedAccountsIndicator) {
+			projection.and(STATS_FIELD_ACCOUNTS).is(1);
+		}
 
 		if(!isExport) {
 			projection.and(indicator).is(1);
-			if(allModules) {
+			if(isAccessAllModules) {
 				projection.and(MODULE_ID).is("$_id."+MODULE_ID);
 			}
 			else {
@@ -159,7 +174,7 @@ public class StatisticsServiceMongoImpl extends MongoDbCrudService implements St
 			projection.and(STRUCTURES_ID).is("$_id."+STRUCTURES_ID);
 
 			if(isAccessIndicator) {
-				if (allModules) {
+				if (isAccessAllModules) {
 					sort = sort.copy().putNumber(MODULE_ID, 1);
 				}
 

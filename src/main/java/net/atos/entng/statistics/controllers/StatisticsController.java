@@ -1,12 +1,13 @@
 package net.atos.entng.statistics.controllers;
 
 import static fr.wseduc.webutils.I18n.acceptLanguage;
+import static net.atos.entng.statistics.aggregation.indicators.IndicatorConstants.STATS_FIELD_ACTIVATED_ACCOUNTS;
 import static net.atos.entng.statistics.aggregation.indicators.IndicatorConstants.STATS_FIELD_UNIQUE_VISITORS;
 import static org.entcore.common.aggregation.MongoConstants.TRACE_TYPE_ACTIVATION;
 import static org.entcore.common.aggregation.MongoConstants.TRACE_TYPE_CONNEXION;
 import static org.entcore.common.aggregation.MongoConstants.TRACE_TYPE_SVC_ACCESS;
-
 import fr.wseduc.webutils.I18n;
+
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -62,6 +63,7 @@ public class StatisticsController extends MongoDbControllerHelper {
 		indicators.add(TRACE_TYPE_ACTIVATION);
 		indicators.add(TRACE_TYPE_CONNEXION);
 		indicators.add(TRACE_TYPE_SVC_ACCESS);
+		indicators.add(STATS_FIELD_ACTIVATED_ACCOUNTS);
 
 		metadata = new JsonObject();
 		metadata.putArray("indicators", new JsonArray(indicators.toArray()));

@@ -27,6 +27,8 @@
     "Teacher": "Enseignant",
     "AdminConsole": "Console d'administration",
     "Annuaire": "Annuaire",
+    "ACTIVATED_ACCOUNTS": "Comptes activés",
+    "ACTIVATED_ACCOUNTS.singular": "Compte activé",
     "ACTIVATION": "Activations de compte",
     "ACTIVATION.singular": "Activation de compte",
     "LOGIN": "Connexions",
