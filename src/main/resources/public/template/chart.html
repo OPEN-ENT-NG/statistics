@@ -8,10 +8,12 @@
 	</div>
 	<div ng-if="chart.data && chart.data.length > 0">
 		<div class="row">
-			<barchart ng-if="!chart.accessAllModules" 
-				val="chart.data" grouped="chart.grouped" indicator="chart.indicatorName"></barchart>
 			<piechart ng-if="chart.accessAllModules===true" 
 				val="chart.allData" grouped="chart.grouped" indicator="chart.indicatorName"></piechart>
+			<stackedgrouped-barchart ng-if="chart.form.indicator==='ACTIVATED_ACCOUNTS'"
+				val="chart.data" legend="chart.legendData"></stackedgrouped-barchart>
+			<barchart ng-if="!chart.accessAllModules && chart.form.indicator!=='ACTIVATED_ACCOUNTS'" 
+				val="chart.data" grouped="chart.grouped" indicator="chart.indicatorName"></barchart>
 		</div>
 		
 		<div class="row">

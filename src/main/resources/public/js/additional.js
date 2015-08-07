@@ -1,11 +1,12 @@
-// Directive based on http://briantford.com/blog/angular-d3
-module.directive('barchart', function ($window, $timeout) {
+// constants for directives 'barchart' and stackedgroupedBarchart
+var margin = {top: 20, right: 10, bottom: 20, left: 60},
+    height = 250 - 0.5 - margin.top - margin.bottom,
+    paddingLeft = 30,
+    format = d3.format("d"),
+    legendHeight = 100;
 
-	  // constants
-	  var margin = {top: 20, right: 10, bottom: 20, left: 60},
-	    height = 250 - 0.5 - margin.top - margin.bottom,
-	    paddingLeft = 30,
-	    format = d3.format("d");
+// Directive based on http://briantford.com/blog/angular-d3 : bar chart with a transition from stacked to grouped
+module.directive('barchart', function ($window, $timeout) {
 
 	  return {
 	    restrict: 'E',
@@ -22,7 +23,7 @@ module.directive('barchart', function ($window, $timeout) {
 	      var vis = d3.select(element[0])
 	        .append("svg")
 	          .style('width', '100%')
-	          .attr("height", height + margin.top + margin.bottom + 100)
+	          .attr("height", height + margin.top + margin.bottom + legendHeight)
 	          .append("g")
 	          .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
@@ -175,39 +176,16 @@ module.directive('barchart', function ($window, $timeout) {
 		        // Chart Key
 		        // =========
 
-		        var keyText = vis.selectAll("text.key")
-		            .data(data)
-		          .enter().append("text")
-		            .attr("class", "key")
-		            .attr("y", function (d, i) {
-		              return height + 42 + 30*(i%2);
-		            })
-		            .attr("x", function (d, i) {
-		              return 155 * Math.floor(i/2) + 15;
-		            })
-		            .attr("dx", 15)
-		            .attr("dy", ".71em")
-		            .attr("text-anchor", "left")
-		            .text(function(d, i) {
-		              return d[0].profile;
-		            });
-
-		        var keySwatches = vis.selectAll("rect.swatch")
-		            .data(data)
-		          .enter().append("rect")
-		            .attr("class", "swatch")
-		            .attr("width", 20)
-		            .attr("height", 20)
-		            .style("fill", function(d, i) {
-		            	return d[0].color;
-		            })
-		            .attr("y", function (d, i) {
-		              return height + 36 + 30*(i%2);
-		            })
-		            .attr("x", function (d, i) {
-		              return 155 * Math.floor(i/2);
-		            });
-
+            	function getProfile(d, i) {
+            		return d[0].profile;
+            	}
+            	
+            	function getColor(d, i) {
+            		return d[0].color;
+            	}
+            	
+            	drawLegend(vis, data, getProfile, getColor);
+		        
 		        // Animate between grouped and stacked
 		        // ===================================
 
@@ -587,3 +565,206 @@ module.directive('piechart', function () {
 		}
 	};
 });
+
+
+
+
+// Bar chart that is both stacked and grouped. Based on http://bl.ocks.org/gencay/4629518 and https://github.com/gencay/stackedGroupedChart
+module.directive('stackedgroupedBarchart', function ($window) {
+	  
+	  return {
+		restrict: 'E',
+		scope: {
+			val: '=',
+			legend: '='
+		},
+        link: function (scope, element, attrs) {
+        	// set up initial svg object
+        	var svg = d3.select(element[0]).append("svg")
+        	.style('width', '100%')
+        	.attr("height", height + margin.top + margin.bottom + legendHeight)
+        	.append("g")
+        	.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+        	// Browser onresize event
+        	$window.onresize = function() {
+        		scope.$apply();
+        	};
+
+        	// Watch for resize event
+        	scope.$watch(function() {
+        		return angular.element($window)[0].innerWidth;
+        	}, function() {
+        		scope.render(scope.val, scope.val);
+        	});
+
+        	scope.$watch('val', function (newVal, oldVal) {
+        		scope.render(newVal, oldVal);
+        	});
+
+        	scope.render = function (newVal, oldVal) {
+        		// clear the elements inside of the directive
+        		svg.selectAll('*').remove();
+
+        		// if 'val' is undefined, exit
+        		if (!newVal) {
+        			return;
+        		}
+
+        		var parentElementWidth = d3.select(element[0]).node().offsetWidth;
+        		var width = parentElementWidth - margin.left - margin.right;
+
+        		var x0 = d3.scale.ordinal().rangeRoundBands([0, width], 0.1);
+        		var x1 = d3.scale.ordinal();
+        		var y = d3.scale.linear().range([height, 0]);
+
+        		var xAxis = d3.svg.axis()
+        		.scale(x0)
+        		.orient("bottom");
+
+        		var yAxis = d3.svg.axis()
+        		.scale(y)
+        		.orient("left")
+        		.tickFormat(format);
+
+        		var yBegin;
+
+        		var innerColumns = {
+        				"column1" : ["Student", "Student not activated"],
+        				"column2" : ["Relative", "Relative not activated"],
+        				"column3" : ["Personnel", "Personnel not activated"],
+        				"column4" : ["Teacher", "Teacher not activated"]
+        		}; 
+
+        		var data = newVal;
+
+        		x0.domain(data.map(function(d) { return d.date; }));
+        		x1.domain(d3.keys(innerColumns)).rangeRoundBands([0, x0.rangeBand()]);
+        		y.domain([0, d3.max(data, function(d) { 
+        			return d.total; 
+        		})]);
+
+        		// Tooltip
+        		// =======
+
+        		var tip = d3.tip()
+        		.attr('class', 'tooltip')
+        		.offset([-10, 0])
+        		.html(function(d) {
+        			return '<div class="arrow"></div><div class="content">' + d.label + "</div>";
+        		});
+
+        		// Bars
+        		// ====
+
+        		var project_stackedbar = svg.selectAll(".project_stackedbar")
+        		.data(data)
+        		.enter().append("g")
+        		.attr("class", "g")
+        		.attr("transform", function(d) { 
+        			return "translate(" + x0(d.date) + ",0)"; 
+        		});
+        		
+                project_stackedbar.selectAll("rect")
+                .data(function(d) { return d.columnDetails; })
+                .enter()
+                .append("rect")
+                .attr("width", x1.rangeBand())
+                .attr("x", function(d) { 
+                        return x1(d.column);
+                })
+                .style("fill", function(d) { return d.color; })
+                .on('mouseover', tip.show)
+                .on('mouseout', tip.hide)
+                .attr("y", function(d) {
+                	return height; 
+                })
+                .attr("height", function(d) { 
+                	return 0; 
+                })
+                .transition()
+                .duration(500)
+                .attr("y", function(d) { 
+                	return y(d.yEnd); 
+                })
+                .attr("height", function(d) { 
+                	return y(d.yBegin) - y(d.yEnd); 
+                });
+
+        		svg.call(tip);
+
+        		// Axis
+        		// ====
+        		
+        		svg.append("g")
+        		.attr("class", "x axis")
+        		.attr("transform", "translate(0," + height + ")")
+        		.call(xAxis);
+
+        		svg.append("g")
+        		.attr("class", "y axis")
+        		.call(yAxis)
+        		.attr("transform", "translate(" + x0(data[0].date) + ",0)")
+        		.append("text")
+        		.attr("transform", "rotate(-90)")
+        		.attr("y", 6)
+        		.attr("dy", ".7em")
+        		.style("text-anchor", "end")
+        		.text("");
+        		
+        		// Chart Key
+        		// =========
+
+        		function getProfile(d, i) {
+        			return d.profile_id;
+        		}
+
+        		function getColor(d, i) {
+        			return d.color;
+        		}
+
+        		drawLegend(svg, scope.legend, getProfile, getColor);
+        	};
+        }
+    };
+});
+
+
+/**
+ * Parameter 'getProfile' : function to get profile from data
+ * Parameter 'getColor' : function to get color from data
+ */
+function drawLegend(d3element, data, getProfile, getColor) {
+	var keyText = d3element.selectAll("text.key")
+	.data(data)
+	.enter().append("text")
+	.attr("class", "key")
+	.attr("y", function (d, i) {
+		return height + 42 + 30*(i%2);
+	})
+	.attr("x", function (d, i) {
+		return 155 * Math.floor(i/2) + 15;
+	})
+	.attr("dx", 15)
+	.attr("dy", ".71em")
+	.attr("text-anchor", "left")
+	.text(function(d, i) {
+		return getProfile(d, i);
+	});
+	
+	var keySwatches = d3element.selectAll("rect.swatch")
+	.data(data)
+	.enter().append("rect")
+	.attr("class", "swatch")
+	.attr("width", 20)
+	.attr("height", 20)
+	.style("fill", function(d, i) {
+		return getColor(d, i);
+	})
+	.attr("y", function (d, i) {
+		return height + 36 + 30*(i%2);
+	})
+	.attr("x", function (d, i) {
+		return 155 * Math.floor(i/2);
+	});
+}

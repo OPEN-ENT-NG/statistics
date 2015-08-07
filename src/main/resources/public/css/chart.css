@@ -6,6 +6,11 @@
   shape-rendering: crispEdges;
 }
 
+.x.axis path,
+.x.axis line {
+  visibility: hidden
+}
+
 .tooltip {
   display: inline !important;
 }

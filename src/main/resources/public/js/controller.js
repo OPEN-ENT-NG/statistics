@@ -195,6 +195,23 @@ function StatisticsController($scope, template, model) {
 						detailData: extractDetailedData(data)
 					};
 				}
+				else if(chartForm.indicator==="ACTIVATED_ACCOUNTS") {
+					$scope.chart.data = formatDataForStackedGroupedBarChart(data, 'ACCOUNTS');
+					
+					var profiles = ['Teacher', 'Personnel', 'Student', 'Relative'];
+					var legendData = [];
+	            	for (var i=0; i<profiles.length; i++) {
+	            		legendData.push({
+	            			profile_id: lang.translate(profiles[i]),
+	            			color: colorFromProfile(profiles[i].toLowerCase())
+	            		});
+	            	}
+	            	legendData.push({
+	            		profile_id: lang.translate('statistics.accounts.not.activated'),
+	            		color: notActivatedColor
+                });
+					$scope.chart.legendData = legendData;
+				}
 				else {
 					$scope.chart.data = formatDataForBarChart(data);
 				}
@@ -459,10 +476,85 @@ function StatisticsController($scope, template, model) {
 		});
 	}
 	
+	/* Format raw data for directive 'stackedgroupedBarchart'.
+	 * Parameter 'totalFieldName' is the name of the field corresponding to the total
+	 */
+	function formatDataForStackedGroupedBarChart(inputData, totalFieldName) {
+		var indicator = $scope.chart.form.indicator;
+		
+		var dataGroupedByDate = _.chain(inputData).map(function(elem) {
+			elem.date = substringDate(elem.date);
+			return elem;
+		})
+		.groupBy("date")
+		.value();
+		
+		var result = [];
+		for (var date in dataGroupedByDate) {
+		    var details = [];
+		    
+		    var orderedProfileArray = ['Teacher', 'Personnel', 'Student', 'Relative'];
+		    dataGroupedByDate[date] = _.sortBy(dataGroupedByDate[date], function(element) {
+		    	return orderedProfileArray.indexOf(element.profil_id);
+		    });
+		    
+		    for (var i=0; i<dataGroupedByDate[date].length; i++) {
+		        var column = "column" + (i+1);
+		        var element = dataGroupedByDate[date][i];
+		        var nbActivated = element[indicator];
+		        var nbTotal = element[totalFieldName];
+		        var percentageActivated = +(100*nbActivated / (nbActivated+nbTotal)).toFixed(2);
+		        	
+		        var activatedAccounts = {
+		            name: element.profil_id,
+		            column: column,
+		            yBegin: 0,
+		            yEnd: nbActivated,
+		            color : colorFromProfile(element.profil_id),
+		            label: nbActivated + 
+		            	lang.translate('statistics.accounts.activated.on')
+		            	.replace(/\{0\}/g, lang.translate(element.profil_id)) + 
+		            	nbTotal +
+		            	' (' + percentageActivated + '%)'
+		        };
+		        details.push(activatedAccounts);
+
+		        var notActivatedAccounts = {
+		            name: element.profil_id + " not activated",
+		            column: column,
+		            yBegin: nbActivated,
+		            yEnd: nbTotal,
+		            color: notActivatedColor,
+		            label: (nbTotal - nbActivated) + 
+		            	lang.translate('statistics.accounts.not.activated.on')
+		            	.replace(/\{0\}/g, lang.translate(element.profil_id)) +
+		            	nbTotal +
+		            	' (' + (100 - percentageActivated) + '%)'
+		        };
+		        details.push(notActivatedAccounts);
+		    }
+
+		    var resultElem = {date: date, columnDetails: details};
+		    resultElem.total = d3.max(resultElem.columnDetails, function(d) { 
+		      return d.yEnd; 
+		    });
+		    result.push(resultElem);
+		}
+		result = _.chain(result).sortBy(function(element) {
+			return element.date;
+		})
+		.map(function(element){
+			element.date = formatDate(element.date);
+			return element;
+		})
+		.value();
+		return result;
+	}
+	
 	// Format raw data for directive 'barchart'
 	function formatDataForBarChart(inputData) {
 		var dates = _.chain(inputData).pluck("date").sort().uniq().value();
-		var orderedProfileArray = ['Teacher', 'Personnel', 'Student', 'Parent', 'Guest'];
+		var orderedProfileArray = ['Teacher', 'Personnel', 'Student', 'Relative', 'Guest'];
 		var profiles = _.chain(inputData).pluck("profil_id").uniq().sort(function(thisProfile, thatProfile){
 			var thisIndex = orderedProfileArray.indexOf(thisProfile);
 			var thatIndex = orderedProfileArray.indexOf(thatProfile);
@@ -484,8 +576,8 @@ function StatisticsController($scope, template, model) {
 
 				var date;
 				if(dates[j].length > 10) {
-					var substr = dates[j].substring(0, 10); // Keep 'yyyy-MM-dd' from 'yyyy-MM-dd HH:mm.ss.SSS'
-					date = moment(substr).lang('fr').format('MMMM YYYY');
+					var substr = substringDate(dates[j]);
+					date = formatDate(substr);
 				}
 				else {
 					date = dates[j];
@@ -511,6 +603,14 @@ function StatisticsController($scope, template, model) {
 		}
 		
 		return outputData;
+	}
+	
+	function substringDate(dateString) {
+		return dateString.substring(0, 10); // Keep 'yyyy-MM-dd' from 'yyyy-MM-dd HH:mm.ss.SSS'
+	}
+	
+	function formatDate(dateString) {
+		return moment(dateString).lang('fr').format('MMMM YYYY');
 	}
 	
 	function formatModules(modules) {
@@ -582,7 +682,8 @@ function StatisticsController($scope, template, model) {
 		}
 		return '';
 	}
-	
+
+    var notActivatedColor = '#ADA6A6';
     var colorsMatch = {
         relative: '#48AEDF',
         teacher: '#6FBE2D',
