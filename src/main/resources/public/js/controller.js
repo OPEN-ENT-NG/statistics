@@ -197,19 +197,19 @@ function StatisticsController($scope, template, model) {
 				}
 				else if(chartForm.indicator==="ACTIVATED_ACCOUNTS") {
 					$scope.chart.data = formatDataForStackedGroupedBarChart(data, 'ACCOUNTS');
-					
+
 					var profiles = ['Teacher', 'Personnel', 'Student', 'Relative'];
 					var legendData = [];
-	            	for (var i=0; i<profiles.length; i++) {
-	            		legendData.push({
-	            			profile_id: lang.translate(profiles[i]),
-	            			color: colorFromProfile(profiles[i].toLowerCase())
-	            		});
-	            	}
-	            	legendData.push({
-	            		profile_id: lang.translate('statistics.accounts.not.activated'),
-	            		color: notActivatedColor
-                });
+					for (var i=0; i<profiles.length; i++) {
+						legendData.push({
+							profile_id: lang.translate(profiles[i]),
+							color: colorFromProfile(profiles[i].toLowerCase())
+						});
+					}
+					legendData.push({
+						profile_id: lang.translate('statistics.accounts.not.activated'),
+						color: notActivatedColor
+					});
 					$scope.chart.legendData = legendData;
 				}
 				else {
@@ -235,7 +235,7 @@ function StatisticsController($scope, template, model) {
 		query += '&format=csv';
 		
 		model.getData(query, function(data) {
-			// Replace string "rne"+structureId by rne, string "city"+structureId by city, and structureIds by structureNames
+			// Replace string "uai"+structureId by uai, string "city"+structureId by city, and structureIds by structureNames
 			var formattedData = data;
 			_.map(schoolIdArray, function(schoolId) {
 				var school = _.find($scope.schools, function(school) {

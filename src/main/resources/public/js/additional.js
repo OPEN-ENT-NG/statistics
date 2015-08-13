@@ -1,4 +1,4 @@
-// constants for directives 'barchart' and stackedgroupedBarchart
+// constants for directives 'barchart' and 'stackedgroupedBarchart'
 var margin = {top: 20, right: 10, bottom: 20, left: 60},
     height = 250 - 0.5 - margin.top - margin.bottom,
     paddingLeft = 30,
@@ -11,8 +11,8 @@ module.directive('barchart', function ($window, $timeout) {
 	  return {
 	    restrict: 'E',
 	    scope: {
-	      val: '=',
-	      grouped: '=',
+	      val: '=', // data
+	      grouped: '=', // boolean to display a grouped or stacked chart
 	      indicator: '='
 	    },
 	    link: function (scope, element, attrs) {
@@ -282,8 +282,8 @@ module.directive('piechart', function () {
 	return {
 		restrict: 'E',
 		scope: {
-			val: '=',
-			grouped: '=',
+			val: '=', // Must contain two fields : globalData (aggregated data for all profiles) and detailData (data for each profile)
+			grouped: '=', // boolean. If true, display data for each profile. 
 			indicator: '='
 		},
 		link: function (scope, element, attrs) {
@@ -632,6 +632,7 @@ module.directive('stackedgroupedBarchart', function ($window) {
 
         		var yBegin;
 
+        		// TODO : innerColumns should be a parameter of the directive
         		var innerColumns = {
         				"column1" : ["Student", "Student not activated"],
         				"column2" : ["Relative", "Relative not activated"],
