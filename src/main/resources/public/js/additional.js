@@ -152,6 +152,9 @@ module.directive('barchart', function ($window, $timeout) {
 		            .text(function(d, i) {
 		              return d.date;
 		            });
+		        
+        		vis.selectAll("text.label")
+        		.call(wrap, x({x: 0.9}));
 
 		        // Y-axis
 		        // =============
@@ -699,8 +702,10 @@ module.directive('stackedgroupedBarchart', function ($window) {
         		svg.append("g")
         		.attr("class", "x axis")
         		.attr("transform", "translate(0," + height + ")")
-        		.call(xAxis);
-
+        		.call(xAxis)
+        		.selectAll("g.tick text")
+        		.call(wrap, x0.rangeBand());
+        		
         		svg.append("g")
         		.attr("class", "y axis")
         		.call(yAxis)
@@ -709,8 +714,7 @@ module.directive('stackedgroupedBarchart', function ($window) {
         		.attr("transform", "rotate(-90)")
         		.attr("y", 6)
         		.attr("dy", ".7em")
-        		.style("text-anchor", "end")
-        		.text("");
+        		.style("text-anchor", "end");
         		
         		// Chart Key
         		// =========
@@ -766,5 +770,34 @@ function drawLegend(d3element, data, getProfile, getColor) {
 	})
 	.attr("x", function (d, i) {
 		return 155 * Math.floor(i/2);
+	});
+}
+
+
+// Function for responsive labels on axis, based on https://gist.github.com/mbostock/7555321
+function wrap(labels, width) {
+	labels.each(function() {
+		var text = d3.select(this),
+		words = text.text().split(/\s+/).reverse(),
+		word,
+		line = [],
+		lineNumber = 0,
+		lineHeight = 1.1, // ems
+		x = text.attr("x"),
+		dx = parseFloat(text.attr("dx")),
+		y = text.attr("y"),
+		dy = parseFloat(text.attr("dy")),
+		tspan = text.text(null).append("tspan").attr("x", x).attr("dx", dx).attr("y", y).attr("dy", dy + "em");
+		
+		while (word = words.pop()) {
+			line.push(word);
+			tspan.text(line.join(" "));
+			if (tspan.node().getComputedTextLength() > width) {
+				line.pop();
+				tspan.text(line.join(" "));
+				line = [word];
+				tspan = text.append("tspan").attr("x", x).attr("dx", dx).attr("y", y).attr("dy", ++lineNumber * lineHeight + dy + "em").text(word);
+			}
+		}
 	});
 }
