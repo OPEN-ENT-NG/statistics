@@ -18,8 +18,8 @@ import org.entcore.common.aggregation.filters.mongo.IndicatorFilterMongoImpl;
 import org.entcore.common.aggregation.groups.IndicatorGroup;
 import org.entcore.common.aggregation.indicators.Indicator;
 import org.entcore.common.aggregation.indicators.mongo.IndicatorMongoImpl;
-import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
@@ -33,15 +33,52 @@ public class IndicatorFactory {
 	// 1) Indicators that are incremented every day
 	// UserAccount Activation
 	public static Indicator getActivationIndicator(Collection<IndicatorFilterMongoImpl> filters, Date pWriteDate) {
-		Collection<IndicatorGroup> indicatorGroups = new ArrayList<>();
-		indicatorGroups.add(new IndicatorGroup(TRACE_FIELD_STRUCTURES).setArray(true)
-				.addAndReturnChild(TRACE_FIELD_PROFILE)
-		);
+        Collection<IndicatorGroup> indicatorGroups = new ArrayList<>();
+        indicatorGroups.add(new IndicatorGroup(TRACE_FIELD_STRUCTURES).setArray(true)
+                .addAndReturnChild(TRACE_FIELD_PROFILE)
+        );
+        
+        IndicatorMongoImpl indicator = new IndicatorMongoImpl(TRACE_TYPE_ACTIVATION, filters, indicatorGroups){
+            @Override
+            protected void customizePipeline(JsonArray pipeline){
+                int triggerSize = 0;
+                // Remove "count" from stage "$group" in pipeline, add userCount instead, and add "userId" to field _id
+                for (int i = 0; i < pipeline.size(); i++) {
+                    JsonObject stage = pipeline.get(i);
+                    JsonObject group = stage.getObject("$group", null);
+                    if(group != null) {
+                        group.removeField("count");
+                        JsonObject id = group.getObject("_id", null);
+                        if(id != null && id.size() == 0) {
+                            id.putString(TRACE_FIELD_USER, "$"+TRACE_FIELD_USER);
+                        } else if(id != null && id.size() > 0) {// We are in a "structures" stats query 
+                            id.putString(TRACE_FIELD_STRUCTURES, "$"+TRACE_FIELD_STRUCTURES).putString(TRACE_FIELD_PROFILE, "$"+TRACE_FIELD_PROFILE).putString(TRACE_FIELD_USER, "$"+TRACE_FIELD_USER);
+                            triggerSize = 1;
+                        }
+                        group.putObject("userCount", new JsonObject().putNumber("$min", 1));
+                        break;
+                    }
+                }
 
-		Indicator indicator = new IndicatorMongoImpl(TRACE_TYPE_ACTIVATION, filters, indicatorGroups);
-		indicator.setWriteDate(pWriteDate);
-		return indicator;
-	}
+                // Add another "$group" stage in pipeline, to count unique activation per user
+                JsonObject groupByActiv = new JsonObject();
+                if(triggerSize == 0){
+                    groupByActiv.putObject("$group", new JsonObject()
+                    .putObject("_id", new JsonObject())
+                    .putObject("count", new JsonObject().putString("$sum", "$userCount")));
+                } else {
+                    groupByActiv.putObject("$group", new JsonObject()
+                    .putObject("_id", new JsonObject().putString(TRACE_FIELD_STRUCTURES, "$_id."+TRACE_FIELD_STRUCTURES).putString(TRACE_FIELD_PROFILE, "$_id."+TRACE_FIELD_PROFILE))
+                    .putObject("count", new JsonObject().putString("$sum", "$userCount")));
+                }
+                pipeline.addObject(groupByActiv);
+            }
+            
+        };
+        
+        indicator.setWriteDate(pWriteDate);
+        return indicator;
+    }
 
 	// Connections
 	public static Indicator getConnectionIndicator(Collection<IndicatorFilterMongoImpl> filters, Date pWriteDate) {
