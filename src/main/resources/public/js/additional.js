@@ -15,9 +15,9 @@ module.directive('chart', function ($window, $timeout) {
 	      indicator: '='
 	    },
 	    link: function (scope, element, attrs) {
-	    	
+
 		  var renderPromise;
-	    	
+
 	      // set up initial svg object
 	      var vis = d3.select(element[0])
 	        .append("svg")
@@ -30,21 +30,21 @@ module.directive('chart', function ($window, $timeout) {
           $window.onresize = function() {
             scope.$apply();
           };
-          
+
           // Watch for resize event
           scope.$watch(function() {
             return angular.element($window)[0].innerWidth;
           }, function() {
             scope.render(scope.val, scope.val);
           });
-	      
+
 	      scope.$watch('val', function (newVal, oldVal) {
  	          // reset grouped state to false
 	          scope.grouped = false;
-	    	  
+
 	    	  scope.render(newVal, oldVal);
 	      });
-          
+
 	      scope.render = function (newVal, oldVal) {
 	        // clear the elements inside of the directive
 	        vis.selectAll('*').remove();
@@ -53,15 +53,15 @@ module.directive('chart', function ($window, $timeout) {
 	        if (!newVal) {
 	          return;
 	        }
-	        
+
 	        if (renderPromise) {
 	        	$timeout.cancel(renderPromise);
 	        }
-	        
+
 	        renderPromise = $timeout(function () {
 		        var parentElementWidth = d3.select(element[0]).node().offsetWidth;
 		        var width = parentElementWidth - margin.left - margin.right;
-		        
+
 		        // Based on: http://mbostock.github.com/d3/ex/stack.html
 		        var n = newVal.length, // number of layers
 		            m = newVal[0].length, // number of samples per layer
@@ -97,19 +97,19 @@ module.directive('chart', function ($window, $timeout) {
 
 		        // Tooltip
 		        // =======
-		    
+
 		        var tip = d3.tip()
-		        .attr('class', 'tooltip')
+		        .attr('class', 'tooltip stat')
 		        .offset([-10, 0])
 		        .html(function(d) {
-		          var label = (d.y > 1) ? 
+		          var label = (d.y > 1) ?
 		        		  d.y + " " + scope.indicator.plural + " " + d.profile + "s" :
 		        		  d.y + " " + scope.indicator.singular + " " + d.profile;
 		          return '<div class="arrow"></div><div class="content">' + label + "</div>";
 		        });
-		        
+
 		        vis.call(tip);
-		        
+
 		        // Bars
 		        // ====
 
@@ -156,7 +156,7 @@ module.directive('chart', function ($window, $timeout) {
 		        // =============
 
 		        var yScale = d3.scale.linear().domain([0, my]).rangeRound([height, 0]);
-		        
+
 		        var yAxis = d3.svg.axis()
 			        .scale(yScale)
 			        .orient("left")
@@ -171,7 +171,7 @@ module.directive('chart', function ($window, $timeout) {
 			        .attr("y", 6)
 			        .attr("dy", ".71em")
 			        .style("text-anchor", "end");
-		        
+
 		        // Chart Key
 		        // =========
 
@@ -213,18 +213,18 @@ module.directive('chart', function ($window, $timeout) {
 
 		        function updateYAxis(yMax) {
 			          var yScale = d3.scale.linear().domain([0, yMax]).rangeRound([height, 0]);
-				        
+
 			          var yAxis = d3.svg.axis()
 				        .scale(yScale)
 				        .orient("left")
 				        .tickFormat(format);
-				        
+
 			          vis.selectAll("g.y.axis")
 			            .transition()
 			              .duration(500)
 			              .call(yAxis);
 		        }
-		        
+
 		        function transitionGroup() {
 		          vis.selectAll("g.layer rect")
 		            .transition()
@@ -235,7 +235,7 @@ module.directive('chart', function ($window, $timeout) {
 		              .each("end", transitionEnd);
 
 		          updateYAxis(mz);
-		          
+
 		          function transitionEnd() {
 		            d3.select(this)
 		              .transition()
@@ -257,7 +257,7 @@ module.directive('chart', function ($window, $timeout) {
 		              .each("end", transitionEnd);
 
 		          updateYAxis(my);
-		          
+
 		          function transitionEnd() {
 		            d3.select(this)
 		              .transition()
@@ -277,7 +277,7 @@ module.directive('chart', function ($window, $timeout) {
 		        });
 	        }, 200);
 	      };
-        
+
 	    }
 	  };
 	});
