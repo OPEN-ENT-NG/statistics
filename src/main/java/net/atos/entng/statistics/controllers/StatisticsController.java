@@ -6,13 +6,11 @@ import static net.atos.entng.statistics.aggregation.indicators.IndicatorConstant
 import static org.entcore.common.aggregation.MongoConstants.TRACE_TYPE_ACTIVATION;
 import static org.entcore.common.aggregation.MongoConstants.TRACE_TYPE_CONNEXION;
 import static org.entcore.common.aggregation.MongoConstants.TRACE_TYPE_SVC_ACCESS;
+import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
+
 import fr.wseduc.webutils.I18n;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import net.atos.entng.statistics.DateUtils;
 import net.atos.entng.statistics.services.StatisticsService;
@@ -26,6 +24,7 @@ import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserInfos.Function;
 import org.entcore.common.user.UserUtils;
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
@@ -102,7 +101,7 @@ public class StatisticsController extends MongoDbControllerHelper {
 					String errorMsg = i18n.translate("statistics.bad.request.invalid.schools", acceptLanguage(request));
 					badRequest(request, errorMsg);
 					return;
-				};
+				}
 
 				final String indicator = request.params().get(PARAM_INDICATOR);
 				if(indicator==null || indicator.trim().isEmpty() || !indicators.contains(indicator)) {
@@ -140,66 +139,101 @@ public class StatisticsController extends MongoDbControllerHelper {
 					return;
 				}
 
-				JsonObject params = new JsonObject();
+				final JsonObject params = new JsonObject();
 				params.putString(PARAM_INDICATOR, indicator)
 					.putNumber(PARAM_START_DATE, start)
 					.putNumber(PARAM_END_DATE, end)
 					.putString(PARAM_MODULE, module);
 
-				String format = request.params().get(PARAM_FORMAT);
-				if(format==null || format.isEmpty()) {
-					// Default case : return JSON data
-					StatisticsController.this.getJsonData(schoolIds, params, request);
+				if( schoolIds.size() == 1 ) {
+					// if the structure choosed is not a school, we need to explore all the attached schools from the graph base
+					structureService.getAttachedStructureslist(schoolIds.get(0), new Handler<Either<String, JsonArray>>() {
+                        @Override
+                        public void handle(Either<String, JsonArray> either) {
+                            if (either.isLeft()) {
+                                log.error(either.left().getValue());
+                                renderError(request);
+                            } else {
+                                final List<String> attachedSchoolsList = new ArrayList<String>();
+                                final JsonArray result = either.right().getValue();
+
+                                for(int i=0;i<result.size();i++) {
+                                    Object obj = result.get(i);
+                                    if (obj instanceof JsonObject) {
+                                        final JsonObject jo = (JsonObject) obj;
+                                        attachedSchoolsList.add(jo.getString("s2.id",""));
+                                    }
+                                }
+                                formatting(attachedSchoolsList, params, indicator, request);
+                            }
+                        }
+                    });
+				} else {
+					formatting(schoolIds, params, indicator, request);
 				}
-				else {
-					switch (format) {
-					case "csv": // CSV export
-						statsService.getStatsForExport(schoolIds, params, new Handler<Either<String,JsonArray>>() {
-							@Override
-							public void handle(Either<String, JsonArray> event) {
-								if(event.isLeft()) {
-									log.error(event.left().getValue());
-									renderError(request);
-								}
-								else {
-									JsonObject params = new JsonObject()
+			}
+		});
+	}
+
+	/**
+	 *
+	 * @param schoolIds : list of schools
+	 * @param params JsonObject
+	 * @param indicator
+     * @param request
+     */
+	private void formatting(List<String> schoolIds, JsonObject params, final String indicator, final HttpServerRequest request) {
+		String format = request.params().get(PARAM_FORMAT);
+		if(format==null || format.isEmpty()) {
+			// Default case : return JSON data
+			StatisticsController.this.getJsonData(schoolIds, params, request);
+		}
+		else {
+			switch (format) {
+				case "csv": // CSV export
+					statsService.getStatsForExport(schoolIds, params, new Handler<Either<String,JsonArray>>() {
+						@Override
+						public void handle(Either<String, JsonArray> event) {
+							if(event.isLeft()) {
+								log.error(event.left().getValue());
+								renderError(request);
+							}
+							else {
+								JsonObject params = new JsonObject()
 										.putBoolean("is"+indicator, true)
 										.putArray("list", event.right().getValue())
 										.putString("indicator", indicator);
 
-									processTemplate(request, "text/export.txt", params, new Handler<String>() {
-										@Override
-										public void handle(final String export) {
-											if (export != null) {
-												request.response().putHeader("Content-Type", "application/csv");
-												request.response().putHeader("Content-Disposition",
-														"attachment; filename=export.csv");
-												request.response().end(export);
-											} else {
-												renderError(request);
-											}
+								processTemplate(request, "text/export.txt", params, new Handler<String>() {
+									@Override
+									public void handle(final String export) {
+										if (export != null) {
+											request.response().putHeader("Content-Type", "application/csv");
+											request.response().putHeader("Content-Disposition",
+													"attachment; filename=export.csv");
+											request.response().end(export);
+										} else {
+											renderError(request);
 										}
-									});
+									}
+								});
 
-								}
 							}
-						});
-						break;
+						}
+					});
+					break;
 
-					case "json":
-						StatisticsController.this.getJsonData(schoolIds, params, request);
-						break;
+				case "json":
+					StatisticsController.this.getJsonData(schoolIds, params, request);
+					break;
 
-					default:
-						String errorMsg = i18n.translate("statistics.bad.request.invalid.export.format", acceptLanguage(request));
-						badRequest(request, errorMsg);
-						break;
-					}
-
-				}
-
+				default:
+					String errorMsg = i18n.translate("statistics.bad.request.invalid.export.format", acceptLanguage(request));
+					badRequest(request, errorMsg);
+					break;
 			}
-		});
+
+		}
 	}
 
 	private boolean isValidSchools(UserInfos user, Collection<String> schoolIds) {
@@ -242,7 +276,7 @@ public class StatisticsController extends MongoDbControllerHelper {
 						String errorMsg = i18n.translate("statistics.bad.request.invalid.schools", acceptLanguage(request));
 						badRequest(request, errorMsg);
 						return;
-					};
+					}
 
 					JsonArray structureIds = new JsonArray();
 					for (String school : schoolIds) {
