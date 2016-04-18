@@ -503,8 +503,7 @@ function StatisticsController($scope, template, model) {
 		        var element = dataGroupedByDate[date][i];
 		        var nbActivated = element[indicator];
 		        var nbTotal = element[totalFieldName];
-		        var percentageActivated = +(100*nbActivated / (nbActivated+nbTotal)).toFixed(2);
-		        	
+		        var percentageActivated = +(100*nbActivated / (nbTotal)).toFixed(2);
 		        var activatedAccounts = {
 		            name: element.profil_id,
 		            column: column,
