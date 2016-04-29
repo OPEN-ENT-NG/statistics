@@ -1,8 +1,16 @@
 function StatisticsController($scope, template, model) {
 
 	this.initialize = function() {
+        $scope.display = {
+            form: true,
+            admin: false,
+            chart: true
+        };
+
+        $scope.generationDates = {};
+
 		$scope.template = template;
-		$scope.form = {};
+        $scope.form = {};
 
 		// Get Schools
 		$scope.schools = [];
@@ -139,9 +147,23 @@ function StatisticsController($scope, template, model) {
 		}
 		return result;
 	};
-	
-	/* If pFormat = "csv", get data as CSV and save it as a file.
-	 * Else, get data as JSON and display chart */
+    
+    $scope.generation = function() {
+        notify.info(lang.translate('statistics.admin.generate.info.start'));
+        var schoolIdArray = getSchoolIdArray($scope.form);
+        $scope.form.from = moment($scope.form.from).seconds(0);
+        $scope.form.to = moment($scope.form.to ).seconds(0);
+        var query = generateQuery($scope.form, schoolIdArray);
+        model.generation(query, function(data) {
+            notify.info(lang.translate('statistics.admin.generate.info.end'));
+        });
+        $scope.form.from = $scope.dates[0].moment;
+        $scope.form.indicator = 'LOGIN';
+        $scope.form.to = $scope.toDates[$scope.toDates.length-1].moment;
+    };
+
+    /* If pFormat = "csv", get data as CSV and save it as a file.
+     * Else, get data as JSON and display chart */
 	$scope.getData = function(pFormat) {
 		$scope.form.processing = true;
 
@@ -299,20 +321,20 @@ function StatisticsController($scope, template, model) {
 	function getSchoolIdArray(form) {
 		return form.school_id.split(",");
 	}
-	
+
 	function generateQuery(form, schoolIdArray) {
 		var query = http().serialize({ schoolId: schoolIdArray}) +
 		"&indicator=" + form.indicator +
 		"&startDate=" +  form.from.unix() +
 		"&endDate=" + form.to.unix();
-		
+
 		if(form.module!==undefined && form.module!==null) {
 			query += '&module=' + form.module;
 		}
 		
 		return query;
 	}
-	
+
 	function getCsvFilename(form) {
 		var separator = "-";
 		var filename = lang.translate(form.indicator).toLowerCase() + separator;
@@ -693,15 +715,34 @@ function StatisticsController($scope, template, model) {
     };
 
     function colorFromProfile(profile) {
-    	var userType = profile.toLowerCase();
-    	if(colorsMatch.hasOwnProperty(userType)) {
-    		return colorsMatch[userType];
-    	}
-    	else {
-    		return colorsMatch.defaultColor;
-    	}
+        var userType = profile;
+        if(userType != null && userType != "null" && colorsMatch.hasOwnProperty(userType.toLowerCase())) {
+            return colorsMatch[userType.toLowerCase()];
+        }
+        else {
+            return colorsMatch.defaultColor;
+        }
     }
-    
+
+    $scope.showManage = function() {
+        $scope.display.form = false;
+        $scope.display.admin = true;
+        $scope.display.chart = false;
+        $scope.form.from = $scope.dates[0].moment;
+        $scope.form.indicator = 'LOGIN';
+        $scope.form.to = $scope.toDates[$scope.toDates.length-1].moment;
+        template.open('admin', 'admin');
+    };
+
+    $scope.showMain = function() {
+        $scope.display.form = true;
+        $scope.display.admin = false;
+        $scope.display.chart = true;
+        $scope.form.from = $scope.dates[0].moment;
+        $scope.form.indicator = 'LOGIN';
+        $scope.form.to = $scope.toDates[$scope.toDates.length-1].moment;
+    };
+
     this.initialize();
     
 }

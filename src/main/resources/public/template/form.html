@@ -4,7 +4,7 @@
 			<div>
 				<label class="two cell"><i18n>statistics.form.school</i18n></label>
 				<span class="three cell">
-					<select ng-hide="schools.length === 1" 
+					<select ng-hide="schools.length === 1"
 						ng-model="form.school_id"
 						ng-options="school.id as school.name for school in schools">
 					</select>
@@ -13,7 +13,7 @@
 			</div>
 			<label class="one cell"><i18n>statistics.form.from</i18n></label>
 			<span class="six cell">
-				<select ng-model="form.from" 
+				<select ng-model="form.from"
 					ng-options="date.moment as date.label for date in dates">
 				</select>
 			</span>
@@ -43,7 +43,7 @@
 					</select>
 				</span>
 			</div>
-			
+
 			<button ng-if="!form.processing" class="right-magnet" ng-click="getData()"><i18n>statistics.form.display.chart</i18n></button>
 			<i18n ng-if="form.processing === true" class="right-magnet">statistics.form.processing</i18n>
 		</div>

@@ -15,15 +15,23 @@
 <body ng-controller="StatisticsController">
 	<portal>
 		<div class="row">
-			<div class="twelve cell">
 				<h1>
 					<i18n>statistics.title</i18n>
 				</h1>
-			</div>
-			<section>
+        </div>
+        <div class="display-buttons">
+                <i class="show-admin" ng-click="showManage()" ng-class="{ selected: display.admin === false }"
+                   tooltip="statistics.admin.access"></i>
+                <i class="show-list" ng-click="showMain()" ng-class="{ selected: display.admin === true }"
+                   tooltip="statistics.view.stats"></i>
+        </div>
+			<section ng-if="display.form">
 				<container template="main"></container>
 			</section>
-			<section>
+            <section ng-if="display.admin">
+                <container template="admin"></container>
+            </section>
+			<section ng-if="display.chart">
 				<container template="chart"></container>
 			</section>
 		</div>

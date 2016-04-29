@@ -7,6 +7,21 @@ model.getMetadata = function(callback){
 	});
 };
 
+model.generation = function(query, callback, errorCallback) {
+
+    var url = '/statistics/generation?' + query;
+    http().get(url).done(function(result){
+        if(typeof callback === 'function'){
+            callback(result);
+        }
+    }).e400(function(e){
+        var responseText = JSON.parse(e.responseText);
+        notify.error(responseText.error);
+        if(typeof errorCallback === 'function'){
+            errorCallback();
+        }
+    });
+};
 
 model.getData = function(query, callback, errorCallback){
 	var url = '/statistics/data?' + query;

@@ -11,6 +11,7 @@ import org.entcore.common.aggregation.MongoConstants;
 import org.entcore.common.http.BaseServer;
 import org.entcore.common.mongodb.MongoDbConf;
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.Vertx;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
@@ -53,18 +54,18 @@ public class Statistics extends BaseServer {
             Date endDate = new Date();
             endDate.setTime(1430438400000L); // Fri, 01 May 2015 00:00:00 GMT
 
-			this.aggregateEvents(startDate, endDate);
+			this.aggregateEvents(vertx, startDate, endDate);
 		}
 
 
 		// 2) Init controller
-		 addController(new StatisticsController(MongoConstants.COLLECTIONS.stats.toString(), accessModules));
+		 addController(new StatisticsController(vertx, MongoConstants.COLLECTIONS.stats.toString(), accessModules));
 		 MongoDbConf.getInstance().setCollection(MongoConstants.COLLECTIONS.stats.toString());
 	}
 
 
 	// Aggregate documents of collection "events" for each day, from startDate to endDate
-	private void aggregateEvents(final Date startDate, final Date endDate) {
+	public void aggregateEvents(Vertx vertx, final Date startDate, final Date endDate) {
 		final Calendar fromCal = Calendar.getInstance();
 		fromCal.setTime(startDate);
 
