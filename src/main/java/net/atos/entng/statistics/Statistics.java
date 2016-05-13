@@ -61,7 +61,9 @@ public class Statistics extends BaseServer {
 		// 2) Init controller
 		 addController(new StatisticsController(vertx, MongoConstants.COLLECTIONS.stats.toString(), accessModules));
 		 MongoDbConf.getInstance().setCollection(MongoConstants.COLLECTIONS.stats.toString());
-	}
+
+        // FIXME : the statistics will be kept one year to antoher. No repositoryEvents management
+    }
 
 
 	// Aggregate documents of collection "events" for each day, from startDate to endDate
