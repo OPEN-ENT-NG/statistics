@@ -5,7 +5,6 @@
 * Financeur(s) : Région Nord Pas de Calais-Picardie
 * description : Application permettant d'agréger des traces et de les afficher sous forme de diagramme
 
-
 ## Déployer dans ent-core
 <pre>
 		gradle clean install
