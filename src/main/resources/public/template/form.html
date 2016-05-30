@@ -1,6 +1,6 @@
-<article class="twelve cell">
+<article class="twelve cell zero-mobile">
 	<form class="row">
-		<div class="row zero-mobile">
+		<div class="row">
 			<div>
 				<label class="two cell"><i18n>statistics.form.school</i18n></label>
 				<span class="three cell">
@@ -18,7 +18,7 @@
 				</select>
 			</span>
 		</div>
-		<div class="row zero-mobile">
+		<div class="row">
 			<label class="two cell"><i18n>statistics.form.indicator</i18n></label>
 			<span class="three cell">
 				<select ng-model="form.indicator" 
@@ -33,7 +33,7 @@
 			</span>
 		</div>
 		
-		<div class="row zero-mobile">
+		<div class="row">
 			<div ng-if="form.indicator === 'ACCESS'">
 				<label class="two cell"><i18n>statistics.form.module</i18n></label>
 				<span class="four cell">
@@ -47,6 +47,6 @@
 			<button ng-if="!form.processing" class="right-magnet" ng-click="getData()"><i18n>statistics.form.display.chart</i18n></button>
 			<i18n ng-if="form.processing === true" class="right-magnet">statistics.form.processing</i18n>
 		</div>
-		
+
 	</form>
 </article>
