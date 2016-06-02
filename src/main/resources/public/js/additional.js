@@ -7,7 +7,7 @@ var margin = {top: 20, right: 10, bottom: 20, left: 60},
 
 // Directive based on http://briantford.com/blog/angular-d3 : bar chart with a transition from stacked to grouped
 module.directive('barchart', function ($window, $timeout) {
-
+        var totalBar = [];
 	  return {
 	    restrict: 'E',
 	    scope: {
@@ -134,7 +134,11 @@ module.directive('barchart', function ($window, $timeout) {
 		            .delay(function(d, i) { return i * 10; })
 		            .attr("y", y1)
 		            .attr("height", function(d) {
-		              return y0(d) - y1(d);
+                        if (!totalBar[d.x]) {
+                            totalBar[d.x] = 0;
+                        };
+                        totalBar[d.x] = totalBar[d.x] + d.y;
+                        return y0(d) - y1(d);
 		            });
 
 		        // X-axis labels
@@ -150,7 +154,9 @@ module.directive('barchart', function ($window, $timeout) {
 		            .attr("dy", ".71em")
 		            .attr("text-anchor", "middle")
 		            .text(function(d, i) {
-		              return d.date;
+                        var displayedVal = totalBar[d.x];
+                        totalBar[d.x] = 0;
+		              return d.date + " (" + displayedVal + ")";
 		            });
 		        
         		vis.selectAll("text.label")
