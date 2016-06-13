@@ -724,25 +724,6 @@ function StatisticsController($scope, template, model) {
         }
     }
 
-    $scope.showManage = function() {
-        $scope.display.form = false;
-        $scope.display.admin = true;
-        $scope.display.chart = false;
-        $scope.form.from = $scope.dates[0].moment;
-        $scope.form.indicator = 'LOGIN';
-        $scope.form.to = $scope.toDates[$scope.toDates.length-1].moment;
-        template.open('admin', 'admin');
-    };
-
-    $scope.showMain = function() {
-        $scope.display.form = true;
-        $scope.display.admin = false;
-        $scope.display.chart = true;
-        $scope.form.from = $scope.dates[0].moment;
-        $scope.form.indicator = 'LOGIN';
-        $scope.form.to = $scope.toDates[$scope.toDates.length-1].moment;
-    };
-
     this.initialize();
     
 }

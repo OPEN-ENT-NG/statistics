@@ -19,7 +19,7 @@
 					<i18n>statistics.title</i18n>
 				</h1>
         </div>
-        <div class="display-buttons">
+        <div class="display-buttons" ng-if="false">
                 <i class="show-admin" ng-click="showManage()" ng-class="{ selected: display.admin === false }"
                    tooltip="statistics.admin.access"></i>
                 <i class="show-list" ng-click="showMain()" ng-class="{ selected: display.admin === true }"
