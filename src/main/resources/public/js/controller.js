@@ -17,33 +17,48 @@ function StatisticsController($scope, template, model) {
 		for (var i=0; i < model.me.structures.length; i++) {
 			$scope.schools.push({id: model.me.structures[i], name: model.me.structureNames[i]});
 		}
+		// getting all the substructures
+		model.getSubstructures(function(substructures) {
 
-		var isLocalAdmin = (model.me.functions && 
-				model.me.functions.ADMIN_LOCAL && 
-				model.me.functions.ADMIN_LOCAL.scope);
-		
-		if(!isLocalAdmin) {
-			endInitialization();
-			return;
-		}
-		
-		var schools = _.union(model.me.functions.ADMIN_LOCAL.scope, model.me.structures);
-		if(schools.length === model.me.structures.length) {
-			endInitialization();
-		}
-		else {
-			// ADMIN_LOCAL.scope has schools that are not in model.me.structures. We need to get their names
+			// adding to schools list if not already present.
+			for (var j=0; j < substructures.length; j++) {
+				checkAndAdd(substructures[j]);
+			}
 
-			var query = http().serialize({schoolId: schools});
-			model.getStructures(query, function(structures) {
-				if (Array.isArray(structures) && structures.length > 0) {
-					$scope.schools = structures;
-				}
+			var isLocalAdmin = (model.me.functions &&
+			model.me.functions.ADMIN_LOCAL &&
+			model.me.functions.ADMIN_LOCAL.scope);
+
+			if(!isLocalAdmin) {
 				endInitialization();
-			});
-		}
+				return;
+			}
+
+			var schools = _.union(model.me.functions.ADMIN_LOCAL.scope, model.me.structures);
+			if(schools.length === model.me.structures.length) {
+				endInitialization();
+			}
+			else {
+				// ADMIN_LOCAL.scope has schools that are not in model.me.structures. We need to get their names
+
+				var query = http().serialize({schoolId: schools});
+				model.getStructures(query, function(structures) {
+					if (Array.isArray(structures) && structures.length > 0) {
+						$scope.schools = structures;
+					}
+					endInitialization();
+				});
+			}
+		});
 	};
-	
+
+	function checkAndAdd(structure) {
+		var found = $scope.schools.some(function (school) {
+			return school.id === structure.id;
+		});
+		if (!found) { $scope.schools.push({ id: structure.id, name: structure.name }); }
+	}
+
 	function endInitialization() {
 		addAllMySchools();
 		

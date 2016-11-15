@@ -29,4 +29,7 @@ public interface StructureService {
 	public void list(JsonArray structureIds, Handler<Either<String, JsonArray>> handler);
 
 	public void getAttachedStructureslist(String id, Handler<Either<String, JsonArray>> handler);
+
+	public void getListStructuresForUser( String userId, Handler<Either<String, JsonArray>> handler);
+
 }

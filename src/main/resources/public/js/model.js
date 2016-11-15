@@ -47,6 +47,16 @@ model.getStructures = function(query, callback){
 	});
 };
 
+// getting all the structures and related structures from current user
+model.getSubstructures = function(callback) {
+	var url = '/statistics/substructures';
+	http().get(url).done(function(result){
+		if(typeof callback === 'function'){
+			callback(result);
+		}
+	});
+}
+
 model.build = function() {
 	// custom directives loading
 	loader.loadFile('/statistics/public/js/additional.js');
