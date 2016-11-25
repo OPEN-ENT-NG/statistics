@@ -6,7 +6,7 @@
         <div class="row zero-mobile">
             <div>
                 <label class="two cell"><i18n>statistics.form.school</i18n></label>
-				<span class="three cell">
+				<span class="four cell">
 					<select ng-hide="schools.length === 1"
                             ng-model="form.school_id"
                             ng-options="school.id as school.name for school in schools">
@@ -23,7 +23,7 @@
         </div>
         <div class="row zero-mobile">
             <label class="two cell"><i18n>statistics.form.indicator</i18n></label>
-			<span class="three cell">
+			<span class="four cell">
 				<select ng-model="form.indicator"
                         ng-options="translate(indicator) for indicator in indicators">
                 </select>

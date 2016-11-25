@@ -337,17 +337,35 @@ function StatisticsController($scope, template, model) {
 		return form.school_id.split(",");
 	}
 
+	// making a json instead of a query
 	function generateQuery(form, schoolIdArray) {
-		var query = http().serialize({ schoolId: schoolIdArray}) +
-		"&indicator=" + form.indicator +
-		"&startDate=" +  form.from.unix() +
-		"&endDate=" + form.to.unix();
+		var query = [];
+		query.push({"schoolIdArray" : schoolIdArray});
+		query.push( {"indicator" : form.indicator });
+		query.push( {"startDate" : form.from.unix() });
+		query.push( {"endDate" : form.to.unix() });
+
+		var json;
 
 		if(form.module!==undefined && form.module!==null) {
-			query += '&module=' + form.module;
+			query.push({"module": form.module});
+			json = {
+				schoolIdArray : schoolIdArray,
+				indicator : form.indicator,
+				startDate : form.from.unix(),
+				endDate : form.to.unix(),
+				module: form.module
+			};
+		} else {
+			json = {
+				schoolIdArray : schoolIdArray,
+				indicator : form.indicator,
+				startDate : form.from.unix(),
+				endDate : form.to.unix()
+			};
 		}
-		
-		return query;
+
+		return json;
 	}
 
 	function getCsvFilename(form) {

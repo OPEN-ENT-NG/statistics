@@ -22,10 +22,12 @@ package net.atos.entng.statistics.controllers;
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.rs.ApiDoc;
 import fr.wseduc.rs.Get;
+import fr.wseduc.rs.Post;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.I18n;
+import fr.wseduc.webutils.request.RequestUtils;
 import net.atos.entng.statistics.DateUtils;
 import net.atos.entng.statistics.Statistics;
 import net.atos.entng.statistics.services.StatisticsService;
@@ -108,116 +110,139 @@ public class StatisticsController extends MongoDbControllerHelper {
         renderJson(request, metadata);
     }
 
-    @Get("/data")
+    @Post("/data")
     @SecuredAction("statistics.get.data")
     public void getData(final HttpServerRequest request) {
-        UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+        RequestUtils.bodyToJson(request, pathPrefix + "schoolquery", new Handler<JsonObject>() {
             @Override
-            public void handle(final UserInfos user) {
-                if (user == null) {
-                    log.debug("User not found in session.");
-                    unauthorized(request);
-                    return;
-                }
+            public void handle(JsonObject data) {
+                final JsonObject params = data; // parameters from the model (schoolIdArray / indicator / startDate / endDate / module)
 
-                structureService.getListStructuresForUser(user.getUserId(), new Handler<Either<String, JsonArray>>() {
+                UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
                     @Override
-                    public void handle(Either<String, JsonArray> either) {
-                        if (either.isLeft()) {
-                            log.error(either.left().getValue());
+                    public void handle(final UserInfos user) {
+                        if (user == null) {
+                            log.debug("User not found in session.");
+                            unauthorized(request);
                             return;
-                        } else {
-                            JsonArray listSubStructures = either.right().getValue();
-                            Collection<String> listSubStructuresIds = new ArrayList<String>();
-                            for( Object obj : listSubStructures ) {
-                                if (obj instanceof JsonObject) {
-                                    JsonObject struct = (JsonObject) obj;
-                                    listSubStructuresIds.add(struct.getString("id"));
-                                }
-                            }
-                            final List<String> schoolIds = request.params().getAll(PARAM_SCHOOL_ID);
-                            if (schoolIds == null || schoolIds.size() == 0 || !isValidSchools(schoolIds, listSubStructuresIds)) {
-                                String errorMsg = i18n.translate("statistics.bad.request.invalid.schools", acceptLanguage(request));
-                                badRequest(request, errorMsg);
-                                return;
-                            }
+                        }
 
-                            final String indicator = request.params().get(PARAM_INDICATOR);
-                            if (indicator == null || indicator.trim().isEmpty() || !indicators.contains(indicator)) {
-                                String errorMsg = i18n.translate("statistics.bad.request.invalid.indicator", acceptLanguage(request));
-                                badRequest(request, errorMsg);
-                                return;
-                            }
-
-                            String module = "";
-                            if (TRACE_TYPE_SVC_ACCESS.equals(indicator)) {
-                                module = request.params().get(PARAM_MODULE);
-                                if (module != null && !module.trim().isEmpty() && !accessModules.contains(module)) {
-                                    String errorMsg = i18n.translate("statistics.bad.request.invalid.module", acceptLanguage(request));
-                                    badRequest(request, errorMsg);
+                        structureService.getListStructuresForUser(user.getUserId(), new Handler<Either<String, JsonArray>>() {
+                            @Override
+                            public void handle(Either<String, JsonArray> either) {
+                                if (either.isLeft()) {
+                                    log.error(either.left().getValue());
                                     return;
-                                }
-                                // Else (when module is not specified) return data for all modules
-                            }
-
-                            String startDate = request.params().get(PARAM_START_DATE);
-                            String endDate = request.params().get(PARAM_END_DATE);
-                            long start, end;
-                            try {
-                                start = DateUtils.parseStringDate(startDate);
-                                end = DateUtils.parseStringDate(endDate);
-                                if (end < start || end < 0L || start < 0L) {
-                                    String errorMsg = i18n.translate("statistics.bad.request.invalid.dates", acceptLanguage(request));
-                                    badRequest(request, errorMsg);
-                                    return;
-                                }
-                            } catch (Exception e) {
-                                log.error("Error when casting startDate or endDate to long", e);
-                                String errorMsg = i18n.translate("statistics.bad.request.invalid.date.format", acceptLanguage(request));
-                                badRequest(request, errorMsg);
-                                return;
-                            }
-
-                            final JsonObject params = new JsonObject();
-                            params.putString(PARAM_INDICATOR, indicator)
-                                    .putNumber(PARAM_START_DATE, start)
-                                    .putNumber(PARAM_END_DATE, end)
-                                    .putString(PARAM_MODULE, module);
-
-                            if (schoolIds.size() == 1) {
-                                // if the structure choosed is not a school, we need to explore all the attached schools from the graph base
-                                structureService.getAttachedStructureslist(schoolIds.get(0), new Handler<Either<String, JsonArray>>() {
-                                    @Override
-                                    public void handle(Either<String, JsonArray> either) {
-                                        if (either.isLeft()) {
-                                            log.error(either.left().getValue());
-                                            renderError(request);
-                                        } else {
-                                            final List<String> attachedSchoolsList;
-                                            final JsonArray result = either.right().getValue();
-
-                                            if (result != null) {
-                                                attachedSchoolsList = new ArrayList<String>(result.size());
-                                                for (int i = 0; i < result.size(); i++) {
-                                                    Object obj = result.get(i);
-                                                    if (obj instanceof JsonObject) {
-                                                        final JsonObject jo = (JsonObject) obj;
-                                                        attachedSchoolsList.add(jo.getString("s2.id", ""));
-                                                    }
-                                                }
-                                            } else {
-                                                attachedSchoolsList = new ArrayList<String>(0);
-                                            }
-                                            formatting(attachedSchoolsList, params, indicator, request);
+                                } else {
+                                    JsonArray listSubStructures = either.right().getValue();
+                                    Collection<String> listSubStructuresIds = new ArrayList<String>();
+                                    for( Object obj : listSubStructures ) {
+                                        if (obj instanceof JsonObject) {
+                                            JsonObject struct = (JsonObject) obj;
+                                            listSubStructuresIds.add(struct.getString("id"));
                                         }
                                     }
-                                });
-                            } else {
-                                formatting(schoolIds, params, indicator, request);
+
+                                    //final List<String> schoolIds = request.params().getAll(PARAM_SCHOOL_ID);
+
+
+                                    JsonArray arr = params.getArray("schoolIdArray");
+                                    List<String> schoolIds = new ArrayList<String>();
+                                    for(int i = 0; i < arr.size(); i++){
+                                        schoolIds.add((String) arr.get(i));
+                                    }
+
+
+                                    //final List<String> schoolIds = Arrays.asList(params.getArray("schoolIdArray"));
+                                    if (schoolIds == null || schoolIds.size() == 0 || !isValidSchools(schoolIds, listSubStructuresIds)){
+                                        String errorMsg = i18n.translate("statistics.bad.request.invalid.schools", I18n.DEFAULT_DOMAIN, acceptLanguage(request));
+                                        badRequest(request, errorMsg);
+                                        return;
+                                    }
+
+                                    //final String indicator = request.params().get(PARAM_INDICATOR);
+                                    final String indicator = params.getString("indicator");
+                                    if (indicator == null || indicator.trim().isEmpty() || !indicators.contains(indicator)) {
+                                        String errorMsg = i18n.translate("statistics.bad.request.invalid.indicator", I18n.DEFAULT_DOMAIN, acceptLanguage(request));
+                                        badRequest(request, errorMsg);
+                                        return;
+                                    }
+
+                                    String module = "";
+                                    if (TRACE_TYPE_SVC_ACCESS.equals(indicator)) {
+                                        //module = request.params().get(PARAM_MODULE);
+                                        module = params.getString("module");
+                                        if (module != null && !module.trim().isEmpty() && !accessModules.contains(module)) {
+                                            String errorMsg = i18n.translate("statistics.bad.request.invalid.module", I18n.DEFAULT_DOMAIN, acceptLanguage(request));
+                                            badRequest(request, errorMsg);
+                                            return;
+                                        }
+                                        // Else (when module is not specified) return data for all modules
+                                    }
+
+                                    //String startDate = request.params().get(PARAM_START_DATE);
+                                    //String endDate = request.params().get(PARAM_END_DATE);
+                                    String startDate = String.valueOf(params.getInteger("startDate"));
+                                    String endDate = String.valueOf(params.getInteger("endDate"));
+                                    long start, end;
+                                    try {
+                                        start = DateUtils.parseStringDate(startDate);
+                                        end = DateUtils.parseStringDate(endDate);
+                                        if (end < start || end < 0L || start < 0L) {
+                                            String errorMsg = i18n.translate("statistics.bad.request.invalid.dates", I18n.DEFAULT_DOMAIN, acceptLanguage(request));
+                                            badRequest(request, errorMsg);
+                                            return;
+                                        }
+                                    } catch (Exception e) {
+                                        log.error("Error when casting startDate or endDate to long", e);
+                                        String errorMsg = i18n.translate("statistics.bad.request.invalid.date.format", I18n.DEFAULT_DOMAIN, acceptLanguage(request));
+                                        badRequest(request, errorMsg);
+                                        return;
+                                    }
+
+                                    final JsonObject params = new JsonObject();
+                                    params.putString(PARAM_INDICATOR, indicator)
+                                            .putNumber(PARAM_START_DATE, start)
+                                            .putNumber(PARAM_END_DATE, end)
+                                            .putString(PARAM_MODULE, module);
+
+                                    if (schoolIds.size() == 1) {
+                                        // if the structure choosed is not a school, we need to explore all the attached schools from the graph base
+                                        structureService.getAttachedStructureslist(schoolIds.get(0), new Handler<Either<String, JsonArray>>() {
+                                            @Override
+                                            public void handle(Either<String, JsonArray> either) {
+                                                if (either.isLeft()) {
+                                                    log.error(either.left().getValue());
+                                                    renderError(request);
+                                                } else {
+                                                    final List<String> attachedSchoolsList;
+                                                    final JsonArray result = either.right().getValue();
+
+                                                    if (result != null) {
+                                                        attachedSchoolsList = new ArrayList<String>(result.size());
+                                                        for (int i = 0; i < result.size(); i++) {
+                                                            Object obj = result.get(i);
+                                                            if (obj instanceof JsonObject) {
+                                                                final JsonObject jo = (JsonObject) obj;
+                                                                attachedSchoolsList.add(jo.getString("s2.id", ""));
+                                                            }
+                                                        }
+                                                    } else {
+                                                        attachedSchoolsList = new ArrayList<String>(0);
+                                                    }
+                                                    formatting(attachedSchoolsList, params, indicator, request);
+                                                }
+                                            }
+                                        });
+                                    } else {
+                                        formatting(schoolIds, params, indicator, request);
+                                    }
+                                }
                             }
-                        }
+                        });
                     }
                 });
+
             }
         });
     }
@@ -297,7 +322,7 @@ public class StatisticsController extends MongoDbControllerHelper {
                     break;
 
                 default:
-                    String errorMsg = i18n.translate("statistics.bad.request.invalid.export.format", acceptLanguage(request));
+                    String errorMsg = i18n.translate("statistics.bad.request.invalid.export.format", I18n.DEFAULT_DOMAIN, acceptLanguage(request));
                     badRequest(request, errorMsg);
                     break;
             }
@@ -349,7 +374,7 @@ public class StatisticsController extends MongoDbControllerHelper {
 
                                 List<String> schoolIds = request.params().getAll(PARAM_SCHOOL_ID);
                                 if (schoolIds == null || schoolIds.size() == 0 || !isValidSchools(schoolIds, listSubStructuresIds)) {
-                                    String errorMsg = i18n.translate("statistics.bad.request.invalid.schools", acceptLanguage(request));
+                                    String errorMsg = i18n.translate("statistics.bad.request.invalid.schools", I18n.DEFAULT_DOMAIN, acceptLanguage(request));
                                     badRequest(request, errorMsg);
                                     return;
                                 }
@@ -386,26 +411,35 @@ public class StatisticsController extends MongoDbControllerHelper {
      * Before the generation, deletes the records who will be regenerated.
      */
     public void generation(final HttpServerRequest request) {
-        UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+        RequestUtils.bodyToJson(request, pathPrefix + "schoolquery", new Handler<JsonObject>() {
             @Override
-            public void handle(final UserInfos user) {
-                final Date startDate = new Date(Long.parseLong(request.params().get(PARAM_START_DATE)) * 1000L);
-                final Date endDate = new Date(Long.parseLong(request.params().get(PARAM_END_DATE)) * 1000L);
-                deleteRegeneratedStatistics(startDate, endDate, new Handler<Either<String, JsonArray>>() {
+            public void handle(JsonObject data) {
+                final JsonObject params = data; // parameters from the model (schoolIdArray / indicator / startDate / endDate / module)
+
+                UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
                     @Override
-                    public void handle(Either<String, JsonArray> event) {
-                        if (event.isLeft()) {
-                            log.error(event.left().getValue());
-                            renderError(request);
-                        } else {
-                            if (user != null) {
-                                Statistics st = new Statistics();
-                                st.aggregateEvents(StatisticsController.this.vertx, startDate, endDate);
-                                JsonArray jarray = new JsonArray();
-                                jarray.add(request.params().get(PARAM_START_DATE));
-                                renderJson(request, jarray);
+                    public void handle(final UserInfos user) {
+                        final Date startDate = new Date(params.getLong("startDate") * 1000L);
+                        final Date endDate = new Date(params.getLong("endDate") * 1000L);
+                        //final Date startDate = new Date(Long.parseLong(request.params().get(PARAM_START_DATE)) * 1000L);
+                        //final Date endDate = new Date(Long.parseLong(request.params().get(PARAM_END_DATE)) * 1000L);
+                        deleteRegeneratedStatistics(startDate, endDate, new Handler<Either<String, JsonArray>>() {
+                            @Override
+                            public void handle(Either<String, JsonArray> event) {
+                                if (event.isLeft()) {
+                                    log.error(event.left().getValue());
+                                    renderError(request);
+                                } else {
+                                    if (user != null) {
+                                        Statistics st = new Statistics();
+                                        st.aggregateEvents(StatisticsController.this.vertx, startDate, endDate);
+                                        JsonArray jarray = new JsonArray();
+                                        jarray.add(String.valueOf(params.getInteger("startDate")));
+                                        renderJson(request, jarray);
+                                    }
+                                }
                             }
-                        }
+                        });
                     }
                 });
             }
