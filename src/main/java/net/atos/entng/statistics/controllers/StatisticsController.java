@@ -155,7 +155,7 @@ public class StatisticsController extends MongoDbControllerHelper {
 
                                     //final List<String> schoolIds = Arrays.asList(params.getArray("schoolIdArray"));
                                     if (schoolIds == null || schoolIds.size() == 0 || !isValidSchools(schoolIds, listSubStructuresIds)){
-                                        String errorMsg = i18n.translate("statistics.bad.request.invalid.schools", I18n.DEFAULT_DOMAIN, acceptLanguage(request));
+                                        String errorMsg = i18n.translate("statistics.bad.request.invalid.schools", getHost(request), acceptLanguage(request));
                                         badRequest(request, errorMsg);
                                         return;
                                     }
@@ -163,7 +163,7 @@ public class StatisticsController extends MongoDbControllerHelper {
                                     //final String indicator = request.params().get(PARAM_INDICATOR);
                                     final String indicator = params.getString("indicator");
                                     if (indicator == null || indicator.trim().isEmpty() || !indicators.contains(indicator)) {
-                                        String errorMsg = i18n.translate("statistics.bad.request.invalid.indicator", I18n.DEFAULT_DOMAIN, acceptLanguage(request));
+                                        String errorMsg = i18n.translate("statistics.bad.request.invalid.indicator", getHost(request), acceptLanguage(request));
                                         badRequest(request, errorMsg);
                                         return;
                                     }
@@ -173,7 +173,7 @@ public class StatisticsController extends MongoDbControllerHelper {
                                         //module = request.params().get(PARAM_MODULE);
                                         module = params.getString("module");
                                         if (module != null && !module.trim().isEmpty() && !accessModules.contains(module)) {
-                                            String errorMsg = i18n.translate("statistics.bad.request.invalid.module", I18n.DEFAULT_DOMAIN, acceptLanguage(request));
+                                            String errorMsg = i18n.translate("statistics.bad.request.invalid.module", getHost(request), acceptLanguage(request));
                                             badRequest(request, errorMsg);
                                             return;
                                         }
@@ -189,13 +189,13 @@ public class StatisticsController extends MongoDbControllerHelper {
                                         start = DateUtils.parseStringDate(startDate);
                                         end = DateUtils.parseStringDate(endDate);
                                         if (end < start || end < 0L || start < 0L) {
-                                            String errorMsg = i18n.translate("statistics.bad.request.invalid.dates", I18n.DEFAULT_DOMAIN, acceptLanguage(request));
+                                            String errorMsg = i18n.translate("statistics.bad.request.invalid.dates", getHost(request), acceptLanguage(request));
                                             badRequest(request, errorMsg);
                                             return;
                                         }
                                     } catch (Exception e) {
                                         log.error("Error when casting startDate or endDate to long", e);
-                                        String errorMsg = i18n.translate("statistics.bad.request.invalid.date.format", I18n.DEFAULT_DOMAIN, acceptLanguage(request));
+                                        String errorMsg = i18n.translate("statistics.bad.request.invalid.date.format", getHost(request), acceptLanguage(request));
                                         badRequest(request, errorMsg);
                                         return;
                                     }
@@ -322,7 +322,7 @@ public class StatisticsController extends MongoDbControllerHelper {
                     break;
 
                 default:
-                    String errorMsg = i18n.translate("statistics.bad.request.invalid.export.format", I18n.DEFAULT_DOMAIN, acceptLanguage(request));
+                    String errorMsg = i18n.translate("statistics.bad.request.invalid.export.format", getHost(request), acceptLanguage(request));
                     badRequest(request, errorMsg);
                     break;
             }
@@ -374,7 +374,7 @@ public class StatisticsController extends MongoDbControllerHelper {
 
                                 List<String> schoolIds = request.params().getAll(PARAM_SCHOOL_ID);
                                 if (schoolIds == null || schoolIds.size() == 0 || !isValidSchools(schoolIds, listSubStructuresIds)) {
-                                    String errorMsg = i18n.translate("statistics.bad.request.invalid.schools", I18n.DEFAULT_DOMAIN, acceptLanguage(request));
+                                    String errorMsg = i18n.translate("statistics.bad.request.invalid.schools", getHost(request), acceptLanguage(request));
                                     badRequest(request, errorMsg);
                                     return;
                                 }
