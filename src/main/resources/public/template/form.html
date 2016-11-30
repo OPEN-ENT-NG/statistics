@@ -6,7 +6,7 @@
 				<span class="four cell">
 					<select ng-hide="schools.length === 1"
 						ng-model="form.school_id"
-						ng-options="school.id as school.name for school in schools">
+						ng-options="school.id as school.name for school in schools | orderBy:'name'">
 					</select>
 					<span ng-if="schools.length === 1">[[schools[0].name]]</span>
 				</span>
