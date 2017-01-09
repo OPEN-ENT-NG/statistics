@@ -192,7 +192,8 @@ function StatisticsController($scope, template, model) {
 			}
 
 			// Get UAI and city of structures
-			var query = http().serialize({schoolId: model.me.structures});
+			//var query = http().serialize({schoolId: model.me.structures});
+			var query = generateQuery($scope.form, schoolIdArray);
 			model.getStructures(query, function(structures) {
 				if (Array.isArray(structures) && structures.length > 0) {
 					$scope.schools = structures;
@@ -269,8 +270,7 @@ function StatisticsController($scope, template, model) {
 		// Export data corresponding to displayed chart (i.e. data from $scope.chart.form, not from $scope.form)
 		var schoolIdArray = getSchoolIdArray($scope.chart.form);
 		var query = generateQuery($scope.chart.form, schoolIdArray);
-		query += '&format=csv';
-		
+
 		model.getData(query, function(data) {
 			// Replace string "uai"+structureId by uai, string "city"+structureId by city, and structureIds by structureNames
 			var formattedData = data;
