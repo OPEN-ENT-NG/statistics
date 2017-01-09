@@ -8,21 +8,21 @@ model.getMetadata = function(callback){
 };
 
 model.generation = function(query, callback, errorCallback) {
-		http().postJson('/statistics/generation', query).done(function(result){
-        if(typeof callback === 'function'){
-            callback(result);
-        }
-    }).e400(function(e){
-        var responseText = JSON.parse(e.responseText);
-        notify.error(responseText.error);
-        if(typeof errorCallback === 'function'){
-            errorCallback();
-        }
-    });
+	http().postJson('/statistics/generation', query).done(function(result){
+		if(typeof callback === 'function'){
+			callback(result);
+		}
+	}).e400(function(e){
+		var responseText = JSON.parse(e.responseText);
+		notify.error(responseText.error);
+		if(typeof errorCallback === 'function'){
+			errorCallback();
+		}
+	});
 };
 
-model.getData = function(query, callback, errorCallback){
-	http().postJson('/statistics/data', query).done(function(result){
+model.getData = function(query, query2, callback, errorCallback){
+	http().postJson('/statistics/data' + query2, query).done(function(result){
 		if(typeof callback === 'function'){
 			callback(result);
 		}
@@ -36,8 +36,7 @@ model.getData = function(query, callback, errorCallback){
 };
 
 model.getStructures = function(query, callback){
-	var url = '/statistics/structures?' + query;
-	http().get(url).done(function(result){
+	http().postJson('/statistics/structures', query).done(function(result){
 		if(typeof callback === 'function'){
 			callback(result);
 		}
