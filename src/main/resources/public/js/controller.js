@@ -192,7 +192,6 @@ function StatisticsController($scope, template, model) {
 			}
 
 			// Get UAI and city of structures
-			//var query = http().serialize({schoolId: model.me.structures});
 			var query = generateQuery($scope.form, schoolIdArray);
 			model.getStructures(query, function(structures) {
 				if (Array.isArray(structures) && structures.length > 0) {
