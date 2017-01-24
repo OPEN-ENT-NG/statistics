@@ -40,8 +40,7 @@ function StatisticsController($scope, template, model) {
 			}
 			else {
 				// ADMIN_LOCAL.scope has schools that are not in model.me.structures. We need to get their names
-
-				var query = http().serialize({schoolId: schools});
+				var query = generateQuery($scope.form, schools);
 				model.getStructures(query, function(structures) {
 					if (Array.isArray(structures) && structures.length > 0) {
 						$scope.schools = structures;
