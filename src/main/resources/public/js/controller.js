@@ -30,24 +30,17 @@ function StatisticsController($scope, template, model) {
 			model.me.functions.ADMIN_LOCAL.scope);
 
 			if(!isLocalAdmin) {
-				endInitialization();
+				endInitialization(false);
 				return;
 			}
 
 			var schools = _.union(model.me.functions.ADMIN_LOCAL.scope, model.me.structures);
 			if(schools.length === model.me.structures.length) {
-				endInitialization();
-			}
-			else {
+			 	endInitialization(false);
+			 } else {
 				// ADMIN_LOCAL.scope has schools that are not in model.me.structures. We need to get their names
-				var query = generateQuery($scope.form, schools);
-				model.getStructures(query, function(structures) {
-					if (Array.isArray(structures) && structures.length > 0) {
-						$scope.schools = structures;
-					}
-					endInitialization();
-				});
-			}
+				endInitialization(true);
+			 }
 		});
 	};
 
@@ -58,7 +51,7 @@ function StatisticsController($scope, template, model) {
 		if (!found) { $scope.schools.push({ id: structure.id, name: structure.name }); }
 	}
 
-	function endInitialization() {
+	function endInitialization(initSubStructures) {
 		addAllMySchools();
 
 		// Get indicators and modules. Initialize dates
@@ -79,7 +72,21 @@ function StatisticsController($scope, template, model) {
 				$scope.toDates = toDates;
 
 				displayDefaultChart();
-				template.open('main', 'form');
+				if( initSubStructures ){
+					var query = generateQuery($scope.form, $scope.schools);
+					model.getStructures(query, function(structures) {
+						if (Array.isArray(structures) && structures.length > 0) {
+							$scope.schools = structures;
+							if($scope.schools.length > 1) {
+								var allSchoolIds = _.pluck($scope.schools, "id").join(",");
+								$scope.schools.push({id: allSchoolIds, name: lang.translate('statistics.all.my.schools')});
+							}
+						}
+						template.open('main', 'form');
+					});
+				} else {
+					template.open('main', 'form');
+				}
 			}
 			else {
 				notify.error('statistics.initialization.error');
@@ -277,18 +284,18 @@ function StatisticsController($scope, template, model) {
 					return schoolId === school.id;
 				});
 				if(school && school.name) {
-				 formattedData = formattedData.replace(new RegExp('uai'+schoolId, 'g'), school.uai)
-				 .replace(new RegExp('city'+schoolId, 'g'), school.city)
-				 .replace(new RegExp(schoolId, 'g'), school.name);
-				 }
+					formattedData = formattedData.replace(new RegExp('uai'+schoolId, 'g'), school.uai)
+						.replace(new RegExp('city'+schoolId, 'g'), school.city)
+						.replace(new RegExp(schoolId, 'g'), school.name);
+				}
 			});
 
 			// Replace applications' technicalNames by displayNames
 			_.map($scope.modules, function(module) {
-			 if(module && module.name && module.technicalName) {
-			 formattedData = formattedData.replace(new RegExp(module.technicalName, 'g'), module.name);
-			 }
-			 });
+				if(module && module.name && module.technicalName) {
+					formattedData = formattedData.replace(new RegExp(module.technicalName, 'g'), module.name);
+				}
+			});
 
 			var csvFilename = getCsvFilename($scope.chart.form);
 
