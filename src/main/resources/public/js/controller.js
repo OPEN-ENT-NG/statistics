@@ -44,12 +44,19 @@ function StatisticsController($scope, template, model) {
 		});
 	};
 
+	// check if structure present in school. If not, push
 	function checkAndAdd(structure) {
-		var found = $scope.schools.some(function (school) {
-			return school.id === structure.id;
-		});
-		if (!found) { $scope.schools.push({ id: structure.id, name: structure.name }); }
+		var found = false;
+		for (var i = 0; i < $scope.schools.length; i++) {
+			if ($scope.schools[i].id === structure.id) {
+				found = true;
+			}
+		}
+		if (!found) {
+			$scope.schools.push({id: structure.id, name: structure.name});
+		}
 	}
+
 
 	function endInitialization(initSubStructures) {
 		addAllMySchools();
