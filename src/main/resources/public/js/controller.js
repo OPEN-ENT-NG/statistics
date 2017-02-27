@@ -286,6 +286,16 @@ function StatisticsController($scope, template, model) {
 		model.getData(query, query2, function(data) {
 			// Replace string "uai"+structureId by uai, string "city"+structureId by city, and structureIds by structureNames
 			var formattedData = data;
+
+            $scope.schools.forEach(function (school) {
+                if (school && school.name) {
+                    formattedData = formattedData.replace(new RegExp('uai' + school.id, 'g'), school.uai)
+                        .replace(new RegExp('city' + school.id, 'g'), school.city)
+                        .replace(new RegExp(school.id, 'g'), school.name);
+                }
+            });
+
+            /*
 			_.map(schoolIdArray, function(schoolId) {
 				var school = _.find($scope.schools, function(school) {
 					return schoolId === school.id;
@@ -295,7 +305,7 @@ function StatisticsController($scope, template, model) {
 						.replace(new RegExp('city'+schoolId, 'g'), school.city)
 						.replace(new RegExp(schoolId, 'g'), school.name);
 				}
-			});
+			});*/
 
 			// Replace applications' technicalNames by displayNames
 			_.map($scope.modules, function(module) {
