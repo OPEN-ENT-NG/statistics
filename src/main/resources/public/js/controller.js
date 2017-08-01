@@ -161,7 +161,7 @@ function StatisticsController($scope, template, model) {
 	}
 
 	function formatMoment(moment) {
-		return moment.lang('fr').format('MMMM YYYY');
+		return moment.local().format('MMMM YYYY');
 	}
 
 	function formatMomentAsPreviousMonth(moment) {
@@ -686,7 +686,7 @@ function StatisticsController($scope, template, model) {
 	}
 
 	function formatDate(dateString) {
-		return moment(dateString).lang('fr').format('MMMM YYYY');
+		return moment(dateString).local().format('MMMM YYYY');
 	}
 
 	function formatModules(modules) {
