@@ -200,25 +200,26 @@ function StatisticsController($scope, template, model) {
 			var getStructuresMetadata = (aSchool && aSchool.city === undefined && aSchool.uai === undefined);
 
 			if(!getStructuresMetadata) {
-				getCsvData();
+				getCsvData($scope.form.school_id);
 				return;
 			}
 
-			// Get UAI and city of structures
-			var query = generateQuery($scope.form, $scope.schools);
-			model.getStructures(query, function(structures) {
-				if (Array.isArray(structures) && structures.length > 0) {
-					$scope.schools = structures;
-					addAllMySchools();
-					getCsvData();
-				}
-				else {
-					notify.error('statistics.get.structures.error');
-					$scope.form.processing = false;
-					return;
-				}
-			});
-		}
+            // Get UAI and city of structures
+            var query = generateQuery($scope.form, $scope.schools);
+            model.getStructures(query, function(structures) {
+                if (Array.isArray(structures) && structures.length > 0) {
+                    var school_id_to_export = $scope.form.school_id;
+                	$scope.schools = structures;
+                    addAllMySchools();
+                    getCsvData(school_id_to_export);
+                }
+                else {
+                    notify.error('statistics.get.structures.error');
+                    $scope.form.processing = false;
+                    return;
+                }
+            });
+        }
 		else {
 			if($scope.form.from.isAfter($scope.form.to) || $scope.form.from.isSame($scope.form.to)) {
 				notify.error('statistics.invalid.dates');
@@ -278,9 +279,9 @@ function StatisticsController($scope, template, model) {
 
 	};
 
-	function getCsvData() {
+	function getCsvData(school_id) {
 		// Export data corresponding to displayed chart (i.e. data from $scope.chart.form, not from $scope.form)
-		var schoolIdArray = getSchoolIdArray($scope.chart.form);
+		var schoolIdArray = school_id.split(",");
 		var query = generateQuery($scope.chart.form, schoolIdArray);
 		var query2 = '?format=csv';
 		model.getData(query, query2, function(data) {
