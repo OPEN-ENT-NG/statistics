@@ -36,12 +36,12 @@ import org.entcore.common.aggregation.MongoConstants.COLLECTIONS;
 import org.entcore.common.aggregation.filters.dbbuilders.MongoDBBuilder;
 import org.entcore.common.aggregation.indicators.Indicator;
 import org.entcore.common.neo4j.Neo4j;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.core.logging.Logger;
-import org.vertx.java.core.logging.impl.LoggerFactory;
+import io.vertx.core.Handler;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.mongodb.MongoQueryBuilder;
@@ -98,18 +98,18 @@ public class IndicatorCustomImpl extends Indicator {
 							if(countDown.decrementAndGet() == 0){
 								final Date end = new Date();
 								log.info("[Aggregation]{"+IndicatorCustomImpl.this.getKey()+"} Took ["+(end.getTime() - start.getTime())+"] ms");
-								callBack.handle(new JsonObject().putString("status", "ok"));
+								callBack.handle(new JsonObject().put("status", "ok"));
 							}
 						}
 					};
 
 					for (int i = 0; i < results.size(); i++) {
-						JsonObject jo = results.get(i);
+						JsonObject jo = results.getJsonObject(i);
 
 						String structure = jo.getString("structure");
 						String profile = jo.getString("profile");
-						Number accounts = jo.getNumber("accounts");
-						Number activatedAccounts = jo.getNumber("activatedAccounts");
+						Number accounts = jo.getInteger("accounts");
+						Number activatedAccounts = jo.getInteger("activatedAccounts");
 
 						String date = MongoDb.formatDate(IndicatorCustomImpl.this.getWriteDate());
 

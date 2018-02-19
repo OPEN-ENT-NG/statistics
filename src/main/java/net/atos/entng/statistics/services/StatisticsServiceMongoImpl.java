@@ -34,10 +34,10 @@ import java.util.List;
 
 import org.entcore.common.mongodb.MongoDbResult;
 import org.entcore.common.service.impl.MongoDbCrudService;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.Handler;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
@@ -57,9 +57,9 @@ public class StatisticsServiceMongoImpl extends MongoDbCrudService implements St
 	public static final String PROFILE_ID = TRACE_FIELD_PROFILE + "_id";
 	public static final String STRUCTURES_ID = TRACE_FIELD_STRUCTURES + "_id";
 
-	private static final JsonObject sortByDateProfile = new JsonObject().putNumber(STATS_FIELD_DATE, 1).putNumber(PROFILE_ID, 1);
+	private static final JsonObject sortByDateProfile = new JsonObject().put(STATS_FIELD_DATE, 1).put(PROFILE_ID, 1);
 	private static final JsonObject sortByStructureDateProfile = new JsonObject()
-		.putNumber(STRUCTURES_ID, 1).putNumber(STATS_FIELD_DATE, 1).putNumber(PROFILE_ID, 1);
+		.put(STRUCTURES_ID, 1).put(STATS_FIELD_DATE, 1).put(PROFILE_ID, 1);
 
 	public StatisticsServiceMongoImpl(String collection) {
 		super(collection);
@@ -84,8 +84,8 @@ public class StatisticsServiceMongoImpl extends MongoDbCrudService implements St
 		}
 
 		String indicator = params.getString(PARAM_INDICATOR);
-		Long start = (Long) params.getNumber(PARAM_START_DATE);
-		Long end = (Long) params.getNumber(PARAM_END_DATE);
+		Long start = params.getLong(PARAM_START_DATE);
+		Long end = params.getLong(PARAM_END_DATE);
 
 		boolean isActivatedAccountsIndicator = STATS_FIELD_ACTIVATED_ACCOUNTS.equals(indicator);
 		boolean isAccessIndicator = TRACE_TYPE_SVC_ACCESS.equals(indicator);
@@ -111,12 +111,12 @@ public class StatisticsServiceMongoImpl extends MongoDbCrudService implements St
 			// When getting data for only one module, a "find" is enough (no need to aggregate data)
 			if(!isExport && !isAccessAllModules) {
 				JsonObject projection = new JsonObject();
-				projection.putNumber("_id", 0)
-					.putNumber(indicator, 1)
-					.putNumber(PROFILE_ID, 1)
-					.putNumber(STATS_FIELD_DATE, 1);
+				projection.put("_id", 0)
+					.put(indicator, 1)
+					.put(PROFILE_ID, 1)
+					.put(STATS_FIELD_DATE, 1);
 				if(isActivatedAccountsIndicator) {
-					projection.putNumber(STATS_FIELD_ACCOUNTS, 1);
+					projection.put(STATS_FIELD_ACCOUNTS, 1);
 				}
 
 				mongo.find(collection, MongoQueryBuilder.build(criteriaQuery), sortByDateProfile,
@@ -130,30 +130,30 @@ public class StatisticsServiceMongoImpl extends MongoDbCrudService implements St
 		final JsonObject aggregation = new JsonObject();
 		JsonArray pipeline = new JsonArray();
 		aggregation
-			.putString("aggregate", collection)
-			.putBoolean("allowDiskUse", true)
-			.putArray("pipeline", pipeline);
+			.put("aggregate", collection)
+			.put("allowDiskUse", true)
+			.put("pipeline", pipeline);
 
-		pipeline.addObject(new JsonObject().putObject("$match", MongoQueryBuilder.build(criteriaQuery)));
+		pipeline.add(new JsonObject().put("$match", MongoQueryBuilder.build(criteriaQuery)));
 
-		JsonObject id = new JsonObject().putString(PROFILE_ID, "$"+PROFILE_ID);
+		JsonObject id = new JsonObject().put(PROFILE_ID, "$"+PROFILE_ID);
 		if(isAccessAllModules && !isExport) {
 			// Case : get JSON data for indicator "access to all modules"
-			id.putString(MODULE_ID, "$"+MODULE_ID);
+			id.put(MODULE_ID, "$"+MODULE_ID);
 		}
 		else {
-			id.putString(STATS_FIELD_DATE, "$"+STATS_FIELD_DATE);
+			id.put(STATS_FIELD_DATE, "$"+STATS_FIELD_DATE);
 		}
 
 		JsonObject group = new JsonObject()
-			.putObject("_id", id)
-			.putObject(indicator, new JsonObject().putString("$sum", "$"+indicator));
+			.put("_id", id)
+			.put(indicator, new JsonObject().put("$sum", "$"+indicator));
 		if(isActivatedAccountsIndicator) {
-			group.putObject(STATS_FIELD_ACCOUNTS, new JsonObject().putString("$sum", "$"+STATS_FIELD_ACCOUNTS));
+			group.put(STATS_FIELD_ACCOUNTS, new JsonObject().put("$sum", "$"+STATS_FIELD_ACCOUNTS));
 		}
-		JsonObject groupBy = new JsonObject().putObject("$group", group);
+		JsonObject groupBy = new JsonObject().put("$group", group);
 
-		pipeline.addObject(groupBy);
+		pipeline.add(groupBy);
 
 		QueryBuilder projection = QueryBuilder.start("_id").is(0)
 				.and(PROFILE_ID).is("$_id."+PROFILE_ID);
@@ -171,7 +171,7 @@ public class StatisticsServiceMongoImpl extends MongoDbCrudService implements St
 			}
 
 			// Sum stats for all structure_ids
-			pipeline.addObject(new JsonObject().putObject("$project", MongoQueryBuilder.build(projection)));
+			pipeline.add(new JsonObject().put("$project", MongoQueryBuilder.build(projection)));
 		}
 		else {
 			// Projection : keep 'yyyy-MM' from 'yyyy-MM-dd HH:mm.ss.SSS'
@@ -189,28 +189,28 @@ public class StatisticsServiceMongoImpl extends MongoDbCrudService implements St
 			JsonObject sort = sortByStructureDateProfile;
 
 			// Export stats for each structure_id
-			id.putString(STRUCTURES_ID, "$"+STRUCTURES_ID);
+			id.put(STRUCTURES_ID, "$"+STRUCTURES_ID);
 			projection.and(STRUCTURES_ID).is("$_id."+STRUCTURES_ID);
 
 			if(isAccessIndicator) {
 				if (isAccessAllModules) {
-					sort = sort.copy().putNumber(MODULE_ID, 1);
+					sort = sort.copy().put(MODULE_ID, 1);
 				}
 
 				// Export stats for each module_id
-				id.putString(MODULE_ID, "$"+MODULE_ID);
+				id.put(MODULE_ID, "$"+MODULE_ID);
 				projection.and(MODULE_ID).is("$_id."+MODULE_ID);
 			}
 
-			pipeline.addObject(new JsonObject().putObject("$project", MongoQueryBuilder.build(projection)));
-			pipeline.addObject(new JsonObject().putObject("$sort", sort));
+			pipeline.add(new JsonObject().put("$project", MongoQueryBuilder.build(projection)));
+			pipeline.add(new JsonObject().put("$sort", sort));
 		}
 
 		mongo.command(aggregation.toString(), new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> message) {
-				if ("ok".equals(message.body().getString("status")) && message.body().getObject("result", new JsonObject()).getInteger("ok") == 1){
-					JsonArray result = message.body().getObject("result").getArray("result");
+				if ("ok".equals(message.body().getString("status")) && message.body().getJsonObject("result", new JsonObject()).getInteger("ok") == 1){
+					JsonArray result = message.body().getJsonObject("result").getJsonArray("result");
 					handler.handle(new Either.Right<String, JsonArray>(result));
 				} else {
 					String error = message.body().toString();
