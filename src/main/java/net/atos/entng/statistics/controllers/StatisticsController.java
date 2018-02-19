@@ -44,11 +44,11 @@ import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserInfos.Function;
 import org.entcore.common.user.UserUtils;
 
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.Vertx;
-import org.vertx.java.core.http.HttpServerRequest;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -91,8 +91,8 @@ public class StatisticsController extends MongoDbControllerHelper {
         indicators.add(STATS_FIELD_ACTIVATED_ACCOUNTS);
 
         metadata = new JsonObject();
-        metadata.putArray("indicators", new JsonArray(indicators.toArray()));
-        metadata.putArray("modules", pAccessModules);
+        metadata.put("indicators", new JsonArray(new ArrayList<>(indicators)));
+        metadata.put("modules", pAccessModules);
         accessModules = pAccessModules;
     }
 
@@ -126,13 +126,13 @@ public class StatisticsController extends MongoDbControllerHelper {
                             unauthorized(request);
                             return;
                         }
-                        JsonArray arr = params.getArray("schoolIdArray");
+                        JsonArray arr = params.getJsonArray("schoolIdArray");
                         List<String> schoolIds = new ArrayList<String>();
                         for(int i = 0; i < arr.size(); i++){
-                            schoolIds.add((String) arr.get(i));
+                            schoolIds.add(arr.getString(i));
                         }
 
-                        //final List<String> schoolIds = Arrays.asList(params.getArray("schoolIdArray"));
+                        //final List<String> schoolIds = Arrays.asList(params.getJsonArray("schoolIdArray"));
                         if (schoolIds == null || schoolIds.size() == 0){
                             String errorMsg = i18n.translate("statistics.bad.request.invalid.schools", getHost(request), acceptLanguage(request));
                             badRequest(request, errorMsg);
@@ -180,10 +180,10 @@ public class StatisticsController extends MongoDbControllerHelper {
                         }
 
                         final JsonObject params = new JsonObject();
-                        params.putString(PARAM_INDICATOR, indicator)
-                                .putNumber(PARAM_START_DATE, start)
-                                .putNumber(PARAM_END_DATE, end)
-                                .putString(PARAM_MODULE, module);
+                        params.put(PARAM_INDICATOR, indicator)
+                                .put(PARAM_START_DATE, start)
+                                .put(PARAM_END_DATE, end)
+                                .put(PARAM_MODULE, module);
 
                         if (schoolIds.size() == 1) {
                             // if the structure choosed is not a school, we need to explore all the attached schools from the graph base
@@ -200,7 +200,7 @@ public class StatisticsController extends MongoDbControllerHelper {
                                         if (result != null) {
                                             attachedSchoolsList = new ArrayList<String>(result.size());
                                             for (int i = 0; i < result.size(); i++) {
-                                                Object obj = result.get(i);
+                                                Object obj = result.getValue(i);
                                                 if (obj instanceof JsonObject) {
                                                     final JsonObject jo = (JsonObject) obj;
                                                     attachedSchoolsList.add(jo.getString("s2.id", ""));
@@ -269,9 +269,9 @@ public class StatisticsController extends MongoDbControllerHelper {
                                 renderError(request);
                             } else {
                                 JsonObject params = new JsonObject()
-                                        .putBoolean("is" + indicator, true)
-                                        .putArray("list", event.right().getValue())
-                                        .putString("indicator", indicator);
+                                        .put("is" + indicator, true)
+                                        .put("list", event.right().getValue())
+                                        .put("indicator", indicator);
 
                                 processTemplate(request, "text/export.txt", params, new Handler<String>() {
                                     @Override
@@ -336,11 +336,11 @@ public class StatisticsController extends MongoDbControllerHelper {
                     public void handle(final UserInfos user) {
                         if (user != null) {
 
-                            JsonArray arr = params.getArray("schoolIdArray");
+                            JsonArray arr = params.getJsonArray("schoolIdArray");
                             List<String> schoolIds = new ArrayList<String>();
                             for(int i = 0; i < arr.size(); i++){
-                                JsonObject obj = arr.get(i);
-                                schoolIds.add((String) obj.getString("id"));
+                                JsonObject obj = arr.getJsonObject(i);
+                                schoolIds.add(obj.getString("id"));
                             }
 
                             if (schoolIds == null || schoolIds.size() == 0) {
@@ -351,7 +351,7 @@ public class StatisticsController extends MongoDbControllerHelper {
 
                             JsonArray structureIds = new JsonArray();
                             for (String school : schoolIds) {
-                                structureIds.addString(school);
+                                structureIds.add(school);
                             }
 
                             structureService.list(structureIds, new Handler<Either<String, JsonArray>>() {
@@ -424,15 +424,15 @@ public class StatisticsController extends MongoDbControllerHelper {
         String strEndDate = df.format(endDate);
 
         // first condition
-        final JsonArray cond = new JsonArray().addObject(new JsonObject().putObject("date", new JsonObject()
-                .putString("$gte", strStartDate)));
+        final JsonArray cond = new JsonArray().add(new JsonObject().put("date", new JsonObject()
+                .put("$gte", strStartDate)));
 
         // second condition
-        cond.addObject(new JsonObject().putObject("date", new JsonObject()
-                .putString("$lt", strEndDate)));
+        cond.add(new JsonObject().put("date", new JsonObject()
+                .put("$lt", strEndDate)));
 
         // query = condition1 AND condition2
-        final JsonObject query = new JsonObject().putArray("$and", cond);
+        final JsonObject query = new JsonObject().put("$and", cond);
 
         // launch deletion
         mongo.delete("stats", query, MongoDbResult.validResultsHandler(handler));

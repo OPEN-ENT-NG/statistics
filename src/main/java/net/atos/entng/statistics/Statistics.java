@@ -29,20 +29,20 @@ import net.atos.entng.statistics.controllers.StatisticsController;
 import org.entcore.common.aggregation.MongoConstants;
 import org.entcore.common.http.BaseServer;
 import org.entcore.common.mongodb.MongoDbConf;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.Vertx;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 import fr.wseduc.cron.CronTrigger;
 
 public class Statistics extends BaseServer {
 
 	@Override
-	public void start() {
+	public void start() throws Exception {
 		super.start();
 
-		JsonArray accessModules = container.config().getArray("access-modules", null);
+		JsonArray accessModules = config.getJsonArray("access-modules", null);
 		if(accessModules==null || accessModules.size()==0) {
 			log.error("Parameter access-modules is null or empty");
 			return;
@@ -53,7 +53,7 @@ public class Statistics extends BaseServer {
 		 * Be careful when setting fire times between midnight and 1:00 AM
 		 * - "daylight savings" can cause a skip or a repeat depending on whether the time moves back or jumps forward.
 		 */
-		final String aggregateEventsCron = container.config().getString("aggregate-cron", "0 15 1 ? * * *");
+		final String aggregateEventsCron = config.getString("aggregate-cron", "0 15 1 ? * * *");
 
 		AggregateTask aggTask = new AggregateTask();
 		try {
@@ -64,8 +64,8 @@ public class Statistics extends BaseServer {
 		}
 
 		// In development environment, launch aggregations if parameter "aggregateOnStart" is set to true in module configuration
-		if("dev".equals(container.config().getString("mode", null))
-				&& container.config().getBoolean("aggregateOnStart", false)) {
+		if("dev".equals(config.getString("mode", null))
+				&& config.getBoolean("aggregateOnStart", false)) {
 
             Date startDate = new Date();
             startDate.setTime(1430352000000L); // Thu, 30 Apr 2015 00:00:00 GMT
