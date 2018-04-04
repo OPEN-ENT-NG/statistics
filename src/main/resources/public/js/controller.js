@@ -14,9 +14,7 @@ function StatisticsController($scope, template, model) {
 
 		// Get Schools
 		$scope.schools = [];
-		for (var i=0; i < model.me.structures.length; i++) {
-			$scope.schools.push({id: model.me.structures[i], name: model.me.structureNames[i]});
-		}
+
 		// getting all the substructures
 		model.getSubstructures(function(substructures) {
 

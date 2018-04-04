@@ -49,7 +49,7 @@ public class StructureServiceNeo4jImpl implements StructureService {
 
 	public void getListStructuresForUser( String userId, Handler<Either<String, JsonArray>> handler) {
 		String query = "match (u:User)-[IN]->(pg:ProfileGroup)-[DEPENDS]->(s:Structure)<-[:HAS_ATTACHMENT*0..]-(s2:Structure) " +
-				" where u.id = {userId} return distinct s2.id as id, s2.name as name";
+				" where u.id = {userId} return distinct s2.id as id, s2.name + case when exists(s2.UAI) then '(' + s2.UAI +')' else '' end as name";
 		JsonObject params = new JsonObject().putString("userId", userId);
 		neo4j.execute(query, params, validResultHandler(handler));
 	}
