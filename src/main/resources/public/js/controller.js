@@ -705,8 +705,8 @@ function StatisticsController($scope, template, model) {
 
 	function getApplicationName(moduleName) {
 		var app = _.find(model.me.apps, function(app){
-			if(app.address && app.address.indexOf('/') !== -1) {
-				var appPrefix = app.address.split('/')[1];
+			if(app.prefix && app.prefix.indexOf('/') !== -1) {
+				var appPrefix = app.prefix[1];
 				return moduleName.toLowerCase() === appPrefix;
 			}
 			return false;
