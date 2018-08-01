@@ -60,7 +60,7 @@ import static org.entcore.common.aggregation.MongoConstants.*;
 
 public class StatisticsController extends MongoDbControllerHelper {
 
-    private final StatisticsService statsService;
+    private StatisticsService statsService;
     private final StructureService structureService;
     private final Vertx vertx;
     private I18n i18n;
@@ -79,7 +79,6 @@ public class StatisticsController extends MongoDbControllerHelper {
     public StatisticsController(Vertx vertx, String collection, JsonArray pAccessModules) {
         super(collection);
         this.vertx = vertx;
-        statsService = new StatisticsServiceMongoImpl(collection);
         structureService = new StructureServiceNeo4jImpl();
         i18n = I18n.getInstance();
 
@@ -438,5 +437,9 @@ public class StatisticsController extends MongoDbControllerHelper {
         mongo.delete("stats", query, MongoDbResult.validResultsHandler(handler));
 
 
+    }
+
+    public void setStatsService(StatisticsService statsService) {
+        this.statsService = statsService;
     }
 }
