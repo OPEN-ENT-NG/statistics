@@ -23,18 +23,19 @@ import java.text.ParseException;
 import java.util.Calendar;
 import java.util.Date;
 
+import fr.wseduc.cron.CronTrigger;
 import net.atos.entng.statistics.aggregation.AggregateTask;
 import net.atos.entng.statistics.controllers.StatisticsController;
 
+import net.atos.entng.statistics.services.ElasticSearchEventsSync;
+import net.atos.entng.statistics.services.StatisticsServiceESImpl;
 import org.entcore.common.aggregation.MongoConstants;
 import org.entcore.common.http.BaseServer;
-import org.entcore.common.mongodb.MongoDbConf;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
-import fr.wseduc.cron.CronTrigger;
 
 public class Statistics extends BaseServer {
 
@@ -48,42 +49,20 @@ public class Statistics extends BaseServer {
 			return;
 		}
 
-		// 1) Schedule daily aggregation
-		/* By default, fire aggregate-cron at 1:15am every day.
-		 * Be careful when setting fire times between midnight and 1:00 AM
-		 * - "daylight savings" can cause a skip or a repeat depending on whether the time moves back or jumps forward.
-		 */
-		final String aggregateEventsCron = config.getString("aggregate-cron", "0 15 1 ? * * *");
+//		this.rm.get( "/statistics/sync", request -> new ElasticSearchEventsSync(vertx).handle(3l));
 
-		AggregateTask aggTask = new AggregateTask();
+		StatisticsController statsController = new StatisticsController(vertx,
+				MongoConstants.COLLECTIONS.stats.toString(), accessModules);
+		statsController.setStatsService(new StatisticsServiceESImpl());
+		addController(statsController);
+
+		final String syncEventsCron = config.getString("sync-cron", "0 42 * * * ? *");
 		try {
-			new CronTrigger(vertx, aggregateEventsCron).schedule(aggTask);
+			new CronTrigger(vertx, syncEventsCron).schedule(new ElasticSearchEventsSync(vertx));
 		} catch (ParseException e) {
-			log.fatal(e.getMessage(), e);
-			return;
+			log.error("Error parsing quartz expression for sync events", e);
 		}
-
-		// In development environment, launch aggregations if parameter "aggregateOnStart" is set to true in module configuration
-		if("dev".equals(config.getString("mode", null))
-				&& config.getBoolean("aggregateOnStart", false)) {
-
-            Date startDate = new Date();
-            startDate.setTime(1430352000000L); // Thu, 30 Apr 2015 00:00:00 GMT
-
-            Date endDate = new Date();
-            endDate.setTime(1430438400000L); // Fri, 01 May 2015 00:00:00 GMT
-
-			this.aggregateEvents(vertx, startDate, endDate);
-		}
-
-
-		// 2) Init controller
-		 addController(new StatisticsController(vertx, MongoConstants.COLLECTIONS.stats.toString(), accessModules));
-		 MongoDbConf.getInstance().setCollection(MongoConstants.COLLECTIONS.stats.toString());
-
-        // FIXME : the statistics will be kept one year to antoher. No repositoryEvents management
     }
-
 
 	// Aggregate documents of collection "events" for each day, from startDate to endDate
 	public void aggregateEvents(Vertx vertx, final Date startDate, final Date endDate) {
