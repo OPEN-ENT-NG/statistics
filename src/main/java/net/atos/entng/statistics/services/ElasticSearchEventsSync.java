@@ -16,7 +16,7 @@ public class ElasticSearchEventsSync implements Handler<Long> {
 	private final MongoDb mongo = MongoDb.getInstance();
 	private final ElasticSearch es = ElasticSearch.getInstance();
 	private static final int BULK_SIZE = 10000;
-	private static final String EVENTS = "events";
+	public static final String EVENTS = "events";
 	private static final Logger log = LoggerFactory.getLogger(ElasticSearchEventsSync.class);
 
 	public ElasticSearchEventsSync(Vertx vertx) {
