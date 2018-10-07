@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static fr.wseduc.webutils.Utils.isNotEmpty;
+import static net.atos.entng.statistics.aggregation.indicators.IndicatorConstants.STATS_FIELD_ACCOUNTS;
 import static net.atos.entng.statistics.aggregation.indicators.IndicatorConstants.STATS_FIELD_ACTIVATED_ACCOUNTS;
 import static net.atos.entng.statistics.aggregation.indicators.IndicatorConstants.STATS_FIELD_UNIQUE_VISITORS;
 import static net.atos.entng.statistics.controllers.StatisticsController.*;
@@ -82,7 +83,18 @@ public class StatisticsServiceESImpl implements StatisticsService {
 				));
 				break;
 			case STATS_FIELD_ACTIVATED_ACCOUNTS:
-
+				filter.add(new JsonObject().put("term", new JsonObject().put("event-type", STATS_FIELD_ACCOUNTS)));
+				perMonth.put("aggs", new JsonObject().put("group_by", groupBy
+						.put("terms", new JsonObject().put("field", TRACE_FIELD_PROFILE))
+						.put("aggs", new JsonObject()
+								.put("activated_accounts", new JsonObject().put("sum", new JsonObject()
+										.put("field", "activatedAccounts")
+								))
+								.put("accounts", new JsonObject().put("sum", new JsonObject()
+										.put("field", "accounts")
+								))
+						)
+				));
 				break;
 			default:
 				handler.handle(new Either.Left<>("invalid.indicator"));
@@ -128,12 +140,16 @@ public class StatisticsServiceESImpl implements StatisticsService {
 				final JsonObject j2 = (JsonObject) o2;
 				final String profile = j2.getString("key");
 				final int count;
+				JsonObject res = new JsonObject();
 				if (STATS_FIELD_UNIQUE_VISITORS.equals(indicator)) {
 					count = j2.getJsonObject("unique_count").getInteger("value");
+				} else if (STATS_FIELD_ACTIVATED_ACCOUNTS.equals(indicator)) {
+					count = j2.getJsonObject("activated_accounts").getInteger("value");
+					res.put(STATS_FIELD_ACCOUNTS, j2.getJsonObject("accounts").getInteger("value"));
 				} else {
 					count = j2.getInteger("doc_count");
 				}
-				results.add(new JsonObject()
+				results.add(res
 						.put(groupByMobule ? "module_id" : "date", dateMonth)
 						.put("profil_id", profile)
 						.put(indicator, count)

@@ -27,6 +27,7 @@ import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.I18n;
+import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.request.RequestUtils;
 import net.atos.entng.statistics.DateUtils;
 import net.atos.entng.statistics.Statistics;
@@ -58,7 +59,7 @@ import static net.atos.entng.statistics.aggregation.indicators.IndicatorConstant
 import static net.atos.entng.statistics.aggregation.indicators.IndicatorConstants.STATS_FIELD_UNIQUE_VISITORS;
 import static org.entcore.common.aggregation.MongoConstants.*;
 
-public class StatisticsController extends MongoDbControllerHelper {
+public class StatisticsController extends BaseController {
 
     private StatisticsService statsService;
     private final StructureService structureService;
@@ -76,8 +77,7 @@ public class StatisticsController extends MongoDbControllerHelper {
     private final JsonObject metadata;
     private final JsonArray accessModules;
 
-    public StatisticsController(Vertx vertx, String collection, JsonArray pAccessModules) {
-        super(collection);
+    public StatisticsController(Vertx vertx, JsonArray pAccessModules) {
         this.vertx = vertx;
         structureService = new StructureServiceNeo4jImpl();
         i18n = I18n.getInstance();
