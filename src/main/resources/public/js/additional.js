@@ -757,7 +757,7 @@ function drawLegend(d3element, data, getProfile, getColor) {
 		return 155 * Math.floor(i/2) + 15;
 	})
 	.attr("dx", 15)
-	.attr("dy", ".71em")
+	.attr("dy", "2em")
 	.attr("text-anchor", "left")
 	.text(function(d, i) {
 		return getProfile(d, i);
@@ -773,7 +773,7 @@ function drawLegend(d3element, data, getProfile, getColor) {
 		return getColor(d, i);
 	})
 	.attr("y", function (d, i) {
-		return height + 36 + 30*(i%2);
+		return height + 57.5 + 30*(i%2);
 	})
 	.attr("x", function (d, i) {
 		return 155 * Math.floor(i/2);
