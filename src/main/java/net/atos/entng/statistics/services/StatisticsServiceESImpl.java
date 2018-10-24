@@ -25,6 +25,7 @@ public class StatisticsServiceESImpl implements StatisticsService {
 
 	private static final Logger log = LoggerFactory.getLogger(StatisticsServiceESImpl.class);
 	private final ElasticSearch es = ElasticSearch.getInstance();
+	private String timezone;
 
 	@Override
 	public void getStats(List<String> schoolIds, JsonObject params, Handler<Either<String, JsonArray>> handler) {
@@ -53,8 +54,12 @@ public class StatisticsServiceESImpl implements StatisticsService {
 		}
 
 		final JsonArray filter = new JsonArray();
+		final JsonObject dateHistogram = new JsonObject().put("field", TRACE_FIELD_DATE).put("interval", "month");
+		if (isNotEmpty(timezone)) {
+			dateHistogram.put("time_zone", timezone);
+		}
 		final JsonObject perMonth = new JsonObject()
-				.put("date_histogram", new JsonObject().put("field", TRACE_FIELD_DATE).put("interval", "month"));
+				.put("date_histogram", dateHistogram);
 
 		JsonObject groupBy = new JsonObject();
 		AtomicBoolean groupByModule = new AtomicBoolean(false);
@@ -254,6 +259,10 @@ public class StatisticsServiceESImpl implements StatisticsService {
 	@Override
 	public void getStatsForExport(List<String> schoolIds, JsonObject params, Handler<Either<String, JsonArray>> handler) {
 		getStats(schoolIds, params, true,  handler);
+	}
+
+	public void setTimezone(String timezone) {
+		this.timezone = timezone;
 	}
 
 }
