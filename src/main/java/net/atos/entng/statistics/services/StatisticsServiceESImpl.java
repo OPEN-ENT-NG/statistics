@@ -28,6 +28,10 @@ public class StatisticsServiceESImpl implements StatisticsService {
 
 	@Override
 	public void getStats(List<String> schoolIds, JsonObject params, Handler<Either<String, JsonArray>> handler) {
+		getStats(schoolIds, params, false, handler);
+	}
+
+	private void getStats(List<String> schoolIds, JsonObject params, boolean export, Handler<Either<String, JsonArray>> handler) {
 		if(schoolIds == null || schoolIds.isEmpty()) {
 			handler.handle(new Either.Left<>("schoolIds is null or empty"));
 			return;
@@ -55,15 +59,25 @@ public class StatisticsServiceESImpl implements StatisticsService {
 		JsonObject groupBy = new JsonObject();
 		AtomicBoolean groupByModule = new AtomicBoolean(false);
 
+		final String module = params.getString(PARAM_MODULE);
+
 		switch (indicator) {
 			case TRACE_TYPE_SVC_ACCESS:
-				final String module = params.getString(PARAM_MODULE);
 				if (isNotEmpty(module)) {
 					filter.add(new JsonObject().put("term", new JsonObject().put(PARAM_MODULE, module)));
 				} else {
-					perMonth.clear();
-					perMonth.put("terms", new JsonObject().put("field", "module"));
 					groupByModule.set(true);
+					if (export) {
+						filter.add(new JsonObject().put("term", new JsonObject().put("event-type", indicator)));
+						perMonth.put("aggs", new JsonObject().put("group_by", groupBy
+								.put("terms", new JsonObject().put("field", TRACE_FIELD_PROFILE))
+								.put("aggs", new JsonObject().put("per_module", new JsonObject()
+										.put("terms", new JsonObject().put("field", "module"))))));
+						break;
+					} else {
+						perMonth.clear();
+						perMonth.put("terms", new JsonObject().put("field", "module"));
+					}
 				}
 			case TRACE_TYPE_CONNEXION:
 			case TRACE_TYPE_ACTIVATION:
@@ -103,13 +117,26 @@ public class StatisticsServiceESImpl implements StatisticsService {
 		filter.add(structures).add(range);
 		JsonObject search = new JsonObject()
 				.put("size", 0)
-				.put("query", new JsonObject().put("bool", new JsonObject().put("filter", filter)))
-				.put("aggs", new JsonObject().put("per_month", perMonth));
+				.put("query", new JsonObject().put("bool", new JsonObject().put("filter", filter)));
+		if (export) {
+			search.put("aggs", new JsonObject().put("per_structure", new JsonObject()
+					.put("terms", new JsonObject().put("field", "structures"))
+					.put("aggs", new JsonObject().put("per_month", perMonth))
+			));
+		} else {
+			search.put("aggs", new JsonObject().put("per_month", perMonth));
+		}
+		// log.info(search.encodePrettily());
 
 		es.search("events", search, ar -> {
 			if (ar.succeeded()) {
 				try {
-					handler.handle(new Either.Right<>(format(ar.result(), indicator, groupByModule.get())));
+					if (export) {
+						handler.handle(new Either.Right<>(formatExport(
+								ar.result(), indicator, groupByModule.get(), schoolIds, module)));
+					} else {
+						handler.handle(new Either.Right<>(format(ar.result(), indicator, groupByModule.get())));
+					}
 				} catch (Exception e) {
 					log.error("Error formatting aggregation result.", e);
 					handler.handle(new Either.Left<>(e.getMessage()));
@@ -122,7 +149,7 @@ public class StatisticsServiceESImpl implements StatisticsService {
 
 	}
 
-	private JsonArray format(JsonObject result, String indicator, boolean groupByMobule) {
+	private JsonArray format(JsonObject result, String indicator, boolean groupByModule) {
 		final DateFormat df = new SimpleDateFormat("yyyy-MM-dd 00:00.00.000");
 		final JsonArray months = result.getJsonObject("aggregations")
 				.getJsonObject("per_month").getJsonArray("buckets");
@@ -130,7 +157,7 @@ public class StatisticsServiceESImpl implements StatisticsService {
 		for (Object o: months) {
 			final JsonObject j = (JsonObject) o;
 			final String dateMonth;
-			if (groupByMobule) {
+			if (groupByModule) {
 				dateMonth = j.getString("key");
 			} else {
 				dateMonth = df.format(new Date(j.getLong("key")));
@@ -150,7 +177,7 @@ public class StatisticsServiceESImpl implements StatisticsService {
 					count = j2.getInteger("doc_count");
 				}
 				results.add(res
-						.put(groupByMobule ? "module_id" : "date", dateMonth)
+						.put(groupByModule ? "module_id" : "date", dateMonth)
 						.put("profil_id", profile)
 						.put(indicator, count)
 				);
@@ -159,9 +186,74 @@ public class StatisticsServiceESImpl implements StatisticsService {
 		return results;
 	}
 
+	private JsonArray formatExport(JsonObject result, String indicator, boolean groupByModule,
+			List<String> structures, String module) {
+		final DateFormat df = new SimpleDateFormat("yyyy-MM");
+		final JsonArray structs = result.getJsonObject("aggregations")
+				.getJsonObject("per_structure").getJsonArray("buckets");
+		final JsonArray results = new JsonArray();
+		for (Object os: structs) {
+			final JsonObject js = (JsonObject) os;
+			final String structure = js.getString("key");
+			if (!structures.contains(structure)) {
+				continue;
+			}
+			final JsonArray months = js.getJsonObject("per_month").getJsonArray("buckets");
+			for (Object o : months) {
+				final JsonObject j = (JsonObject) o;
+				final String dateMonth = df.format(new Date(j.getLong("key")));
+				final JsonArray buckets = j.getJsonObject("group_by").getJsonArray("buckets");
+				if (groupByModule) {
+					for (Object o2 : buckets) {
+						final JsonObject j2 = (JsonObject) o2;
+						final String profile = j2.getString("key");
+						final JsonArray modules = j2.getJsonObject("per_module").getJsonArray("buckets");
+						for (Object m: modules) {
+							final JsonObject app = (JsonObject) m;
+							JsonObject res = new JsonObject();
+							final int count = j2.getInteger("doc_count");
+							res
+									.put("module_id", app.getString("key"))
+									.put("date", dateMonth)
+									.put("profil_id", profile)
+									.put("indicatorValue", count)
+									.put("structures_id", structure);
+							results.add(res);
+						}
+					}
+				} else {
+					for (Object o2 : buckets) {
+						final JsonObject j2 = (JsonObject) o2;
+						final String profile = j2.getString("key");
+						final int count;
+						JsonObject res = new JsonObject();
+						if (STATS_FIELD_UNIQUE_VISITORS.equals(indicator)) {
+							count = j2.getJsonObject("unique_count").getInteger("value");
+						} else if (STATS_FIELD_ACTIVATED_ACCOUNTS.equals(indicator)) {
+							count = j2.getJsonObject("activated_accounts").getInteger("value");
+							res.put(STATS_FIELD_ACCOUNTS, j2.getJsonObject("accounts").getInteger("value"));
+						} else {
+							count = j2.getInteger("doc_count");
+						}
+						if (isNotEmpty(module)) {
+							res.put("module_id", module);
+						}
+						res
+								.put("date", dateMonth)
+								.put("profil_id", profile)
+								.put("indicatorValue", count)
+								.put("structures_id", structure);
+						results.add(res);
+					}
+				}
+			}
+		}
+		return results;
+	}
+
 	@Override
 	public void getStatsForExport(List<String> schoolIds, JsonObject params, Handler<Either<String, JsonArray>> handler) {
-		getStats(schoolIds, params, handler);
+		getStats(schoolIds, params, true,  handler);
 	}
 
 }
