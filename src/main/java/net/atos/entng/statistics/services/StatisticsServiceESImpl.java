@@ -211,7 +211,7 @@ public class StatisticsServiceESImpl implements StatisticsService {
 						for (Object m: modules) {
 							final JsonObject app = (JsonObject) m;
 							JsonObject res = new JsonObject();
-							final int count = j2.getInteger("doc_count");
+							final int count = app.getInteger("doc_count");
 							res
 									.put("module_id", app.getString("key"))
 									.put("date", dateMonth)
