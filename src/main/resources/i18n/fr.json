@@ -83,5 +83,16 @@
     "csv.date": "Date",
     "csv.module": "Application",
     "csv.total.number.of.accounts": "Nombre total de comptes",
-    "yesterday" : "hier"
+    "yesterday" : "hier",
+    "Conversation": "Messagerie",
+    "Rbs": "Réservation de ressources",
+    "CollaborativeWall" : "Mur collaboratif",
+    "Callendar":"Calendrier",
+    "Community":"Communauté",
+    "MindMap":"Carte mentale",
+    "Poll": "Sondage",
+    "Rack":"Casier",
+    "TimelineGenerator":"Générateur de ligne temporelle",
+    "Workspace":"Espace de travail",
+    "Mindmap":"Carte mentale"
 }
