@@ -219,7 +219,7 @@ function StatisticsController($scope, template, model) {
             });
         }
 		else {
-			if($scope.form.from.isAfter($scope.form.to) || $scope.form.from.isSame($scope.form.to)) {
+			if($scope.form.from.isAfter($scope.form.to)) {
 				notify.error('statistics.invalid.dates');
 				$scope.form.processing = false;
 				return;
