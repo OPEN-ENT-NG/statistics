@@ -34,12 +34,8 @@ import net.atos.entng.statistics.Statistics;
 import net.atos.entng.statistics.services.*;
 import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.http.filter.SuperAdminFilter;
-import org.entcore.common.mongodb.MongoDbControllerHelper;
 import org.entcore.common.mongodb.MongoDbResult;
-import org.entcore.common.service.impl.MongoDbCrudService;
-import org.entcore.common.user.DefaultFunctions;
 import org.entcore.common.user.UserInfos;
-import org.entcore.common.user.UserInfos.Function;
 import org.entcore.common.user.UserUtils;
 
 import io.vertx.core.Handler;
@@ -47,11 +43,13 @@ import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.vertx.java.core.http.RouteMatcher;
 
 import java.text.SimpleDateFormat;
 import java.util.*;
 
 import static fr.wseduc.webutils.I18n.acceptLanguage;
+import static fr.wseduc.webutils.Utils.isNotEmpty;
 import static net.atos.entng.statistics.aggregation.indicators.IndicatorConstants.STATS_FIELD_ACTIVATED_ACCOUNTS;
 import static net.atos.entng.statistics.aggregation.indicators.IndicatorConstants.STATS_FIELD_UNIQUE_VISITORS;
 import static org.entcore.common.aggregation.MongoConstants.*;
@@ -74,6 +72,13 @@ public class StatisticsController extends BaseController {
     private final JsonObject metadata;
     private final JsonArray accessModules;
 
+    @Override
+    public void init(Vertx vertx, JsonObject config, RouteMatcher rm,
+            Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
+        super.init(vertx, config, rm, securedActions);
+        metadata.put("connectors", config.getJsonArray("connectors"));
+    }
+
     public StatisticsController(Vertx vertx, JsonArray pAccessModules) {
         this.vertx = vertx;
         structureService = new StructureServiceNeo4jImpl();
@@ -85,6 +90,7 @@ public class StatisticsController extends BaseController {
         indicators.add(TRACE_TYPE_CONNEXION);
         indicators.add(TRACE_TYPE_SVC_ACCESS);
         indicators.add(STATS_FIELD_ACTIVATED_ACCOUNTS);
+        indicators.add(TRACE_TYPE_CONNECTOR);
 
         metadata = new JsonObject();
         metadata.put("indicators", new JsonArray(new ArrayList<>(indicators)));
@@ -124,12 +130,12 @@ public class StatisticsController extends BaseController {
                         }
                         JsonArray arr = params.getJsonArray("schoolIdArray");
                         List<String> schoolIds = new ArrayList<String>();
-                        for(int i = 0; i < arr.size(); i++){
+                        for (int i = 0; i < arr.size(); i++) {
                             schoolIds.add(arr.getString(i));
                         }
 
                         //final List<String> schoolIds = Arrays.asList(params.getJsonArray("schoolIdArray"));
-                        if (schoolIds == null || schoolIds.size() == 0){
+                        if (schoolIds == null || schoolIds.size() == 0) {
                             String errorMsg = i18n.translate("statistics.bad.request.invalid.schools", getHost(request), acceptLanguage(request));
                             badRequest(request, errorMsg);
                             return;
@@ -153,6 +159,14 @@ public class StatisticsController extends BaseController {
                                 return;
                             }
                             // Else (when module is not specified) return data for all modules
+                        } else if (TRACE_TYPE_CONNECTOR.equals(indicator)) {
+                            module = params.getString("module");
+                            if (isNotEmpty(module) && !metadata.getJsonArray("connectors").contains(module)) {
+                                badRequest(request, i18n.translate(
+                                        "statistics.bad.request.invalid.connector",
+                                        getHost(request), acceptLanguage(request)));
+                                return;
+                            }
                         }
 
                         //String startDate = request.params().get(PARAM_START_DATE);

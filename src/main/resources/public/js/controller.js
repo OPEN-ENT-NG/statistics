@@ -62,6 +62,7 @@ function StatisticsController($scope, template, model) {
 		// Get indicators and modules. Initialize dates
 		$scope.indicators = [];
 		$scope.modules = [];
+		$scope.connectors = [];
 		model.getMetadata(function(result){
 			if (result && result.indicators && result.modules) {
 				$scope.indicators = result.indicators;
@@ -69,6 +70,7 @@ function StatisticsController($scope, template, model) {
 				if($scope.modules && $scope.modules.length > 0) {
 					$scope.modules.push({name: lang.translate('statistics.form.all.applications')});
 				}
+				$scope.connectors = formatModules(result.connectors);
 
 				var fromDates = [];
 				var toDates = [];

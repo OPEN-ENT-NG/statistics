@@ -68,6 +68,7 @@ public class StatisticsServiceESImpl implements StatisticsService {
 
 		switch (indicator) {
 			case TRACE_TYPE_SVC_ACCESS:
+			case TRACE_TYPE_CONNECTOR:
 				if (isNotEmpty(module)) {
 					filter.add(new JsonObject().put("term", new JsonObject().put(PARAM_MODULE, module)));
 				} else {

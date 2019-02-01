@@ -43,6 +43,15 @@
 					</select>
 				</span>
 			</div>
+			<div ng-if="form.indicator === 'CONNECTOR'">
+				<label class="two cell"><i18n>statistics.form.connector</i18n></label>
+				<span class="four cell">
+					<select ng-model="form.module"
+						ng-init="form.module = modules[0].technicalName"
+						ng-options="module.technicalName as module.name for module in connectors">
+					</select>
+				</span>
+			</div>
 
 			<button ng-if="!form.processing" class="right-magnet" ng-click="getData()"><i18n>statistics.form.display.chart</i18n></button>
 			<i18n ng-if="form.processing === true" class="right-magnet">statistics.form.processing</i18n>
