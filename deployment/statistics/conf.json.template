@@ -9,6 +9,7 @@
     "app-name" : "Statistiques",
     "app-address" : "/statistics",
     "app-icon" : "statistics-large",
+    "app-type" : "END_USER",
     "host": "${host}",
     "ssl" : $ssl,
     "auto-redeploy": false,
