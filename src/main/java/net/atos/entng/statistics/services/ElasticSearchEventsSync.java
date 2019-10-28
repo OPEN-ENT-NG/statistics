@@ -3,6 +3,7 @@ package net.atos.entng.statistics.services;
 import fr.wseduc.mongodb.MongoDb;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
@@ -12,15 +13,15 @@ import org.entcore.common.elasticsearch.ElasticSearch;
 
 public class ElasticSearchEventsSync implements Handler<Long> {
 
-	private final Vertx vertx;
 	private final MongoDb mongo = MongoDb.getInstance();
 	private final ElasticSearch es = ElasticSearch.getInstance();
 	private static final int BULK_SIZE = 10000;
 	public static final String EVENTS = "events";
 	private static final Logger log = LoggerFactory.getLogger(ElasticSearchEventsSync.class);
+	private final long timeout;
 
 	public ElasticSearchEventsSync(Vertx vertx) {
-		this.vertx = vertx;
+		this.timeout = vertx.getOrCreateContext().config().getLong("delete-users-timeout", 300000L);
 	}
 
 	@Override
@@ -33,7 +34,8 @@ public class ElasticSearchEventsSync implements Handler<Long> {
 		final long started = System.currentTimeMillis();
 		final JsonObject query = new JsonObject().put("synced", new JsonObject().put("$exists", false));
 		final JsonObject sort = new JsonObject().put("date", 1);
-		mongo.find(EVENTS, query, sort, null, 0, BULK_SIZE, BULK_SIZE, res -> {
+		mongo.find(EVENTS, query, sort, null, 0, BULK_SIZE, BULK_SIZE,
+				new DeliveryOptions().setSendTimeout(timeout),res -> {
 			final JsonArray results = res.body().getJsonArray("results");
 			final int resultsSize;
 			if ("ok".equals(res.body().getString("status")) &&
@@ -67,7 +69,8 @@ public class ElasticSearchEventsSync implements Handler<Long> {
 								.put("$set", new JsonObject().put("synced", MongoDb.now()));
 						final JsonObject criteria2 = new JsonObject()
 								.put("_id", new JsonObject().put("$in", eventsIds));
-						mongo.update(EVENTS, criteria2, modifier, false, true, ru2 -> {
+						mongo.update(EVENTS, criteria2, modifier, false, true, null,
+								new DeliveryOptions().setSendTimeout(timeout), ru2 -> {
 							if ("ok".equals(ru2.body().getString("status"))) {
 								if (resultsSize == BULK_SIZE) {
 									sync();
