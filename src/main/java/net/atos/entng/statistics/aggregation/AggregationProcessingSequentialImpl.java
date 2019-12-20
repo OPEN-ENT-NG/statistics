@@ -35,6 +35,7 @@ public class AggregationProcessingSequentialImpl extends AggregationProcessing {
 
 	@Override
 	public void process(final Handler<JsonObject> callBack) {
+		log.info("Execute AggregateTask.");
 		if(indicators == null && indicators.isEmpty()) {
 			log.warn("indicators is empty. Nothing was processed");
 			return;

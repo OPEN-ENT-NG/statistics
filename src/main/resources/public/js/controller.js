@@ -70,6 +70,7 @@ function StatisticsController($scope, template, model) {
 				if($scope.modules && $scope.modules.length > 0) {
 					$scope.modules.push({name: lang.translate('statistics.form.all.applications')});
 				}
+				console.log(result.connectors)
 				$scope.connectors = formatModules(result.connectors);
 
 				var fromDates = [];
@@ -692,17 +693,19 @@ function StatisticsController($scope, template, model) {
 
 	function formatModules(modules) {
 		var result = [];
-		for(var i=0; i<modules.length; i++) {
-			var module = {
-				technicalName : modules[i],
-				name : getApplicationName(modules[i])
-			};
-			result.push(module);
+		if (modules) {
+			for (var i = 0; i < modules.length; i++) {
+				var module = {
+					technicalName: modules[i],
+					name: getApplicationName(modules[i])
+				};
+				result.push(module);
+			}
+			result.sort(function (thisModule, thatModule) {
+				return thisModule.name.localeCompare(thatModule.name);
+			});
+			return result;
 		}
-		result.sort(function(thisModule, thatModule) {
-			return thisModule.name.localeCompare(thatModule.name);
-		});
-		return result;
 	}
 
 	function getApplicationName(moduleName) {
