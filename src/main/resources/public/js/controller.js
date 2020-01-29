@@ -15,6 +15,11 @@ function StatisticsController($scope, template, model) {
 		// Get Schools
 		$scope.schools = [];
 
+		$scope.devices = [];
+		$scope.devices.push({technicalName: 'BOTH', name: lang.translate('statistics.form.all.devices')});
+		$scope.devices.push({technicalName: 'WEB', name: lang.translate('statistics.form.web.only')});
+		$scope.devices.push({technicalName: 'MOBILE', name: lang.translate('statistics.form.mobile.only')});
+
 		// getting all the substructures
 		model.getSubstructures(function(substructures) {
 
@@ -363,10 +368,12 @@ function StatisticsController($scope, template, model) {
 	// making a json instead of a query
 	function generateQuery(form, schoolIdArray) {
 		var query = [];
+		var device = (form.device && form.device.technicalName) || "BOTH";
 		query.push({"schoolIdArray" : schoolIdArray});
 		query.push( {"indicator" : form.indicator });
 		query.push( {"startDate" : form.from.unix() });
 		query.push( {"endDate" : form.to.unix() });
+		query.push( {"device" : device });
 
 		var json;
 
@@ -377,6 +384,7 @@ function StatisticsController($scope, template, model) {
 				indicator : form.indicator,
 				startDate : form.from.unix(),
 				endDate : form.to.unix(),
+				device : device,
 				module: form.module
 			};
 		} else {
@@ -384,7 +392,8 @@ function StatisticsController($scope, template, model) {
 				schoolIdArray : schoolIdArray,
 				indicator : form.indicator,
 				startDate : form.from.unix(),
-				endDate : form.to.unix()
+				endDate : form.to.unix(),
+				device : device
 			};
 		}
 

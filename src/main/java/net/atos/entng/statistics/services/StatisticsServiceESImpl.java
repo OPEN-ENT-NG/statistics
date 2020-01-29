@@ -15,9 +15,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static fr.wseduc.webutils.Utils.isNotEmpty;
-import static net.atos.entng.statistics.aggregation.indicators.IndicatorConstants.STATS_FIELD_ACCOUNTS;
-import static net.atos.entng.statistics.aggregation.indicators.IndicatorConstants.STATS_FIELD_ACTIVATED_ACCOUNTS;
-import static net.atos.entng.statistics.aggregation.indicators.IndicatorConstants.STATS_FIELD_UNIQUE_VISITORS;
+import static net.atos.entng.statistics.aggregation.indicators.IndicatorConstants.*;
 import static net.atos.entng.statistics.controllers.StatisticsController.*;
 import static org.entcore.common.aggregation.MongoConstants.*;
 
@@ -41,6 +39,7 @@ public class StatisticsServiceESImpl implements StatisticsService {
 		final String indicator = params.getString(PARAM_INDICATOR);
 		final Long start = params.getLong(PARAM_START_DATE);
 		final Long end = params.getLong(PARAM_END_DATE);
+		final String device = params.getString(PARAM_DEVICE);
 
 		final JsonObject range = new JsonObject()
 				.put("range", new JsonObject()
@@ -69,12 +68,17 @@ public class StatisticsServiceESImpl implements StatisticsService {
 		switch (indicator) {
 			case TRACE_TYPE_SVC_ACCESS:
 			case TRACE_TYPE_CONNECTOR:
+				if (STATS_FIELD_MOBILE.equals(device)) {
+					filter.add(new JsonObject().put("term", new JsonObject().put("event-type", TRACE_TYPE_MOBILE)));
+				}
+				if (STATS_FIELD_WEB.equals(device)) {
+					filter.add(new JsonObject().put("term", new JsonObject().put("event-type", indicator)));
+				}
 				if (isNotEmpty(module)) {
 					filter.add(new JsonObject().put("term", new JsonObject().put(PARAM_MODULE, module)));
 				} else {
 					groupByModule.set(true);
 					if (export) {
-						filter.add(new JsonObject().put("term", new JsonObject().put("event-type", indicator)));
 						perMonth.put("aggs", new JsonObject().put("group_by", groupBy
 								.put("terms", new JsonObject().put("field", TRACE_FIELD_PROFILE))
 								.put("aggs", new JsonObject().put("per_module", new JsonObject()
@@ -85,6 +89,9 @@ public class StatisticsServiceESImpl implements StatisticsService {
 						perMonth.put("terms", new JsonObject().put("field", "module"));
 					}
 				}
+				perMonth.put("aggs", new JsonObject().put("group_by", groupBy
+						.put("terms", new JsonObject().put("field", TRACE_FIELD_PROFILE))));
+				break;
 			case TRACE_TYPE_CONNEXION:
 			case TRACE_TYPE_ACTIVATION:
 				filter.add(new JsonObject().put("term", new JsonObject().put("event-type", indicator)));

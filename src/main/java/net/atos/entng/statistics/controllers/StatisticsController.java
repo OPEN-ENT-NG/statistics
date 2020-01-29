@@ -67,6 +67,7 @@ public class StatisticsController extends BaseController {
     public static final String PARAM_END_DATE = "endDate";
     public static final String PARAM_MODULE = "module";
     public static final String PARAM_FORMAT = "format";
+    public static final String PARAM_DEVICE = "device";
 
     private final Set<String> indicators;
     private final JsonObject metadata;
@@ -189,11 +190,14 @@ public class StatisticsController extends BaseController {
                             return;
                         }
 
+                        String device = params.getString("device");
+
                         final JsonObject params = new JsonObject();
                         params.put(PARAM_INDICATOR, indicator)
                                 .put(PARAM_START_DATE, start)
                                 .put(PARAM_END_DATE, end)
-                                .put(PARAM_MODULE, module);
+                                .put(PARAM_MODULE, module)
+                                .put(PARAM_DEVICE, device);
 
                         if (schoolIds.size() == 1) {
                             // if the structure choosed is not a school, we need to explore all the attached schools from the graph base

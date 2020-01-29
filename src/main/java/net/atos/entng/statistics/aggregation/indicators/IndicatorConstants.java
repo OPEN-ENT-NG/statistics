@@ -26,4 +26,9 @@ public class IndicatorConstants {
 	public static final String STATS_FIELD_ACCOUNTS = "ACCOUNTS";
 	public static final String STATS_FIELD_ACTIVATED_ACCOUNTS = "ACTIVATED_ACCOUNTS";
 
+	// Additional fields for device
+	public static final String STATS_FIELD_WEB = "WEB";
+	public static final String STATS_FIELD_MOBILE = "MOBILE";
+	public static final String STATS_FIELD_BOTH = "BOTH";
+
 }

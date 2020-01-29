@@ -16,6 +16,9 @@
     },
     "module": {
       "type": "string"
+    },
+    "device": {
+      "type": "string"
     }
   }
 }
