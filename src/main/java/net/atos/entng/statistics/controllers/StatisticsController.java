@@ -72,6 +72,7 @@ public class StatisticsController extends BaseController {
     private final Set<String> indicators;
     private final JsonObject metadata;
     private final JsonArray accessModules;
+    private final JsonArray mobileClientIds;
 
     @Override
     public void init(Vertx vertx, JsonObject config, RouteMatcher rm,
@@ -80,7 +81,7 @@ public class StatisticsController extends BaseController {
         metadata.put("connectors", config.getJsonArray("connectors"));
     }
 
-    public StatisticsController(Vertx vertx, JsonArray pAccessModules) {
+    public StatisticsController(Vertx vertx, JsonArray pAccessModules, JsonArray mobileClientIds) {
         this.vertx = vertx;
         structureService = new StructureServiceNeo4jImpl();
         i18n = I18n.getInstance();
@@ -97,6 +98,7 @@ public class StatisticsController extends BaseController {
         metadata.put("indicators", new JsonArray(new ArrayList<>(indicators)));
         metadata.put("modules", pAccessModules);
         accessModules = pAccessModules;
+        this.mobileClientIds = mobileClientIds;
     }
 
     @Get("")
@@ -275,7 +277,7 @@ public class StatisticsController extends BaseController {
         } else {
             switch (format) {
                 case "csv": // CSV export
-                    statsService.getStatsForExport(schoolIds, params, new Handler<Either<String, JsonArray>>() {
+                    statsService.getStatsForExport(schoolIds, params, mobileClientIds, new Handler<Either<String, JsonArray>>() {
                         @Override
                         public void handle(Either<String, JsonArray> event) {
                             if (event.isLeft()) {
@@ -324,7 +326,7 @@ public class StatisticsController extends BaseController {
     }
 
     private void getJsonData(final List<String> schoolIds, final JsonObject params, final HttpServerRequest request) {
-        statsService.getStats(schoolIds, params, new Handler<Either<String, JsonArray>>() {
+        statsService.getStats(schoolIds, params, mobileClientIds, new Handler<Either<String, JsonArray>>() {
             @Override
             public void handle(Either<String, JsonArray> event) {
                 if (event.isLeft()) {

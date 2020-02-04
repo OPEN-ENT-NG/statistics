@@ -52,7 +52,8 @@ public class Statistics extends BaseServer {
 			return;
 		}
 
-		final StatisticsController statsController = new StatisticsController(vertx, accessModules);
+		final JsonArray mobileClientIds = config.getJsonArray("mobile-client-ids", new JsonArray().add("app-e"));
+		final StatisticsController statsController = new StatisticsController(vertx, accessModules, mobileClientIds);
 		final String aggregateEventsCron = config.getString("aggregate-cron", "0 15 1 ? * * *");
 		final Handler<Long> aggTask;
 

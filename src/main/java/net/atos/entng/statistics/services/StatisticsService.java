@@ -29,7 +29,7 @@ import fr.wseduc.webutils.Either;
 
 public interface StatisticsService {
 
-	public void getStats(List<String> schoolIds, JsonObject params, Handler<Either<String, JsonArray>> handler);
+	public void getStats(List<String> schoolIds, JsonObject params, JsonArray mobileClientIds, Handler<Either<String, JsonArray>> handler);
 
-	public void getStatsForExport(List<String> schoolIds, JsonObject params, Handler<Either<String, JsonArray>> handler);
+	public void getStatsForExport(List<String> schoolIds, JsonObject params, JsonArray mobileClientIds, Handler<Either<String, JsonArray>> handler);
 }

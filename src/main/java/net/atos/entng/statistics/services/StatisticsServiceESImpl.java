@@ -26,11 +26,11 @@ public class StatisticsServiceESImpl implements StatisticsService {
 	private String timezone;
 
 	@Override
-	public void getStats(List<String> schoolIds, JsonObject params, Handler<Either<String, JsonArray>> handler) {
-		getStats(schoolIds, params, false, handler);
+	public void getStats(List<String> schoolIds, JsonObject params, JsonArray mobileClientIds, Handler<Either<String, JsonArray>> handler) {
+		getStats(schoolIds, params, mobileClientIds, false, handler);
 	}
 
-	private void getStats(List<String> schoolIds, JsonObject params, boolean export, Handler<Either<String, JsonArray>> handler) {
+	private void getStats(List<String> schoolIds, JsonObject params, JsonArray mobileClientIds, boolean export, Handler<Either<String, JsonArray>> handler) {
 		if(schoolIds == null || schoolIds.isEmpty()) {
 			handler.handle(new Either.Left<>("schoolIds is null or empty"));
 			return;
@@ -94,6 +94,12 @@ public class StatisticsServiceESImpl implements StatisticsService {
 				break;
 			case TRACE_TYPE_CONNEXION:
 			case TRACE_TYPE_ACTIVATION:
+				if (STATS_FIELD_MOBILE.equals(device)) {
+					filter.add(new JsonObject().put("terms", new JsonObject().put("module", mobileClientIds)));
+				}
+				if (STATS_FIELD_WEB.equals(device)) {
+					filter.add(new JsonObject().put("term", new JsonObject().put("module", "Auth")));
+				}
 				filter.add(new JsonObject().put("term", new JsonObject().put("event-type", indicator)));
 				perMonth.put("aggs", new JsonObject().put("group_by", groupBy
 						.put("terms", new JsonObject().put("field", TRACE_FIELD_PROFILE))));
@@ -265,8 +271,8 @@ public class StatisticsServiceESImpl implements StatisticsService {
 	}
 
 	@Override
-	public void getStatsForExport(List<String> schoolIds, JsonObject params, Handler<Either<String, JsonArray>> handler) {
-		getStats(schoolIds, params, true,  handler);
+	public void getStatsForExport(List<String> schoolIds, JsonObject params, JsonArray mobileClientIds, Handler<Either<String, JsonArray>> handler) {
+		getStats(schoolIds, params, mobileClientIds, true,  handler);
 	}
 
 	public void setTimezone(String timezone) {

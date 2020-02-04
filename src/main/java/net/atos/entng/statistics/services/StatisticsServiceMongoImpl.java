@@ -68,12 +68,12 @@ public class StatisticsServiceMongoImpl extends MongoDbCrudService implements St
 	}
 
 	@Override
-	public void getStats(final List<String> schoolIds, final JsonObject params, final Handler<Either<String, JsonArray>> handler) {
+	public void getStats(final List<String> schoolIds, final JsonObject params, JsonArray mobileClientIds, final Handler<Either<String, JsonArray>> handler) {
 		this.getStatistics(schoolIds, params, handler, false);
 	}
 
 	@Override
-	public void getStatsForExport(final List<String> schoolIds, final JsonObject params, final Handler<Either<String, JsonArray>> handler) {
+	public void getStatsForExport(final List<String> schoolIds, final JsonObject params, JsonArray mobileClientIds, final Handler<Either<String, JsonArray>> handler) {
 		this.getStatistics(schoolIds, params, handler, true);
 	}
 
