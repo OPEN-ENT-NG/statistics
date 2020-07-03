@@ -39,6 +39,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.mongodb.MongoDbConf;
 
+import java.util.List;
 
 public class Statistics extends BaseServer {
 
@@ -52,8 +53,9 @@ public class Statistics extends BaseServer {
 			return;
 		}
 
+		List<String> customIndicators = config.getJsonArray("custom-indicators", new JsonArray()).getList();
 		final JsonArray mobileClientIds = config.getJsonArray("mobile-client-ids", new JsonArray().add("app-e"));
-		final StatisticsController statsController = new StatisticsController(vertx, accessModules, mobileClientIds);
+		final StatisticsController statsController = new StatisticsController(vertx, accessModules, customIndicators, mobileClientIds);
 		final String aggregateEventsCron = config.getString("aggregate-cron", "0 15 1 ? * * *");
 		final Handler<Long> aggTask;
 
@@ -63,7 +65,7 @@ public class Statistics extends BaseServer {
 			 * Be careful when setting fire times between midnight and 1:00 AM
 			 * - "daylight savings" can cause a skip or a repeat depending on whether the time moves back or jumps forward.
 			 */
-			aggTask = new AggregateTask();
+			aggTask = new AggregateTask(customIndicators);
 
 			// In development environment, launch aggregations if parameter "aggregateOnStart" is set to true in module configuration
 			if ("dev".equals(config.getString("mode", null))
@@ -84,7 +86,7 @@ public class Statistics extends BaseServer {
 			MongoDbConf.getInstance().setCollection(MongoConstants.COLLECTIONS.stats.toString());
 
 		} else {
-			StatisticsServiceESImpl statisticsServiceES = new StatisticsServiceESImpl();
+			StatisticsServiceESImpl statisticsServiceES = new StatisticsServiceESImpl(customIndicators);
 			statisticsServiceES.setTimezone(config.getString("time_zone", "Europe/Paris"));
 			statsController.setStatsService(statisticsServiceES);
 

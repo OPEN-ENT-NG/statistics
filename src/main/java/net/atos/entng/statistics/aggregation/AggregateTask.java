@@ -29,14 +29,18 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+import java.util.List;
+
 
 public class AggregateTask implements Handler<Long> {
 
 	private static final Logger log = LoggerFactory.getLogger(AggregateTask.class);
 	private Date from, to;
 	private Handler<JsonObject> handler;
+	private List<String> customIndicators;
 
-	public AggregateTask() {
+	public AggregateTask(List<String> customIndicators) {
+		this.customIndicators = customIndicators;
 	}
 
 	public AggregateTask(Date pFrom, Date pTo, Handler<JsonObject> pHandler) {
@@ -50,7 +54,7 @@ public class AggregateTask implements Handler<Long> {
 		log.info("Execute AggregateTask.");
 
 		AggregationProcessing aggProcessing = new AggregationProcessingSequentialImpl();
-		IndicatorHelper.addIndicators(from, to, aggProcessing);
+		IndicatorHelper.addIndicators(from, to, customIndicators, aggProcessing);
 
 		Handler<JsonObject> handler = (this.handler!=null) ? this.handler : new Handler<JsonObject>() {
 			@Override

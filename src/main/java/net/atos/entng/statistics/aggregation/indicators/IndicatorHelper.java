@@ -25,6 +25,10 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 
+import java.util.List;
+
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import net.atos.entng.statistics.DateUtils;
 
 import org.entcore.common.aggregation.AggregationTools;
@@ -34,8 +38,9 @@ import org.entcore.common.aggregation.processing.AggregationProcessing;
 
 
 public class IndicatorHelper {
+	private static Logger log = LoggerFactory.getLogger(IndicatorHelper.class);
 
-	public static void addIndicators(Date from, Date to, AggregationProcessing aggProcessing) {
+	public static void addIndicators(Date from, Date to, List<String> customIndicators, AggregationProcessing aggProcessing) {
 		if(aggProcessing == null) {
 			throw new InvalidParameterException("Parameter aggProcessing is null");
 		}
@@ -64,6 +69,11 @@ public class IndicatorHelper {
 		// Access to applications
 		aggProcessing.addIndicator(IndicatorFactory.getAccessIndicator(filters, writeDate));
 
+		// Custom indicators
+		for (String indicator : customIndicators) {
+			CustomIndicator cid = CustomIndicator.create(indicator);
+			if (cid != null) aggProcessing.addIndicator(cid.indicator(filters, writeDate));
+		}
 
 		// DateFilter to keep all events of current month
 		filters = new ArrayList<>();
