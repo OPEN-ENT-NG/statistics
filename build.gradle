@@ -16,7 +16,7 @@ if (!hasProperty('odePassword')) {
 repositories {
   mavenLocal()
     maven {
-      url "https://maven.opendigitaleducation.com/nexus/content/groups/public"
+      url "https://maven.opendigitaleducation.com/nexus/content/groups/public/"
     }
   mavenCentral()
     maven {
