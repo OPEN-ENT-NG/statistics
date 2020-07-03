@@ -6,12 +6,12 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import net.atos.entng.statistics.aggregation.indicators.CustomIndicator;
 import org.entcore.common.elasticsearch.ElasticSearch;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static fr.wseduc.webutils.Utils.isNotEmpty;
@@ -24,6 +24,11 @@ public class StatisticsServiceESImpl implements StatisticsService {
 	private static final Logger log = LoggerFactory.getLogger(StatisticsServiceESImpl.class);
 	private final ElasticSearch es = ElasticSearch.getInstance();
 	private String timezone;
+	private List<String> customIndicators;
+
+	public StatisticsServiceESImpl(List<String> customIndicators) {
+		this.customIndicators = customIndicators;
+	}
 
 	@Override
 	public void getStats(List<String> schoolIds, JsonObject params, JsonArray mobileClientIds, Handler<Either<String, JsonArray>> handler) {
@@ -130,8 +135,16 @@ public class StatisticsServiceESImpl implements StatisticsService {
 				));
 				break;
 			default:
-				handler.handle(new Either.Left<>("invalid.indicator"));
-				return;
+				if (!customIndicators.contains(indicator)) {
+					handler.handle(new Either.Left<>("invalid.indicator"));
+					return;
+				} else {
+					CustomIndicator cid = CustomIndicator.create(indicator);
+					if (cid != null) {
+						filter.addAll(cid.filter(schoolIds, params, mobileClientIds, export));
+						perMonth.put("aggs", cid.aggregation());
+					}
+				}
 		}
 		filter.add(structures).add(range);
 		JsonObject search = new JsonObject()

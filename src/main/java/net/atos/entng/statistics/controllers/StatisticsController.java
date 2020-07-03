@@ -78,10 +78,10 @@ public class StatisticsController extends BaseController {
     public void init(Vertx vertx, JsonObject config, RouteMatcher rm,
             Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
         super.init(vertx, config, rm, securedActions);
-        metadata.put("connectors", config.getJsonArray("connectors"));
+        metadata.put("connectors", config.getJsonArray("connectors", new JsonArray()));
     }
 
-    public StatisticsController(Vertx vertx, JsonArray pAccessModules, JsonArray mobileClientIds) {
+    public StatisticsController(Vertx vertx, JsonArray pAccessModules, List<String> customIndicators, JsonArray mobileClientIds) {
         this.vertx = vertx;
         structureService = new StructureServiceNeo4jImpl();
         i18n = I18n.getInstance();
@@ -93,6 +93,7 @@ public class StatisticsController extends BaseController {
         indicators.add(TRACE_TYPE_SVC_ACCESS);
         indicators.add(STATS_FIELD_ACTIVATED_ACCOUNTS);
         indicators.add(TRACE_TYPE_CONNECTOR);
+        indicators.addAll(customIndicators);
 
         metadata = new JsonObject();
         metadata.put("indicators", new JsonArray(new ArrayList<>(indicators)));

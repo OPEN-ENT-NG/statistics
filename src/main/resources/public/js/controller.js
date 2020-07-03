@@ -71,11 +71,11 @@ function StatisticsController($scope, template, model) {
 		model.getMetadata(function(result){
 			if (result && result.indicators && result.modules) {
 				$scope.indicators = result.indicators;
-				$scope.modules = formatModules(result.modules);
+				$scope.modules = result.modules && result.modules.length > 0 ? formatModules(result.modules) : [];
 				if($scope.modules && $scope.modules.length > 0) {
 					$scope.modules.push({name: lang.translate('statistics.form.all.applications')});
 				}
-				$scope.connectors = formatModules(result.connectors);
+				$scope.connectors = result.connectors && result.connectors.length > 0 ? formatModules(result.connectors) : [];
 
 				var fromDates = [];
 				var toDates = [];
