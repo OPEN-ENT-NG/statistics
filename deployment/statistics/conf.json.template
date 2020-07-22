@@ -16,7 +16,7 @@
     "userbook-host": "${host}",
     "integration-mode" : "HTTP",
     "mode" : "${mode}",
-    "access-modules" : ["Blog","Workspace","Conversation","Actualites","Support","Community","Forum","Wiki","Rbs","Mindmap","TimelineGenerator","CollaborativeWall","Poll","Calendar","AdminConsole","Pages","Rack","Annuaire","Archive", "WebConference"],
+    "access-modules" : ["Blog","Workspace","Conversation","Actualites","Support","Community","Forum","Wiki","Rbs","Mindmap","TimelineGenerator","CollaborativeWall","Poll","Calendar","AdminConsole","Pages","Rack","Annuaire","Archive","WebConference","Exercizer"],
     "custom-indicators": ["WebConferenceRoomCreation", "WebConferenceRoomAccess"]
     }
 }
