@@ -86,7 +86,8 @@ public class Statistics extends BaseServer {
 			MongoDbConf.getInstance().setCollection(MongoConstants.COLLECTIONS.stats.toString());
 
 		} else {
-			StatisticsServiceESImpl statisticsServiceES = new StatisticsServiceESImpl(customIndicators);
+			StatisticsServiceESImpl statisticsServiceES = new StatisticsServiceESImpl(
+					accessModules, config.getJsonArray("connectors", new JsonArray()), customIndicators);
 			statisticsServiceES.setTimezone(config.getString("time_zone", "Europe/Paris"));
 			statsController.setStatsService(statisticsServiceES);
 

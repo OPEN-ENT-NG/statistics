@@ -25,9 +25,13 @@ public class StatisticsServiceESImpl implements StatisticsService {
 	private final ElasticSearch es = ElasticSearch.getInstance();
 	private String timezone;
 	private List<String> customIndicators;
+	private final JsonArray accessModules;
+	private final JsonArray connectors;
 
-	public StatisticsServiceESImpl(List<String> customIndicators) {
+	public StatisticsServiceESImpl(JsonArray accessModules, JsonArray connectors, List<String> customIndicators) {
 		this.customIndicators = customIndicators;
+		this.accessModules = accessModules;
+		this.connectors = connectors;
 	}
 
 	@Override
@@ -73,15 +77,22 @@ public class StatisticsServiceESImpl implements StatisticsService {
 		switch (indicator) {
 			case TRACE_TYPE_SVC_ACCESS:
 			case TRACE_TYPE_CONNECTOR:
+				final JsonArray eventTypeTerms = new JsonArray();
 				if (STATS_FIELD_MOBILE.equals(device)) {
-					filter.add(new JsonObject().put("term", new JsonObject().put("event-type", TRACE_TYPE_MOBILE)));
+					eventTypeTerms.add(TRACE_TYPE_MOBILE);
 				}
 				if (STATS_FIELD_WEB.equals(device)) {
-					filter.add(new JsonObject().put("term", new JsonObject().put("event-type", indicator)));
+					eventTypeTerms.add(indicator);
 				}
+				if (eventTypeTerms.isEmpty()) {
+					eventTypeTerms.add(indicator).add(TRACE_TYPE_MOBILE);
+				}
+				filter.add(new JsonObject().put("terms", new JsonObject().put("event-type", eventTypeTerms)));
 				if (isNotEmpty(module)) {
 					filter.add(new JsonObject().put("term", new JsonObject().put(PARAM_MODULE, module)));
 				} else {
+					filter.add(new JsonObject().put("terms", new JsonObject()
+							.put("module", (TRACE_TYPE_CONNECTOR.equals(indicator) ? connectors : accessModules))));
 					groupByModule.set(true);
 					if (export) {
 						perMonth.put("aggs", new JsonObject().put("group_by", groupBy
