@@ -163,7 +163,7 @@ public class StatisticsServiceESImpl implements StatisticsService {
 				.put("query", new JsonObject().put("bool", new JsonObject().put("filter", filter)));
 		if (export) {
 			search.put("aggs", new JsonObject().put("per_structure", new JsonObject()
-					.put("terms", new JsonObject().put("field", "structures").put("size", schoolIds.size()))
+					.put("terms", new JsonObject().put("field", "structures").put("size", schoolIds.size()).put("include", new JsonArray(schoolIds)))
 					.put("aggs", new JsonObject().put("per_month", perMonth))
 			));
 		} else {
