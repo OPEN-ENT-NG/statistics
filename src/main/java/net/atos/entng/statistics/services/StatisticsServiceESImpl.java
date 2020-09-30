@@ -121,6 +121,12 @@ public class StatisticsServiceESImpl implements StatisticsService {
 						.put("terms", new JsonObject().put("field", TRACE_FIELD_PROFILE))));
 				break;
 			case STATS_FIELD_UNIQUE_VISITORS:
+				if (STATS_FIELD_MOBILE.equals(device)) {
+					filter.add(new JsonObject().put("terms", new JsonObject().put("module", mobileClientIds)));
+				}
+				if (STATS_FIELD_WEB.equals(device)) {
+					filter.add(new JsonObject().put("term", new JsonObject().put("module", "Auth")));
+				}
 				filter.add(new JsonObject().put("term", new JsonObject().put("event-type", TRACE_TYPE_CONNEXION)));
 				perMonth.put("aggs", new JsonObject().put("group_by", groupBy
 						.put("terms", new JsonObject().put("field", TRACE_FIELD_PROFILE))
