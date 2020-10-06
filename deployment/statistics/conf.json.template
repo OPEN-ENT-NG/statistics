@@ -1,5 +1,5 @@
 {
- "name": "net.atos~statistics~1.10.4",
+ "name": "net.atos~statistics~1.10-SNAPSHOT",
   "config": {
     "main" : "net.atos.entng.statistics.Statistics",
     "port" : 8042,
