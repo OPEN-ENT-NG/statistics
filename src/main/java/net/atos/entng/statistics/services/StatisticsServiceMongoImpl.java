@@ -132,6 +132,7 @@ public class StatisticsServiceMongoImpl extends MongoDbCrudService implements St
 		aggregation
 			.put("aggregate", collection)
 			.put("allowDiskUse", true)
+			.put("cursor", new JsonObject().put("batchSize", Integer.MAX_VALUE))
 			.put("pipeline", pipeline);
 
 		pipeline.add(new JsonObject().put("$match", MongoQueryBuilder.build(criteriaQuery)));
@@ -210,7 +211,7 @@ public class StatisticsServiceMongoImpl extends MongoDbCrudService implements St
 			@Override
 			public void handle(Message<JsonObject> message) {
 				if ("ok".equals(message.body().getString("status")) && message.body().getJsonObject("result", new JsonObject()).getInteger("ok") == 1){
-					JsonArray result = message.body().getJsonObject("result").getJsonArray("result");
+					JsonArray result = message.body().getJsonObject("result").getJsonArray("result", new JsonArray());
 					handler.handle(new Either.Right<String, JsonArray>(result));
 				} else {
 					String error = message.body().toString();
