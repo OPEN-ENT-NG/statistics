@@ -747,36 +747,53 @@ module.directive('stackedgroupedBarchart', function ($window) {
  */
 function drawLegend(d3element, data, getProfile, getColor) {
 	var keyText = d3element.selectAll("text.key")
-	.data(data)
-	.enter().append("text")
-	.attr("class", "key")
-	.attr("y", function (d, i) {
-		return height + 42 + 30*(i%2);
-	})
-	.attr("x", function (d, i) {
-		return 155 * Math.floor(i/2) + 15;
-	})
-	.attr("dx", 15)
-	.attr("dy", "2em")
-	.attr("text-anchor", "left")
-	.text(function(d, i) {
-		return getProfile(d, i);
+		.data(data)
+		.enter().append("text")
+		.attr("class", "key")
+		.attr("y", function (d, i) {
+			return height + 42 + 30*(i%2);
+		})
+		.attr("x", function (d, i) {
+			return 155 * Math.floor(i/2) + 15;
+		})
+		.attr("dx", 15)
+		.attr("dy", "2em")
+		.attr("text-anchor", "left")
+		.text(function(d, i) {
+			return getProfile(d, i);
+		})
+
+	var maxLength = 0;
+	var extraSpace = 50; // 15px space + 20px rect width + 15px extra space
+
+	// handling space
+	d3element.selectAll('text.key').each(function(d, i) {
+		// store the max textLength for extra space
+		if (this.textLength.baseVal.value > maxLength) {
+			maxLength = this.textLength.baseVal.value;
+		}
+		this.setAttribute("x", (maxLength + extraSpace) * Math.floor(i/2) + 15);
 	});
-	
+
 	var keySwatches = d3element.selectAll("rect.swatch")
-	.data(data)
-	.enter().append("rect")
-	.attr("class", "swatch")
-	.attr("width", 20)
-	.attr("height", 20)
-	.style("fill", function(d, i) {
-		return getColor(d, i);
-	})
-	.attr("y", function (d, i) {
-		return height + 57.5 + 30*(i%2);
-	})
-	.attr("x", function (d, i) {
-		return 155 * Math.floor(i/2);
+		.data(data)
+		.enter().append("rect")
+		.attr("class", "swatch")
+		.attr("width", 20)
+		.attr("height", 20)
+		.style("fill", function(d, i) {
+			return getColor(d, i);
+		})
+		.attr("y", function (d, i) {
+			return height + 57.5 + 30*(i%2);
+		})
+		.attr("x", function (d, i) {
+			return 155 * Math.floor(i/2);
+		})
+
+	// handling space
+	d3element.selectAll('rect.swatch').each(function(d, i) {
+		this.setAttribute("x", (maxLength + extraSpace) * Math.floor(i/2));
 	});
 }
 
