@@ -1,4 +1,4 @@
 "{{#i18n}}csv.structure{{/i18n}}";"{{#i18n}}csv.city{{/i18n}}";"{{#i18n}}csv.uai{{/i18n}}";"{{#i18n}}csv.date{{/i18n}}";"{{#i18n}}csv.profile{{/i18n}}";"{{#i18n}}{{indicator}}{{/i18n}}"{{#isACCESS}};"{{#i18n}}csv.module{{/i18n}}"{{/isACCESS}}{{#isACTIVATED_ACCOUNTS}};"{{#i18n}}csv.total.number.of.accounts{{/i18n}}"{{/isACTIVATED_ACCOUNTS}}
 {{#list}}
-"{{structures_id}}";"city{{structures_id}}";"uai{{structures_id}}";"{{date}}";"{{#i18n}}{{profil_id}}{{/i18n}}";"{{indicatorValue}}"{{#isACCESS}};"{{module_id}}"{{/isACCESS}}{{#isACTIVATED_ACCOUNTS}};"{{ACCOUNTS}}"{{/isACTIVATED_ACCOUNTS}}
+"{{structures_id}}";"city{{structures_id}}";"uai{{structures_id}}";"{{date}}";"{{#i18n}}{{profil_id}}{{/i18n}}";"{{indicatorValue}}"{{#isACCESS}};"{{#i18n}}{{module_id}}{{/i18n}}"{{/isACCESS}}{{#isACTIVATED_ACCOUNTS}};"{{ACCOUNTS}}"{{/isACTIVATED_ACCOUNTS}}
 {{/list}}
