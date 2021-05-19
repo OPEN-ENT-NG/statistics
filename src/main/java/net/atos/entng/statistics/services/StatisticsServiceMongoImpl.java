@@ -211,8 +211,9 @@ public class StatisticsServiceMongoImpl extends MongoDbCrudService implements St
 			@Override
 			public void handle(Message<JsonObject> message) {
 				if ("ok".equals(message.body().getString("status")) && message.body().getJsonObject("result", new JsonObject()).getInteger("ok") == 1){
-					JsonArray result = message.body().getJsonObject("result").getJsonArray("result", new JsonArray());
-					handler.handle(new Either.Right<String, JsonArray>(result));
+					JsonObject messageResult = message.body().getJsonObject("result", new JsonObject());
+					JsonArray results = messageResult.getJsonObject("cursor", new JsonObject()).getJsonArray("firstBatch", new JsonArray());
+					handler.handle(new Either.Right<String, JsonArray>(results));
 				} else {
 					String error = message.body().toString();
 					handler.handle(new Either.Left<String, JsonArray>(error));
