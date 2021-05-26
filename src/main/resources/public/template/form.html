@@ -5,8 +5,8 @@
 				<label class="two cell"><i18n>statistics.form.school</i18n></label>
 				<span class="five cell">
 					<select ng-hide="schools.length === 1"
-						ng-model="form.school_id" style="max-width: 275px">
-						<option value="[[school.id]]" ng-repeat="school in schools | orderBy:'name'">[[school.name]]</option>
+						ng-model="form.school_id" style="max-width: 275px"
+						ng-options="school.id as school.name for school in schools">
 					</select>
 					<span ng-if="schools.length === 1">[[schools[0].name]]</span>
 				</span>
