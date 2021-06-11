@@ -43,6 +43,8 @@ import java.util.List;
 
 public class Statistics extends BaseServer {
 
+	public static boolean deviceFilter = true;
+
 	@Override
 	public void start() throws Exception {
 		super.start();
@@ -60,6 +62,7 @@ public class Statistics extends BaseServer {
 		final Handler<Long> aggTask;
 
 		if (!config.getBoolean("elasticsearch", false)) {
+			deviceFilter = false;
 			// 1) Schedule daily aggregation
 			/* By default, fire aggregate-cron at 1:15am every day.
 			 * Be careful when setting fire times between midnight and 1:00 AM

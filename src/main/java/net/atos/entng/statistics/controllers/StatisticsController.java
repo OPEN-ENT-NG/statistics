@@ -106,7 +106,9 @@ public class StatisticsController extends BaseController {
     @ApiDoc("Get HTML view")
     @SecuredAction("statistics.view")
     public void view(HttpServerRequest request) {
-        renderView(request);
+        JsonObject params = new JsonObject()
+                .put("deviceFilter", Statistics.deviceFilter);
+        renderView(request, params);
     }
 
     @Get("/indicators")

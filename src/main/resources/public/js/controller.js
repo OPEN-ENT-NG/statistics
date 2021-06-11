@@ -4,7 +4,8 @@ function StatisticsController($scope, template, model) {
 		$scope.display = {
 			form: true,
 			admin: false,
-			chart: true
+			chart: true,
+			deviceFilter: window.deviceFilter || false
 		};
 
 		$scope.generationDates = {};

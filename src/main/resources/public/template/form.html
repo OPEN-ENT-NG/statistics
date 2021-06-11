@@ -57,7 +57,7 @@
 
 		<div class="row">
 			<!-- div ng-if="form.indicator === 'LOGIN' || form.indicator === 'ACCESS' || form.indicator === 'UNIQUE_VISITORS'" -->
-			<div ng-if="form.indicator === 'LOGIN' || form.indicator === 'UNIQUE_VISITORS'"> <!-- When ACCESS EVENT will be available for MOBILE then replace with the commented line above -->
+			<div ng-if="(form.indicator === 'LOGIN' || form.indicator === 'UNIQUE_VISITORS') && display.deviceFilter"> <!-- When ACCESS EVENT will be available for MOBILE then replace with the commented line above -->
 				<label class="two cell"><i18n>statistics.form.device</i18n></label>
 				<span class="four cell">
 						<select ng-model="form.device"
