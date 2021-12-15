@@ -1,0 +1,102 @@
+{
+    "name": "{{ statisticsVersion }}",
+    "config": {
+        "main": "net.atos.entng.statistics.Statistics",
+        "port": 8042,
+        "sql": false,
+        "mongodb": true,
+        "neo4j": true,
+        {% if statsVersion is defined %}
+        "app-name": "Statistiques 2D",
+        {% else %}
+        "app-name": "Statistiques",
+        {% endif %}
+        "app-address": "/statistics",
+        "app-icon": "statistics-large",
+        "app-type" : "END_USER",
+        "host": "https://{{ host }}",
+        "ssl": true,
+        {% if overrideTheme %} "override-theme": {{ override2d }}, {% endif %}
+        "auto-redeploy": false,
+        "userbook-host": "https://{{ host }}",
+        "integration-mode": "HTTP",
+        "mode": "prod",
+        "publicConf": {
+            "xiti": {
+                "ID_SERVICE": {
+                    "default": ""
+                },
+                "LIBELLE_SERVICE": {
+                    "default": "PAGE_ENT"
+                }
+            }
+        },
+        {% if elasticsearchConfig is defined %}
+        "elasticsearch":true,
+        "elasticsearchConfig" : {{ elasticsearchConfig }},
+            {% if statCron is defined and statCron %}
+        "aggregate-cron": "0 15 1 1 1 ? 2042",
+        "sync-cron": "0 10 * * * ? 2042",
+            {% endif %}
+        {% else %}
+            {% if statCron is defined and statCron %}
+        "aggregate-cron": "0 15 1 1 1 ? 2042",
+            {% endif %}
+        {% endif %}
+        "connectors" : {{ statConnectors|default('[]') }},
+        "custom-indicators" : {{ customIndicators|default('[]') }},
+        "access-modules": [
+            {% if stat1dAccessModules is defined %}
+                {% for app in stat1dAccessModules %}
+            "{{app}}",
+                {% endfor %}
+            {% endif %}
+            {% if webConferenceVersion is defined %}
+            "WebConference",
+            {% endif %}
+            {% if mediacentreVersion is defined %}
+            "Mediacentre",
+            {% endif %}
+            {% if moodleVersion is defined %}
+            "Moodle",
+            {% endif %}
+            {% if zimbraVersion is defined %}
+            "Zimbra",
+            {% endif %}
+            {% if presencesVersion is defined %}
+            "Presences",
+            {% endif %}
+            {% if competencesVersion is defined %}
+            "Competences",
+            {% endif %}
+            {% if diaryVersion is defined %}
+            "Diary",
+            {% endif %}
+            {% if edtVersion is defined %}
+            "Edt",
+            {% endif %}
+            {% if collaborativeEditorVersion is defined %}
+            "CollaborativeEditor",
+            {% endif %}
+            "Blog",
+            "Workspace",
+            "Conversation",
+            "Actualites",
+            "Support",
+            "Community",
+            "Forum",
+            "Wiki",
+            "Rbs",
+            "Mindmap",
+            "TimelineGenerator",
+            "CollaborativeWall",
+            "Poll",
+            "Calendar",
+            "Pages",
+            "Rack",
+            "Annuaire",
+            "Archive",
+            "Exercizer"
+        ]
+    }
+}
