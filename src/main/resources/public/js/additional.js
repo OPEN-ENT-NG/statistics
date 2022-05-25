@@ -769,8 +769,8 @@ function drawLegend(d3element, data, getProfile, getColor) {
 	// handling space
 	d3element.selectAll('text.key').each(function(d, i) {
 		// store the max textLength for extra space
-		if (this.textLength.baseVal.value > maxLength) {
-			maxLength = this.textLength.baseVal.value;
+		if (this.getComputedTextLength() > maxLength) {
+			maxLength = this.getComputedTextLength();
 		}
 		this.setAttribute("x", (maxLength + extraSpace) * Math.floor(i/2) + 15);
 	});
