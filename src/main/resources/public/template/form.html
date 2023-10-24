@@ -13,8 +13,10 @@
 			</div>
 			<label class="one cell"><i18n>statistics.form.from</i18n></label>
 			<span class="four cell">
-				<select ng-model="form.from"
-					ng-options="date.moment as date.label for date in dates">
+				<select id="date-selector-from"
+					ng-model="form.from"
+					ng-options="date.moment as date.label for date in dates"
+					ng-init="initStartDate()">
 				</select>
 			</span>
 		</div>
@@ -67,7 +69,10 @@
 				</span>
 			</div>
 
-			<button ng-if="!form.processing" class="right-magnet" ng-click="getData()"><i18n>statistics.form.display.chart</i18n></button>
+			<div display="flex">
+				<div class="aligned warning" ng-show="!isIntervalValid()"><i18n>statistics.form.error.requirements</i18n></div>
+				<button ng-if="!form.processing" class="right-magnet" ng-click="getData()" ng-disabled="!isIntervalValid()"><i18n>statistics.form.display.chart</i18n></button>
+			</div>
 			<i18n ng-if="form.processing === true" class="right-magnet">statistics.form.processing</i18n>
 		</div>
 

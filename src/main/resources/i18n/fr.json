@@ -88,6 +88,7 @@
     "statistics.bad.request.invalid.export.format": "Le format demandé pour l'export de données n'est pas supporté.",
     "statistics.rename.downloaded.file.to.csv": "Renommez le fichier téléchargé en export.csv",
     "statistics.form.connector" : "Connecteur",
+    "statistics.form.error.requirements" : "La durée demandée doit être inférieure ou égale à un an et la date de fin ne peut pas être avant la date de début.",
     "csv.profile": "Profil",
     "csv.structure": "Établissement",
     "csv.city": "Commune",
