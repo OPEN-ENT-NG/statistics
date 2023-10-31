@@ -130,15 +130,8 @@ function StatisticsController($scope, template, model) {
 			return;
 		}
 
+		var minDate = moment('01-01-2020', 'DD-MM-YYYY');
 		var maxDate = moment().startOf('month'); // 1st day of current month
-
-		// Set minDate to september 1st of current school year
-		var year = moment().year();
-		var september = 8;
-		if(moment().month() < september) {
-			year = year - 1;
-		}
-		var minDate = moment().year(year).month(september).startOf('month');
 		fromDates.push(getDateObjectForNgOptions(minDate.clone()));
 
 		while(minDate.isBefore(maxDate)) {
@@ -195,6 +188,26 @@ function StatisticsController($scope, template, model) {
 		$scope.form.indicator = 'LOGIN';
 		$scope.form.to = $scope.toDates[$scope.toDates.length-1].moment;
 	};
+
+	$scope.isIntervalValid = () => {
+		var before = $scope.form.from.moment ? $scope.form.from.moment : $scope.form.from;
+		var after = $scope.form.to.moment ? $scope.form.to.moment : $scope.form.to;
+		var isStartBeforeEnd = before.isBefore(after);
+		var isIntervalMoreThanOneYearisIntervalMoreThanOneYear = Math.abs(before.diff(after)) < 31556926000;
+		return isStartBeforeEnd && isIntervalMoreThanOneYearisIntervalMoreThanOneYear;
+	}
+
+	$scope.initStartDate = () => {
+		// Set expectedStartDate5 to september 1st of current school year
+		var year = moment().month() > 8 ? moment().year() : moment().year() - 1;
+		var expectedStartDate = moment().year(year).month(8).startOf('month').format("MMMM YYYY");
+
+		var initialisedStartDate = $scope.dates.find(dateOption => dateOption.label == expectedStartDate);
+		$scope.form.from = initialisedStartDate.moment;
+		$scope.getData();
+		$scope.$apply();
+		return initialisedStartDate;
+	}
 
 	/* If pFormat = "csv", get data as CSV and save it as a file.
 	 * Else, get data as JSON and display chart */
