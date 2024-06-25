@@ -17,6 +17,7 @@
     "integration-mode" : "HTTP",
     "mode" : "${mode}",
     "access-modules" : ["Blog","Workspace","Conversation","Actualites","Support","Community","Forum","Wiki","Rbs","Mindmap","TimelineGenerator","CollaborativeWall","Poll","Calendar","AdminConsole","Pages","Rack","Annuaire","Archive","WebConference","Exercizer"],
-    "custom-indicators": ["WebConferenceRoomCreation", "WebConferenceRoomAccess"]
+    "custom-indicators": ["WebConferenceRoomCreation", "WebConferenceRoomAccess"],
+     "connectors" : ["MOODLE-DIGITAL-FACTORY","CHAT","re7-didask","JIRA MinArm","Matomo","Peertube-SSO-RE7","PeertubeLienDirect","MOODLE-EETAA722","PRONOTE - connecteur","MOODLE-EFSOAA721","MOODLE-EPA749","MOODLE-EFSOAA721","MOODLE-EPA749","MOODLE-SCLAE-SECTION-COMPETENCES-LINGUISTIQUES-AERONAUTI","MOODLE-TEST-RECETTE","MOODLE-TEST-CGI","MOODLE-TESTMOODLE"]
     }
 }
