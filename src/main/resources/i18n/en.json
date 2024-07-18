@@ -119,6 +119,7 @@
     "Edt": "Emploi du temps",
     "UniversalisRegisteredService" : "Universalis",
     "PronoteRegisteredService" : "Pronote",
+    "MoodleRegisteredService" : "Moodle",
     "BRNERegisteredService" : "BRNE",
     "CIDJRegisteredService" : "CIDJ",
     "DefaultRegisteredService" : "Autres",

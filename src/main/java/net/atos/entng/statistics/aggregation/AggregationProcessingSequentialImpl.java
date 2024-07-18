@@ -28,7 +28,6 @@ import io.vertx.core.Handler;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-
 public class AggregationProcessingSequentialImpl extends AggregationProcessing {
 
 	private static final Logger log = LoggerFactory.getLogger(AggregationProcessingSequentialImpl.class);

@@ -69,12 +69,16 @@ public class IndicatorHelper {
 		// Access to applications
 		aggProcessing.addIndicator(IndicatorFactory.getAccessIndicator(filters, writeDate));
 
-		// Custom indicators
-		for (String indicator : customIndicators) {
-			CustomIndicator cid = CustomIndicator.create(indicator);
-			if (cid != null) aggProcessing.addIndicator(cid.indicator(filters, writeDate));
-		}
+		//Connectors
+		aggProcessing.addIndicator(IndicatorFactory.getConnectorsIndicator(filters, writeDate));
 
+		// Custom indicators
+		if(customIndicators != null) {
+			for (String indicator : customIndicators) {
+				CustomIndicator cid = CustomIndicator.create(indicator);
+				if (cid != null) aggProcessing.addIndicator(cid.indicator(filters, writeDate));
+			}
+		}
 		// DateFilter to keep all events of current month
 		filters = new ArrayList<>();
 		from = DateUtils.getFirstDayOfMonth(to);
@@ -88,5 +92,6 @@ public class IndicatorHelper {
 
 		// Accounts and activated accounts
 		aggProcessing.addIndicator(IndicatorFactory.getActivatedAccountsIndicator(writeDate));
+
 	}
 }
