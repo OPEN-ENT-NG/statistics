@@ -26,6 +26,7 @@ import static org.entcore.common.aggregation.MongoConstants.TRACE_FIELD_USER;
 import static org.entcore.common.aggregation.MongoConstants.TRACE_TYPE_ACTIVATION;
 import static org.entcore.common.aggregation.MongoConstants.TRACE_TYPE_CONNEXION;
 import static org.entcore.common.aggregation.MongoConstants.TRACE_TYPE_SVC_ACCESS;
+import static org.entcore.common.aggregation.MongoConstants.TRACE_TYPE_CONNECTOR;
 import static net.atos.entng.statistics.aggregation.indicators.IndicatorConstants.STATS_FIELD_UNIQUE_VISITORS;
 
 import java.util.ArrayList;
@@ -117,6 +118,16 @@ public class IndicatorFactory {
 			.addAndReturnChild(TRACE_FIELD_PROFILE));
 
 		Indicator indicator = new IndicatorMongoImpl(TRACE_TYPE_SVC_ACCESS, filters, indicatorGroups);
+		indicator.setWriteDate(pWriteDate);
+		return indicator;
+	}
+	public static Indicator getConnectorsIndicator(Collection<IndicatorFilterMongoImpl> filters, Date pWriteDate) {
+		Collection<IndicatorGroup> indicatorGroups = new ArrayList<IndicatorGroup>();
+		indicatorGroups.add(new IndicatorGroup(TRACE_FIELD_MODULE)
+				.addAndReturnChild(new IndicatorGroup(TRACE_FIELD_STRUCTURES).setArray(true))
+				.addAndReturnChild(TRACE_FIELD_PROFILE));
+
+		Indicator indicator = new IndicatorMongoImpl(TRACE_TYPE_CONNECTOR, filters, indicatorGroups);
 		indicator.setWriteDate(pWriteDate);
 		return indicator;
 	}

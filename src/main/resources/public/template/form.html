@@ -49,7 +49,7 @@
 				<label class="two cell"><i18n>statistics.form.connector</i18n></label>
 				<span class="four cell">
 					<select ng-model="form.module"
-						ng-init="form.module = modules[0].technicalName"
+						ng-init="form.module = connectors[0].technicalName"
 						ng-options="module.technicalName as module.name for module in connectors">
 					</select>
 				</span>

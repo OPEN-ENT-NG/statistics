@@ -29,6 +29,7 @@ import static org.entcore.common.aggregation.MongoConstants.TRACE_FIELD_PROFILE;
 import static org.entcore.common.aggregation.MongoConstants.TRACE_FIELD_STRUCTURES;
 import static org.entcore.common.aggregation.MongoConstants.STATS_FIELD_DATE;
 import static org.entcore.common.aggregation.MongoConstants.STATS_FIELD_GROUPBY;
+import static org.entcore.common.aggregation.MongoConstants.TRACE_TYPE_CONNECTOR;
 
 import java.util.List;
 
@@ -89,7 +90,8 @@ public class StatisticsServiceMongoImpl extends MongoDbCrudService implements St
 
 		boolean isActivatedAccountsIndicator = STATS_FIELD_ACTIVATED_ACCOUNTS.equals(indicator);
 		boolean isAccessIndicator = TRACE_TYPE_SVC_ACCESS.equals(indicator);
-		String groupedBy = isAccessIndicator ? "module/structures/profil" : "structures/profil";
+		boolean isConnector = TRACE_TYPE_CONNECTOR.equals(indicator);
+		String groupedBy = (isAccessIndicator || isConnector) ? "module/structures/profil" : "structures/profil";
 		final QueryBuilder criteriaQuery = QueryBuilder
 				.start(STATS_FIELD_GROUPBY).is(groupedBy)
 				.and(STATS_FIELD_DATE).greaterThanEquals(formatTimestamp(start)).lessThan(formatTimestamp(end))
@@ -98,7 +100,7 @@ public class StatisticsServiceMongoImpl extends MongoDbCrudService implements St
 		String module = params.getString(PARAM_MODULE);
 		boolean moduleIsEmpty = module==null || module.trim().isEmpty();
 		boolean isAccessAllModules = isAccessIndicator && moduleIsEmpty;
-		if(isAccessIndicator && !moduleIsEmpty) {
+		if(isAccessIndicator && !moduleIsEmpty || isConnector && !moduleIsEmpty) {
 			criteriaQuery.and(MODULE_ID).is(module);
 		}
 
