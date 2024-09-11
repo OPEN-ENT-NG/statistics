@@ -119,6 +119,7 @@
     "UniversalisRegisteredService" : "Universalis",
     "PronoteRegisteredService" : "Pronote",
     "MoodleRegisteredService" : "Moodle",
+    "SSOMatrix" : "Chat",
     "BRNERegisteredService" : "BRNE",
     "CIDJRegisteredService" : "CIDJ",
     "DefaultRegisteredService" : "Autres",

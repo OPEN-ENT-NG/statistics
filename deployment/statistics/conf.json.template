@@ -18,6 +18,6 @@
     "mode" : "${mode}",
     "access-modules" : ["Blog","Workspace","Conversation","Actualites","Support","Community","Forum","Wiki","Rbs","Mindmap","TimelineGenerator","CollaborativeWall","Poll","Calendar","AdminConsole","Pages","Rack","Annuaire","Archive","WebConference","Exercizer"],
     "custom-indicators": ["WebConferenceRoomCreation", "WebConferenceRoomAccess"],
-    "connectors" : ["MoodleRegisteredService", "PronoteRegisteredService"]
+    "connectors" : ["MoodleRegisteredService", "PronoteRegisteredService", "SSOPeertube", "SSOMatrix"]
     }
 }
