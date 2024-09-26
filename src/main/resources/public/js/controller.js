@@ -198,8 +198,8 @@ function StatisticsController($scope, template, model) {
 	}
 
 	$scope.initStartDate = () => {
-		// Set expectedStartDate5 to september 1st of current school year
-		var year = moment().month() > 8 ? moment().year() : moment().year() - 1;
+		// Set expectedStartDate5 to september 1st of current school year / 8= september with moment
+		var year = moment().month() >= 8 ? moment().year() : moment().year() - 1;
 		var expectedStartDate = moment().year(year).month(8).startOf('month').format("MMMM YYYY");
 
 		var initialisedStartDate = $scope.dates.find(dateOption => dateOption.label == expectedStartDate);
