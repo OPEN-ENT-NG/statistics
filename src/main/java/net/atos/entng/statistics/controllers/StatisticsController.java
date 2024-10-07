@@ -291,7 +291,7 @@ public class StatisticsController extends BaseController {
                                         .put("is" + indicator, true)
                                         .put("list", event.right().getValue())
                                         .put("indicator", indicator);
-
+log.info("case csv : " + event.right().getValue());
                                 processTemplate(request, "text/export.txt", params, new Handler<String>() {
                                     @Override
                                     public void handle(final String export) {

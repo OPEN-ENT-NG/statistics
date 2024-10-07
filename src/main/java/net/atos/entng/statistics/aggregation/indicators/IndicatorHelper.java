@@ -44,7 +44,7 @@ public class IndicatorHelper {
 		if(aggProcessing == null) {
 			throw new InvalidParameterException("Parameter aggProcessing is null");
 		}
-
+		log.info("addIndicators from : " + from + " to " + to);
 		Collection<IndicatorFilterMongoImpl> filters = new ArrayList<>();
 
 		// DateFilter : keep events of yesterday if parameters "from" and "to" are not supplied
@@ -56,6 +56,7 @@ public class IndicatorHelper {
 			cal.add(Calendar.DAY_OF_MONTH, -1);
 			from = AggregationTools.setToMidnight(cal);
 		}
+		log.info("addIndicators from : " + from + " to " + to);
 		filters.add(new DateFilter(from, to));
 
 		Date writeDate = DateUtils.getFirstDayOfMonth(from);

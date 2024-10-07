@@ -47,9 +47,12 @@ public class AggregationProcessingSequentialImpl extends AggregationProcessing {
 			@Override
 			public void handle(JsonObject event) {
 				if(it.hasNext()) {
+					log.info(" indicator : " + indicator);
+					log.info("event : " + event);
 					it.next().aggregate(this);
 				}
 				else {
+					log.info("event catch : " + event);
 					callBack.handle(event);
 				}
 			}
