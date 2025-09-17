@@ -24,7 +24,10 @@ package fr.wseduc.stats;
 
 import java.text.ParseException;
 import java.util.Base64;
+import java.util.Map;
 
+import fr.wseduc.webutils.collections.SharedDataHelper;
+import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.pgclient.PgPool;
@@ -48,7 +51,6 @@ import fr.wseduc.stats.controllers.StatsController;
 import fr.wseduc.stats.cron.CronAggregationTask;
 import fr.wseduc.stats.filters.WorkflowFilter;
 import fr.wseduc.stats.services.DefaultJobsServiceImpl;
-import fr.wseduc.stats.services.JobsService;
 import fr.wseduc.stats.services.MockStatsService;
 import fr.wseduc.stats.services.PGStatsService;
 import fr.wseduc.stats.services.StatsService;
@@ -62,7 +64,15 @@ public class Stats extends BaseServer {
 
 	@Override
 	public void start(final Promise<Void> startPromise) throws Exception {
-		super.start(startPromise);
+		Promise<Void> promise = Promise.promise();
+		super.start(promise);
+		promise.future()
+				.compose(init -> SharedDataHelper.getInstance().getMulti("server", "event-store", "neo4jConfig"))
+				.compose(statsConfigMap -> initStats(statsConfigMap))
+				.onComplete(startPromise);
+	}
+
+	private Future<Void> initStats(final Map<String, Object> statsConfigMap) {
 
 		// CRON
 		// Default at 00:00AM every day
@@ -76,12 +86,12 @@ public class Stats extends BaseServer {
 			} catch (ParseException e) {
 				logger.fatal(e.getMessage(), e);
 				vertx.close();
-				return;
+				return Future.failedFuture(e);
 			}
 		}
 
 		final String platformId;
-		final String eventStoreConf = (String) vertx.sharedData().getLocalMap("server").get("event-store");
+		final String eventStoreConf = (String) statsConfigMap.get("event-store");
 		final JsonObject eventStoreConfig;
 		if (eventStoreConf != null) {
 			eventStoreConfig = new JsonObject(eventStoreConf);
@@ -107,7 +117,7 @@ public class Stats extends BaseServer {
 			PgPool pgPool = PgPool.pool(vertx, connectOptions, poolOptions);
 
 			// SyncRepository with neo4j config
-			final String neo4jConfig = (String) vertx.sharedData().getLocalMap("server").get("neo4jConfig");
+			final String neo4jConfig = (String) statsConfigMap.get("neo4jConfig");
 			final JsonObject neo4jConfigJson = new JsonObject(neo4jConfig);
 			final String neo4jUserName = neo4jConfigJson.getString("username");
 			final String neo4jPassword = neo4jConfigJson.getString("password");
@@ -170,7 +180,7 @@ public class Stats extends BaseServer {
 		addController(statsController);
 		MongoDbConf.getInstance().setCollection(COLLECTIONS.stats.name());
 		addFilter(new WorkflowFilter(this.vertx.eventBus(), "stats.view", "fr.wseduc.stats.controllers.StatsController|view"));
-		startPromise.tryComplete();
+		return Future.succeededFuture();
 	}
 
 }

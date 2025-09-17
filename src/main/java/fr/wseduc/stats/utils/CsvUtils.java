@@ -21,6 +21,7 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 
+import static org.entcore.common.utils.FileUtils.deleteFSImportPath;
 import static org.entcore.common.utils.FileUtils.deleteImportPath;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -57,9 +58,9 @@ public final class CsvUtils {
 		request.setExpectMultipart(true);
 		request.exceptionHandler(event -> {
 			handler.handle(Future.failedFuture(event));
-			deleteImportPath(vertx, path);
+			deleteFSImportPath(vertx, path);
 		});
-		request.response().endHandler(ar -> deleteImportPath(vertx, path));
+		request.response().endHandler(ar -> deleteFSImportPath(vertx, path));
 		request.uploadHandler(upload -> {
 			if (!upload.filename().toLowerCase().endsWith(".csv")) {
 				log.error("Invalid file extension");
