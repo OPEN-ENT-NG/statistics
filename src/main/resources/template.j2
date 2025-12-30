@@ -1,0 +1,44 @@
+{
+ "name": "fr.wseduc~stats",
+  "config": {
+    "main" : "fr.wseduc.stats.Stats",
+    "port" : 8225,
+    "app-name" : "Statistiques",
+    "app-address" : "/stats",
+    "app-icon" : "stats-large",
+    "app-displayName" : "stats",
+    "app-type" : "END_USER",
+    "ssl" : true,
+    "integration-mode": "{{ integration_mode|default('HTTP') }}",
+    "app-registry.port" : 8012,
+    "auto-redeploy": false,
+    "mode" : "prod",
+    "entcore.port" : 8009,
+	  "mock": {{ statsMockData | default('false') }},
+    {% if statsReadInENT is defined and statsReadInENT %}
+      "read-pg-config" : {
+        "user":"{{ statsPgRoUser | default('stats-ro') }}",
+        "password": "{{ statsENTpgRO }}",
+        "host": "{{ statsPgRoHost }}",
+        "port": 5432,
+        "database":"{{ statsPgDatabase | default('stats') }}",
+        "ssl-mode": "REQUIRE"
+      },
+  	{% endif %}
+    {% if statsInENT is defined and statsInENT %}
+      "pg-config" : {
+        "user":"{{ statsPgRwUser | default('stats-rw') }}",
+        "password": "{{ statsENTpgRW }}",
+        "host": "{{ statsPgRwHost }}",
+        "port": 5432,
+        "database":"{{ statsPgDatabase | default('stats') }}",
+        "ssl-mode": "REQUIRE"
+      },
+  	{% endif %}
+    {% if ha is defined and ha and inventory_hostname_short is defined and inventory_hostname_short != 'jobs' %}
+      "aggregation-cron": "0 0 0 * * ? 2099"
+    {% else %}
+      "aggregation-cron": "0 0 0 * * ? 2099"
+    {% endif %}
+  }
+}
