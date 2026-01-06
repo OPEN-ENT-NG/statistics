@@ -15,6 +15,7 @@
     "mode" : "prod",
     "entcore.port" : 8009,
 	  "mock": {{ statsMockData | default('false') }},
+    "mocks-path": "{{ statsMocksPath | default('/tmp') }}",
     {% if statsReadInENT is defined and statsReadInENT %}
       "read-pg-config" : {
         "user":"{{ statsPgRoUser | default('stats-ro') }}",
