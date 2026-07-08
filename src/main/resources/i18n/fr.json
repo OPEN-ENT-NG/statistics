@@ -1,6 +1,7 @@
 {
   "admin": "Admin",
   "annuaire": "Annuaire",
+  "assistancetic": "Support Eduprovence",
   "blog": "Blog",
   "capytale": "Capytale",
   "cerisepro": "Cerise Pro",
@@ -125,6 +126,5 @@
   "webgerest": "WebGerest",
   "wekan": "Wekan",
   "workspace": "Espace documentaire",
-  "zimbra": "Zimbra",
-  "assistancetic": "Support Eduprovence"
+  "zimbra": "Zimbra"
 }
