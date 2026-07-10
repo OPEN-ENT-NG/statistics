@@ -67,7 +67,7 @@ public class Stats extends BaseServer {
 		Promise<Void> promise = Promise.promise();
 		super.start(promise);
 		promise.future()
-				.compose(init -> SharedDataHelper.getInstance().getMulti("server", "event-store", "neo4jConfig"))
+				.compose(init -> SharedDataHelper.getInstance().getLocalMulti("server", "event-store", "neo4jConfig"))
 				.compose(statsConfigMap -> initStats(statsConfigMap))
 				.onComplete(startPromise);
 	}
