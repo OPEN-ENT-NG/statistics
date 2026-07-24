@@ -26,7 +26,7 @@
     </repository>
   </repositories>
   <properties>
-        <entcore.version>6.16-SNAPSHOT</entcore.version>
+        <entcore.version>6.16-develop-enabling-SNAPSHOT</entcore.version>
     <vertx-cron-timer.version>3.0-SNAPSHOT</vertx-cron-timer.version>
     <joda-time.version>2.9.4</joda-time.version>
     <postgres-driver.version>42.2.26</postgres-driver.version>
@@ -36,7 +36,7 @@
     <modMongoVersion>4.2-SNAPSHOT</modMongoVersion>
     <modJsonSchemaValidatorVersion>2.2-SNAPSHOT</modJsonSchemaValidatorVersion>
     <entCoreLibsVersion>6.16-SNAPSHOT</entCoreLibsVersion>
-    <entCoreVersion>6.16-SNAPSHOT</entCoreVersion>
+    <entCoreVersion>6.16-develop-enabling-SNAPSHOT</entCoreVersion>
   </properties>
   <dependencies>
     <dependency>
