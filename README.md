@@ -166,3 +166,6 @@ Pour qu'un connecteur apparaisse dans les statistiques, il faut qu'il soit du ty
 Pour qu'une application (pour laquelle des événements sont collectés) apparaisse dans les statistiques, il est nécessaire d'ajouter le nom court du *verticle* dans le tableau `modules` dans le fichier `src/main/resources/api-allowed-values.json`.
 
 Processus : à l'ajout d'un nouveau module dont le verticle principal est la classe `org.entcore.xxx.xyz.MyVerticle`, il faut donc créer sur master une PR sur le module `statistics` avec l'ajout de la valeur `MyVerticle` au tableau `modules`.
+
+
+Ce dépôt est un miroir officiel du dépôt Edifice : https://github.com/edificeio/statistics
